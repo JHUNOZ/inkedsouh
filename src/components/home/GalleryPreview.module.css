@@ -175,7 +175,8 @@
 }
 
 @media (max-width: 768px) {
+  .section { padding: 60px 0; }
   .controlsRow { flex-direction: column; gap: 20px; align-items: flex-start; }
-  .carousel { gap: 20px; }
+  .carousel { gap: 16px; padding-bottom: 10px; }
   .card { flex: 0 0 85vw; }
 }

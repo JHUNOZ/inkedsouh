@@ -28,6 +28,11 @@
   flex-direction: column;
 }
 
+@media (max-width: 768px) {
+  .page { padding: 80px 0; }
+  .grid { grid-template-columns: 1fr; gap: 20px; }
+}
+
 .card:hover {
   border-color: var(--color-red);
   transform: translateY(-5px);

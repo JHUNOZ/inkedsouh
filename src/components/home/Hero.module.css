@@ -204,7 +204,8 @@
 
 @media (max-width: 768px) {
   .heroTextLogo {
-    font-size: 3rem;
+    font-size: clamp(2.4rem, 10vw, 3rem);
+    letter-spacing: 6px;
   }
 }
 
@@ -320,9 +321,9 @@
 }
 
 @media (max-width: 900px) {
-  .hero { min-height: 100svh; padding: 120px var(--container-padding) 60px; }
-  .inner { grid-template-columns: 1fr; gap: 40px; text-align: center; }
-  .imageWrap { max-width: 300px; margin: 0 auto; }
+  .hero { min-height: 100svh; padding: 100px var(--container-padding) 40px; }
+  .inner { grid-template-columns: 1fr; gap: 30px; text-align: center; }
+  .imageWrap { max-width: 250px; margin: 0 auto; }
   .label::after { display: none; }
   .tags { justify-content: center; }
   .scrollArrow { display: none; } /* Ocultar flecha en móvil si estorba */

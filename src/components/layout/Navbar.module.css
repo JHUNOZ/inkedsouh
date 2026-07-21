@@ -171,7 +171,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  width: 300px;
+  width: clamp(250px, 75vw, 300px);
   height: 100vh;
   background: var(--color-bg-elevated);
   backdrop-filter: var(--glass-blur);

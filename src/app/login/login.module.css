@@ -420,10 +420,12 @@
   .formSide { 
     width: 100%; 
     min-height: 100vh;
-    padding: 30px; 
+    padding: 40px 20px; 
     border-right: none;
     box-shadow: none;
     background: radial-gradient(ellipse at top right, rgba(232, 36, 40, 0.1) 0%, var(--color-bg) 60%);
   }
   .visualSide { display: none; }
+  .logo { font-size: 2rem; }
+  .title { font-size: 1.5rem; }
 }
