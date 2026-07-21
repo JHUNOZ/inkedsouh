@@ -1,7 +1,7 @@
 'use client'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Calendar, Package, Image as ImageIcon, Settings, LogOut, Menu, X } from 'lucide-react'
+import { Calendar, Package, Image as ImageIcon, Settings, LogOut, Menu, X, LayoutDashboard, BookOpen, User } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import styles from './layout.module.css'
 import { createClient } from '@/lib/supabase/client'
@@ -27,9 +27,13 @@ export default function AdminLayout({ children }) {
   }
 
   const navItems = [
+    { href: '/admin/resumen', label: 'Resumen', icon: LayoutDashboard },
     { href: '/admin/reservas', label: 'Reservas', icon: Calendar },
     { href: '/admin/productos', label: 'Productos', icon: Package },
+    { href: '/admin/cursos', label: 'Cursos', icon: BookOpen },
     { href: '/admin/galeria', label: 'Galería IG', icon: ImageIcon },
+    { href: '/admin/configuracion', label: 'Configuración', icon: Settings },
+    { href: '/admin/perfil', label: 'Mi Perfil', icon: User }
   ]
 
   return (
