@@ -8,7 +8,6 @@ import { createClient } from '@/lib/supabase/client'
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname()
-  const isLoginPage = pathname === '/admin/login'
   const [mobileOpen, setMobileOpen] = useState(false)
   const supabase = createClient()
 
@@ -17,13 +16,13 @@ export default function AdminLayout({ children }) {
     setMobileOpen(false)
   }, [pathname])
 
-  if (isLoginPage) {
-    return <>{children}</>
-  }
+
 
   const handleLogout = async () => {
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
     await supabase.auth.signOut()
-    window.location.href = '/admin/login'
+    window.location.href = '/login'
   }
 
   const navItems = [

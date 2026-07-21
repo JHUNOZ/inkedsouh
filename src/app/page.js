@@ -42,11 +42,11 @@ export default function Home() {
         <p style={{ color: '#888', maxWidth: '400px', lineHeight: '1.6', marginBottom: '40px' }}>
           Estamos actualizando nuestra plataforma para ofrecerte una mejor experiencia. Volveremos a estar en línea pronto.
         </p>
-        {/* Botón oculto para admin (estética minimalista y casi imperceptible) */}
-        <Link href="/admin/login" style={{ opacity: 0.1, fontSize: '0.8rem', textDecoration: 'none', color: '#fff' }}>
+        <footer style={{ marginTop: 'auto', padding: '20px', textAlign: 'center' }}>
+        <Link href="/login" style={{ opacity: 0.1, fontSize: '0.8rem', textDecoration: 'none', color: '#fff' }}>
           Admin
         </Link>
-      </div>
+      </footer>
     )
   }
 

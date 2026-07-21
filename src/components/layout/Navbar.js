@@ -48,7 +48,7 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Link href="/admin/login" className={styles.loginBtn}>
+          <Link href="/login" className={styles.loginBtn}>
             Login
           </Link>
         </div>
@@ -78,7 +78,7 @@ export default function Navbar() {
             {link.label}
           </Link>
         ))}
-        <Link href="/admin/login" className={styles.mobileLoginBtn}>
+        <Link href="/login" className={styles.mobileLoginBtn}>
           Login
         </Link>
       </div>
