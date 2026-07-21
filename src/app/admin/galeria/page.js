@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { RefreshCw, Instagram } from 'lucide-react'
+import { RefreshCw, Camera } from 'lucide-react'
 import styles from './galeria.module.css'
 
 export default function GaleriaPage() {
@@ -51,7 +51,7 @@ export default function GaleriaPage() {
       </div>
 
       <div className={styles.infoBox}>
-        <Instagram size={24} className={styles.igIcon} />
+        <Camera size={24} className={styles.igIcon} />
         <div>
           <h3>Integración con Instagram Graph API</h3>
           <p>Para automatizar la importación de tus posts, necesitas agregar tu Access Token en el panel de configuración o variables de entorno.</p>
