@@ -27,7 +27,6 @@ export default function AdminLayout({ children }) {
   }
 
   const navItems = [
-    { href: '/admin/dashboard', label: 'Dashboard', icon: Settings },
     { href: '/admin/reservas', label: 'Reservas', icon: Calendar },
     { href: '/admin/productos', label: 'Productos', icon: Package },
     { href: '/admin/galeria', label: 'Galería IG', icon: ImageIcon },
