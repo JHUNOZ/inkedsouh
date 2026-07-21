@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-// Usa process.env.RESEND_API_KEY
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(req) {
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY || 'dummy_key')
     const body = await req.json()
     const { type, booking } = body
 
