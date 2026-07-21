@@ -26,9 +26,22 @@ export default function LoginPage() {
         password
       })
       
-      if (authError) throw authError
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Error al obtener usuario')
 
-      window.location.href = '/admin/reservas'
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      
+      const role = roleData?.role || 'estudiante'
+
+      if (role === 'admin') {
+        window.location.href = '/admin/resumen'
+      } else {
+        window.location.href = '/estudiante'
+      }
     } catch (err) {
       setError(err.message)
     } finally {
@@ -50,8 +63,8 @@ export default function LoginPage() {
           <div className={styles.logo}>
             INKED<span className={styles.logoAccent}>SOUH</span>
           </div>
-          <h1 className={styles.title}>Panel de Control</h1>
-          <p className={styles.subtitle}>Ingreso</p>
+          <h1 className={styles.title}>Plataforma</h1>
+          <p className={styles.subtitle}>Ingreso a tu cuenta</p>
 
           <form onSubmit={handleSubmit} className={styles.form}>
             {/* Email */}
@@ -110,7 +123,12 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className={styles.credits}>© INKEDSOUH</p>
+          <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.9rem' }}>
+            <span style={{ color: 'var(--color-text-muted)' }}>¿No tienes cuenta? </span>
+            <Link href="/registro" style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'none' }}>Regístrate aquí</Link>
+          </div>
+
+          <p className={styles.credits} style={{ marginTop: '30px' }}>© INKEDSOUH</p>
         </div>
       </div>
 

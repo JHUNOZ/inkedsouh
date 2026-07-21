@@ -14,6 +14,7 @@ export default function ProductosPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    specifications: '',
     price: '',
     old_price: '',
     stock: '',
@@ -47,6 +48,7 @@ export default function ProductosPage() {
       setFormData({
         name: product.name,
         description: product.description || '',
+        specifications: product.specifications || '',
         price: product.price,
         old_price: product.old_price || '',
         stock: product.stock,
@@ -57,7 +59,7 @@ export default function ProductosPage() {
     } else {
       setEditingId(null)
       setFormData({
-        name: '', description: '', price: '', old_price: '', 
+        name: '', description: '', specifications: '', price: '', old_price: '', 
         stock: '', category: 'general', image_url: '', is_active: true
       })
     }
@@ -178,7 +180,7 @@ export default function ProductosPage() {
       {/* Form Modal */}
       {modalOpen && (
         <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
+          <div className={styles.modal} style={{ maxHeight: '90vh', overflowY: 'auto' }}>
             <button className={styles.closeModal} onClick={() => setModalOpen(false)}>
               <X size={20} />
             </button>
@@ -197,8 +199,13 @@ export default function ProductosPage() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Descripción</label>
+                <label>Descripción General</label>
                 <textarea rows="3" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className={styles.textarea} />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Especificaciones (Talla, material, detalles)</label>
+                <textarea rows="2" value={formData.specifications} onChange={e => setFormData({...formData, specifications: e.target.value})} className={styles.textarea} placeholder="Ej: Material 100% algodón. Talla M." />
               </div>
 
               <div className={styles.formRow}>

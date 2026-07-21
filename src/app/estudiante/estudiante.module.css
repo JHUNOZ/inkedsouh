@@ -1,0 +1,112 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.header {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 20px;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+  background: linear-gradient(90deg, #fff, #888);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.courseCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.courseCard:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-primary);
+}
+
+.courseImage {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background-color: #111;
+}
+
+.courseContent {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.courseTitle {
+  font-size: 1.2rem;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.courseDescription {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.courseFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 15px;
+}
+
+.expiryDate {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.btnAccess {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.btnAccess:hover {
+  background: var(--color-primary-dark);
+}
+
+.emptyState {
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  color: var(--color-text-muted);
+}

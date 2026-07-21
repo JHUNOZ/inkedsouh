@@ -32,21 +32,40 @@ export async function middleware(request) {
 
   const { pathname } = request.nextUrl
 
-  // Protect /admin routes (except /admin/login)
-  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
-    if (!user) {
-      // User is not logged in, redirect to login page
+  // Obtener el rol del usuario si está autenticado
+  let userRole = null
+  if (user) {
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    userRole = roleData?.role || 'estudiante'
+  }
+
+  // Rutas protegidas de ADMIN
+  if (pathname.startsWith('/admin')) {
+    if (!user || userRole !== 'admin') {
       const url = request.nextUrl.clone()
-      url.pathname = '/admin/login'
+      url.pathname = '/login'
       return NextResponse.redirect(url)
     }
   }
 
-  // If user is already logged in and tries to access /admin/login, redirect to dashboard
-  if (pathname.startsWith('/admin/login')) {
+  // Rutas protegidas de ESTUDIANTE
+  if (pathname.startsWith('/estudiante')) {
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // Si el usuario autenticado intenta entrar al login o registro, redirigirlo a su portal
+  if (pathname.startsWith('/login') || pathname.startsWith('/registro')) {
     if (user) {
       const url = request.nextUrl.clone()
-      url.pathname = '/admin/reservas'
+      url.pathname = userRole === 'admin' ? '/admin/resumen' : '/estudiante'
       return NextResponse.redirect(url)
     }
   }

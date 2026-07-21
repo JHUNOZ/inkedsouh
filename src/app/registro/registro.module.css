@@ -1,0 +1,113 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-background);
+  padding: 20px;
+}
+
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: 40px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 5px;
+  font-size: 1.8rem;
+  background: linear-gradient(90deg, #fff, #888);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--color-text-muted);
+  margin-bottom: 30px;
+  font-size: 0.9rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputGroup label {
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.input {
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--color-border);
+  color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+}
+
+.button {
+  background-color: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 10px;
+}
+
+.button:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-align: center;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.loginLink {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.loginLink a {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.loginLink a:hover {
+  text-decoration: underline;
+}

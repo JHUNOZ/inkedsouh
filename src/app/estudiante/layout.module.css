@@ -1,0 +1,124 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-background);
+}
+
+.sidebar {
+  width: 260px;
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  z-index: 50;
+  transition: transform 0.3s ease;
+}
+
+.logoContainer {
+  padding: 30px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.logo {
+  font-family: 'Integral CF', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+}
+
+.logoAccent {
+  color: var(--color-primary);
+}
+
+.nav {
+  flex: 1;
+  padding: 20px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.navItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.navItemActive {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+.logoutBtn {
+  margin: 20px;
+  padding: 12px 15px;
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  color: #fff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logoutBtn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.main {
+  flex: 1;
+  margin-left: 260px;
+  padding: 40px;
+}
+
+.mobileToggle {
+  display: none;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+  
+  .main {
+    margin-left: 0;
+    padding: 80px 20px 40px;
+  }
+  
+  .mobileToggle {
+    display: flex;
+  }
+}
