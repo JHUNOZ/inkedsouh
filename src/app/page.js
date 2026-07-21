@@ -43,10 +43,11 @@ export default function Home() {
           Estamos actualizando nuestra plataforma para ofrecerte una mejor experiencia. Volveremos a estar en línea pronto.
         </p>
         <footer style={{ marginTop: 'auto', padding: '20px', textAlign: 'center' }}>
-        <Link href="/login" style={{ opacity: 0.1, fontSize: '0.8rem', textDecoration: 'none', color: '#fff' }}>
-          Admin
-        </Link>
-      </footer>
+          <Link href="/login" style={{ opacity: 0.1, fontSize: '0.8rem', textDecoration: 'none', color: '#fff' }}>
+            Admin
+          </Link>
+        </footer>
+      </div>
     )
   }
 
