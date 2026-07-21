@@ -1,0 +1,171 @@
+/* Biografía premium — más visual */
+.section {
+  padding: 140px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Línea decorativa lateral */
+.section::before {
+  content: '';
+  position: absolute;
+  top: 15%;
+  left: 7%;
+  width: 1px;
+  height: 70%;
+  background: linear-gradient(to bottom, transparent, rgba(232, 36, 40, 0.15), transparent);
+}
+
+.inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 80px;
+  align-items: center;
+}
+
+/* Foto del artista */
+.imageWrap {
+  position: relative;
+  aspect-ratio: 3/4;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.imageWrap::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 50px;
+  height: 50px;
+  border-top: 2px solid var(--color-red);
+  border-right: 2px solid var(--color-red);
+  z-index: 2;
+  box-shadow: 3px -3px 15px var(--color-red-glow);
+}
+
+.imageWrap::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: -1px;
+  width: 50px;
+  height: 50px;
+  border-bottom: 2px solid var(--color-red);
+  border-left: 2px solid var(--color-red);
+  z-index: 2;
+  box-shadow: -3px 3px 15px var(--color-red-glow);
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--color-gray-700);
+  background: linear-gradient(160deg, var(--color-bg-card) 0%, #0e0e0e 50%, var(--color-bg-card) 100%);
+}
+
+.placeholder span {
+  font-size: 0.82rem;
+  color: var(--color-gray-600);
+  letter-spacing: 2px;
+}
+
+/* Info */
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.label {
+  font-size: 0.68rem;
+  color: var(--color-red);
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  font-weight: 600;
+  position: relative;
+  display: inline-block;
+}
+
+.label::after {
+  content: '';
+  display: inline-block;
+  width: 30px;
+  height: 1px;
+  background: var(--color-red);
+  margin-left: 12px;
+  vertical-align: middle;
+  box-shadow: 0 0 6px var(--color-red-glow);
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 5vw, 4rem);
+  color: var(--color-white);
+  letter-spacing: 6px;
+  line-height: 1;
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.06);
+}
+
+.bio {
+  font-size: 1rem;
+  color: var(--color-gray-400);
+  line-height: 2;
+  max-width: 480px;
+}
+
+/* Tags */
+.tags {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  padding: 10px 20px;
+  border: 1px solid var(--color-border);
+  font-size: 0.75rem;
+  color: var(--color-gray-400);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all var(--transition-base);
+}
+
+.tag:hover {
+  border-color: var(--color-red);
+  color: var(--color-red);
+  box-shadow: var(--shadow-neon-sm);
+  transform: translateY(-2px);
+}
+
+/* Link IG */
+.igLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--color-gray-500);
+  transition: all var(--transition-base);
+  margin-top: 4px;
+}
+
+.igLink:hover {
+  color: var(--color-red);
+  text-shadow: 0 0 10px var(--color-red-glow);
+}
+
+@media (max-width: 768px) {
+  .section { padding: 80px 0; }
+  .inner { grid-template-columns: 1fr; gap: 40px; }
+  .imageWrap { max-width: 320px; margin: 0 auto; }
+  .section::before { display: none; }
+}

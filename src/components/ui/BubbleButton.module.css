@@ -1,0 +1,139 @@
+/* BubbleButton — Premium Glow Effect */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 40px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  overflow: hidden;
+  text-decoration: none;
+  border: 1px solid transparent;
+  background: var(--color-bg-card);
+  color: var(--color-gray-100);
+  z-index: 1;
+  border-radius: var(--radius-sm);
+}
+
+/* Efecto Glow que sigue el mouse */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: var(--y, 50%);
+  left: var(--x, 50%);
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(232, 36, 40, 0.8) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Fondo oscuro por encima del glow para que el glow solo se vea en el borde */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  background: var(--color-bg-elevated);
+  z-index: -1;
+  transition: background 0.3s ease;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+/* ── Variantes ── */
+
+/* Primary */
+.primary {
+  border-color: rgba(215, 26, 33, 0.3);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-white);
+}
+
+.primary::after {
+  background: rgba(215, 26, 33, 0.85);
+  backdrop-filter: var(--glass-blur-sm);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+}
+
+.primary:hover {
+  border-color: var(--color-red-hover);
+  box-shadow: var(--shadow-red);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.primary:hover::before {
+  opacity: 1;
+}
+
+.primary:active {
+  transform: translateY(1px);
+}
+
+/* Outline */
+.outline {
+  border-color: var(--color-border);
+}
+
+.outline:hover {
+  border-color: var(--color-red);
+  color: var(--color-white); /* Mejor contraste en hover que rojo */
+  text-shadow: 0 0 10px rgba(232, 36, 40, 0.8);
+  box-shadow: 0 5px 25px rgba(232, 36, 40, 0.25), inset 0 0 15px rgba(232, 36, 40, 0.1);
+}
+
+.outline:hover::before {
+  opacity: 0.5;
+}
+
+/* Ghost */
+.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--color-gray-500);
+}
+
+.ghost::after {
+  display: none;
+}
+
+.ghost:hover {
+  color: var(--color-red);
+  text-shadow: 0 0 10px var(--color-red-glow);
+}
+
+/* ── Tamaños ── */
+.small {
+  padding: 12px 24px;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+}
+
+.large {
+  padding: 20px 48px;
+  font-size: 0.95rem;
+  letter-spacing: 4px;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}

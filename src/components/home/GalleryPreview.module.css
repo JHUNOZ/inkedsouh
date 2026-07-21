@@ -1,0 +1,181 @@
+/* Galería — Carrusel Dark Tech */
+.section {
+  padding: 120px 0;
+  background: var(--color-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+/* Fila de controles */
+.controlsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 20px;
+}
+
+.navButtons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.navBtn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-gray-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray-400);
+  transition: all var(--transition-base);
+}
+
+.navBtn:hover {
+  border-color: var(--color-red);
+  color: var(--color-red);
+  box-shadow: var(--shadow-neon-sm);
+}
+
+.counter {
+  font-family: var(--font-display);
+  color: var(--color-gray-500);
+  font-size: 1rem;
+  letter-spacing: 2px;
+  margin-left: 20px;
+}
+
+/* Link IG arrastra */
+.igLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--color-gray-400);
+  letter-spacing: 4px;
+  transition: color var(--transition-base);
+}
+
+.igLink:hover {
+  color: var(--color-red);
+}
+
+/* Carrusel Horizontal */
+.carousel {
+  display: flex;
+  gap: 40px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-red) var(--color-bg);
+}
+
+.carousel::-webkit-scrollbar {
+  height: 4px;
+}
+
+.carousel::-webkit-scrollbar-track {
+  background: var(--color-bg-elevated);
+}
+
+.carousel::-webkit-scrollbar-thumb {
+  background: var(--color-red);
+}
+
+/* Tarjeta (Card) Líquida */
+.card {
+  flex: 0 0 clamp(300px, 40vw, 400px);
+  aspect-ratio: 3/4;
+  scroll-snap-align: start;
+  position: relative;
+  background: var(--color-bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
+  overflow: hidden; /* Para el efecto de zoom interno */
+  box-shadow: var(--shadow-sm);
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-md), 0 10px 40px var(--color-red-glow);
+  border-color: rgba(255, 42, 61, 0.3);
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-elevated);
+  filter: grayscale(20%) contrast(1.1) brightness(0.85);
+  transition: filter var(--transition-smooth), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.igMedia {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(20%) contrast(1.1) brightness(0.85);
+  transition: filter var(--transition-smooth), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card:hover .placeholder,
+.card:hover .igMedia {
+  filter: grayscale(0%) contrast(1.15) brightness(1.1);
+  transform: scale(1.08); /* Zoom fluido al pasar el mouse */
+}
+
+/* Card Footer (01 ---- ESTILO) */
+.cardFooter {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 12;
+}
+
+.cardNumber {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--color-gray-100);
+  letter-spacing: 2px;
+}
+
+.cardLine {
+  flex-grow: 1;
+  height: 1px;
+  background-color: var(--color-gray-600);
+}
+
+.cardLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 4px;
+  color: var(--color-gray-300);
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .controlsRow { flex-direction: column; gap: 20px; align-items: flex-start; }
+  .carousel { gap: 20px; }
+  .card { flex: 0 0 85vw; }
+}

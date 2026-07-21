@@ -1,0 +1,208 @@
+/* Layout Página Cursos */
+.page {
+  padding: 120px 0;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+  transition: all 0.3s ease;
+}
+
+/* Card del curso */
+.card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  transition: all var(--transition-base);
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  border-color: var(--color-red);
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-neon-sm);
+}
+
+.cardImage {
+  aspect-ratio: 16/9;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray-600);
+  position: relative;
+}
+
+.playOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover .playOverlay {
+  opacity: 1;
+}
+
+.levelBadge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--color-white);
+  border-radius: 4px;
+}
+
+.cardBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--color-white);
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.cardDesc {
+  font-size: 0.9rem;
+  color: var(--color-gray-400);
+  line-height: 1.6;
+  margin-bottom: 24px;
+  flex: 1;
+}
+
+.meta {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--color-gray-500);
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+.price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+/* Overlay Próximamente en página Cursos */
+.coursesWrapper {
+  position: relative;
+  min-height: 500px;
+}
+
+.comingSoonOverlay {
+  position: absolute;
+  inset: -20px;
+  background: rgba(8, 8, 8, 0.5);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+  border-radius: 12px;
+}
+
+.comingSoonBox {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-red);
+  padding: 50px 40px;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(232, 36, 40, 0.15);
+  animation: floatIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.comingSoonBox::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-red), transparent);
+  box-shadow: 0 0 15px var(--color-red-glow);
+}
+
+.comingSoonIcon {
+  color: var(--color-red);
+  margin-bottom: 20px;
+}
+
+.comingSoonBox h2 {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  letter-spacing: 5px;
+  color: var(--color-white);
+  margin-bottom: 12px;
+}
+
+.comingSoonBox p {
+  font-size: 0.95rem;
+  color: var(--color-gray-400);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.comingSoonLine {
+  width: 40px;
+  height: 2px;
+  background: var(--color-red);
+  margin: 0 auto;
+  box-shadow: var(--shadow-neon-sm);
+}
+
+@keyframes floatIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* El grid se difumina y desactiva interacción cuando hay overlay */
+.gridBlurred {
+  opacity: 0.4;
+  pointer-events: none;
+  user-select: none;
+}

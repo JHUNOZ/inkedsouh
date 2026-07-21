@@ -1,0 +1,163 @@
+/* CTA Agendar — Split Layout Premium */
+.section {
+  padding: 160px 0;
+  position: relative;
+  background: var(--color-bg);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid rgba(232, 36, 40, 0.1);
+  border-bottom: 1px solid rgba(232, 36, 40, 0.1);
+}
+
+/* Elementos geométricos removidos en favor del minimalismo líquido */
+
+.inner {
+  max-width: var(--container-max);
+  width: 100%;
+  padding: 0 var(--container-padding);
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+/* Video Box (Líquido) */
+.videoBox {
+  position: relative;
+  aspect-ratio: 4/5;
+  background: var(--color-bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg), inset 0 0 40px rgba(255,255,255,0.02);
+  overflow: hidden;
+  border-radius: 30% 70% 60% 40% / 50% 40% 60% 50%;
+  animation: morphVideo 12s ease-in-out infinite;
+  transition: all var(--transition-smooth);
+}
+
+.videoBox:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-lg), 0 0 60px var(--color-red-glow);
+}
+
+@keyframes morphVideo {
+  0% { border-radius: 30% 70% 60% 40% / 50% 40% 60% 50%; }
+  34% { border-radius: 60% 40% 30% 70% / 60% 60% 40% 40%; }
+  67% { border-radius: 50% 50% 70% 30% / 30% 70% 30% 70%; }
+  100% { border-radius: 30% 70% 60% 40% / 50% 40% 60% 50%; }
+}
+
+.videoBox::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(232, 36, 40, 0.02) 10px,
+    rgba(232, 36, 40, 0.02) 11px
+  );
+  pointer-events: none;
+}
+
+/* Esquinas decorativas eliminadas por minimalismo orgánico */
+
+.promoVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  opacity: 0.8;
+  filter: grayscale(20%) contrast(1.1);
+  transition: all var(--transition-base);
+}
+
+.videoBox:hover .promoVideo {
+  opacity: 1;
+  filter: grayscale(0%) contrast(1.2);
+}
+
+
+/* Content (Derecha) */
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 5vw, 4.5rem);
+  color: var(--color-red);
+  letter-spacing: 6px;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  text-shadow: 0 0 15px rgba(232, 36, 40, 0.15), 0 0 30px rgba(232, 36, 40, 0.05);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.line {
+  height: 1px;
+  width: 80px;
+  background: rgba(232, 36, 40, 0.4);
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  background: var(--color-red);
+  transform: rotate(45deg);
+  box-shadow: 0 0 5px var(--color-red-glow);
+}
+
+.text {
+  font-size: 1.1rem;
+  color: var(--color-gray-400);
+  line-height: 1.8;
+  margin-bottom: 40px;
+  max-width: 500px;
+}
+
+.ctaButton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .inner {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+  
+  .videoBox {
+    aspect-ratio: 16/9;
+    order: 2;
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .content {
+    order: 1;
+    align-items: center;
+    text-align: center;
+  }
+}

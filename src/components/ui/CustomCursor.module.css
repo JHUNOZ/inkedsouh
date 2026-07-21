@@ -1,0 +1,59 @@
+.cursorWrapper {
+  pointer-events: none;
+  z-index: 99999; /* Por encima de absolutamente todo, incluido el ruido */
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  background-color: var(--color-red);
+  border-radius: 50%;
+  margin: -3px 0 0 -3px;
+  box-shadow: 0 0 10px var(--color-red-glow);
+  transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
+}
+
+.ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(232, 36, 40, 0.4);
+  border-radius: 50%;
+  margin: -18px 0 0 -18px;
+  transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+  will-change: transform;
+  box-shadow: inset 0 0 10px rgba(232, 36, 40, 0.1);
+}
+
+.dotHover {
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  background-color: var(--color-white);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.ringHover {
+  width: 60px;
+  height: 60px;
+  margin: -30px 0 0 -30px;
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: grayscale(100%) contrast(1.2);
+}
+
+/* Ocultar cursor en móviles/táctiles */
+@media (max-width: 768px), (pointer: coarse) {
+  .cursorWrapper {
+    display: none;
+  }
+}
