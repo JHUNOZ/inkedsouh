@@ -1,39 +1,62 @@
 'use client'
-// Barra de navegación principal
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion'
 import { NAV_LINKS } from '@/lib/constants'
 import styles from './Navbar.module.css'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [hidden, setHidden] = useState(false)
   const pathname = usePathname()
+  
+  const { scrollY } = useScroll()
 
-  // Detectar scroll para cambiar estilo de navbar
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50)
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  // Detect scroll direction for Smart Navbar
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious()
+    if (latest > 50) {
+      setScrolled(true)
+    } else {
+      setScrolled(false)
+    }
 
-  // Cerrar menú móvil al cambiar de página
+    if (latest > 150 && latest > previous) {
+      setHidden(true)
+    } else {
+      setHidden(false)
+    }
+  })
+
+  // Close mobile menu on page change
   useEffect(() => {
-    setMobileOpen(false)
+    const timeout = setTimeout(() => {
+      setMobileOpen(false)
+    }, 0)
+    return () => clearTimeout(timeout)
   }, [pathname])
 
-  // Bloquear scroll cuando menú está abierto
+  // Lock scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [mobileOpen])
 
   return (
-    <nav className={`${styles.nav} ${scrolled ? styles.navSolid : styles.navTransparent}`}>
+    <motion.nav 
+      className={`${styles.nav} ${scrolled ? styles.navSolid : styles.navTransparent}`}
+      variants={{
+        visible: { y: 0 },
+        hidden: { y: '-100%' },
+      }}
+      animate={hidden ? "hidden" : "visible"}
+      transition={{ duration: 0.35, ease: "easeInOut" }}
+    >
       <div className={styles.inner}>
         {/* Logo Texto */}
-        <Link href="/" className={styles.logo}>
+        <Link href="/" className={`${styles.logo} interactive`}>
           INKEDSOUH
         </Link>
 
@@ -43,19 +66,19 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`${styles.link} ${pathname === link.href ? styles.linkActive : ''}`}
+              className={`${styles.link} ${pathname === link.href ? styles.linkActive : ''} interactive`}
             >
               {link.label}
             </Link>
           ))}
-          <Link href="/login" className={styles.loginBtn}>
+          <Link href="/login" className={`${styles.loginBtn} interactive magnetic`}>
             Login
           </Link>
         </div>
 
         {/* Hamburger móvil */}
         <button
-          className={`${styles.hamburger} ${mobileOpen ? styles.hamburgerOpen : ''}`}
+          className={`${styles.hamburger} ${mobileOpen ? styles.hamburgerOpen : ''} interactive`}
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Menú de navegación"
         >
@@ -65,23 +88,58 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Overlay móvil */}
-      <div
-        className={`${styles.mobileOverlay} ${mobileOpen ? styles.active : ''}`}
-        onClick={() => setMobileOpen(false)}
-      />
+      {/* Overlay móvil con Framer Motion */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className={styles.mobileOverlay}
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Menú móvil deslizante */}
-      <div className={`${styles.mobileMenu} ${mobileOpen ? styles.open : ''}`}>
-        {NAV_LINKS.map((link) => (
-          <Link key={link.href} href={link.href} className={styles.mobileLink}>
-            {link.label}
-          </Link>
-        ))}
-        <Link href="/login" className={styles.mobileLoginBtn}>
-          Login
-        </Link>
-      </div>
-    </nav>
+      {/* Menú móvil deslizante con Framer Motion */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div 
+            className={styles.mobileMenu}
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          >
+            <div className={styles.mobileLinksContainer}>
+              {NAV_LINKS.map((link, i) => (
+                <motion.div
+                  key={link.href}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 50 }}
+                  transition={{ delay: 0.1 + i * 0.1 }}
+                >
+                  <Link href={link.href} className={`${styles.mobileLink} interactive`}>
+                    {link.label}
+                  </Link>
+                </motion.div>
+              ))}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ delay: 0.1 + NAV_LINKS.length * 0.1 }}
+              >
+                <Link href="/login" className={`${styles.mobileLoginBtn} interactive`}>
+                  Login
+                </Link>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
   )
 }

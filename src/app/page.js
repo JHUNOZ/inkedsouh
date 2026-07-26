@@ -14,25 +14,8 @@ import ProductsPreview from '@/components/home/ProductsPreview'
 export default function Home() {
   const { maintenance } = useConfig()
 
-  // Scroll reveal con animaciones escalonadas
-  useEffect(() => {
-    if (maintenance) return // No animar si está en mantenimiento
-    
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible')
-          }
-        })
-      },
-      { threshold: 0.08, rootMargin: '0px 0px -50px 0px' }
-    )
-
-    const selectors = '.reveal, .reveal-left, .reveal-right, .reveal-scale'
-    document.querySelectorAll(selectors).forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
-  }, [maintenance])
+  // Framer Motion will handle all the scroll reveals inside the individual components
+  // so we no longer need the global IntersectionObserver here.
 
   if (maintenance) {
     return (

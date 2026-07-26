@@ -151,19 +151,11 @@
 
 /* Overlay móvil */
 .mobileOverlay {
-  display: none;
   position: fixed;
   inset: 0;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: var(--glass-blur-sm);
   z-index: 998;
-  opacity: 0;
-  transition: opacity var(--transition-base);
-}
-
-.mobileOverlay.active {
-  display: block;
-  opacity: 1;
 }
 
 /* Menú móvil */
@@ -181,14 +173,13 @@
   padding: 100px 30px 40px;
   display: flex;
   flex-direction: column;
-  gap: 0;
   z-index: 999;
-  transform: translateX(100%);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.mobileMenu.open {
-  transform: translateX(0);
+.mobileLinksContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .mobileLink {

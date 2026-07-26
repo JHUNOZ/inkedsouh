@@ -40,12 +40,22 @@ CREATE TABLE public.instagram_cache (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 4. Tabla de Configuraciones del Sitio (Site Settings)
+CREATE TABLE public.site_settings (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    key TEXT UNIQUE NOT NULL,
+    value JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- ========================================================
 -- ROW LEVEL SECURITY (RLS)
 -- ========================================================
 ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.instagram_cache ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 
 -- Políticas para Bookings
 -- Todo el mundo puede insertar una reserva (Cotizar)
@@ -68,6 +78,10 @@ CREATE POLICY "Allow auth delete on products" ON public.products FOR DELETE TO a
 CREATE POLICY "Allow public read on instagram_cache" ON public.instagram_cache FOR SELECT TO anon, authenticated USING (true);
 -- Solo admin puede actualizar la caché de Instagram
 CREATE POLICY "Allow auth all on instagram_cache" ON public.instagram_cache FOR ALL TO authenticated USING (true);
+
+-- Políticas para Site Settings
+CREATE POLICY "Allow public read on site_settings" ON public.site_settings FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Allow auth all on site_settings" ON public.site_settings FOR ALL TO authenticated USING (true);
 
 -- ========================================================
 -- STORAGE (Para subir fotos de productos y otros archivos)

@@ -1,6 +1,6 @@
 'use client'
 // Página de galería — Feed de Instagram
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Heart, MessageCircle, ExternalLink } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
@@ -11,11 +11,16 @@ export default function GaleriaPage() {
   const [lightbox, setLightbox] = useState(null)
 
   // Posts de Instagram placeholder
-  const posts = Array.from({ length: 18 }, (_, i) => ({
-    id: i + 1,
-    likes: Math.floor(Math.random() * 300) + 50,
-    comments: Math.floor(Math.random() * 30) + 3,
-  }))
+  const [posts, setPosts] = useState([])
+
+  useEffect(() => {
+    const generatedPosts = Array.from({ length: 18 }, (_, i) => ({
+      id: i + 1,
+      likes: Math.floor(Math.random() * 300) + 50,
+      comments: Math.floor(Math.random() * 30) + 3,
+    }))
+    setPosts(generatedPosts)
+  }, [])
 
   return (
     <>

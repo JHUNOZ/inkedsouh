@@ -1,13 +1,43 @@
-/* Productos — Grid premium */
+/* Preview de Productos — Estilos mejorados con 3D tilt potential */
 .section {
   padding: 120px 0;
-  background: var(--color-bg-elevated);
+  background: var(--color-bg);
   position: relative;
-  z-index: 10000; /* Bloquea el ruido global (9999) */
-  overflow: hidden; /* Mantiene el ruido local dentro */
+  overflow: hidden;
 }
 
-/* Ruido local removido por estética líquida */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 80px 20px;
+  background: rgba(20, 20, 25, 0.4);
+  border: 1px dashed rgba(232, 36, 40, 0.3);
+  border-radius: 24px;
+  margin: 40px 0;
+}
+
+.emptyIcon {
+  color: var(--color-gray-600);
+  opacity: 0.5;
+}
+
+.emptyState p {
+  color: var(--color-gray-400);
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 80px 20px;
+}
 
 .section::before {
   content: '';

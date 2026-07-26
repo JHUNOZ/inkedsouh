@@ -24,11 +24,101 @@
   font-size: 0.95rem;
 }
 
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .card {
-  background: var(--color-surface);
+  background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 20px;
   padding: 30px;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  color: var(--color-white);
+  margin-bottom: 8px;
+}
+
+.cardDesc {
+  font-size: 0.85rem;
+  color: var(--color-gray-400);
+  margin-bottom: 24px;
+}
+
+/* Photo Section */
+.photoSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.photoPreview {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 2px dashed rgba(255,255,255,0.1);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photoPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-gray-500);
+}
+
+.uploadControls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.uploadBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: rgba(232, 36, 40, 0.1);
+  color: var(--color-red);
+  border: 1px solid var(--color-red);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.uploadBtn:hover {
+  background: var(--color-red);
+  color: var(--color-white);
 }
 
 .formGroup {
@@ -57,23 +147,29 @@
 }
 
 .btnSubmit {
-  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background: var(--color-red);
   color: white;
   border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
+  border-radius: 12px;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
-  width: 100%;
+  transition: all 0.3s ease;
+  margin-top: 16px;
 }
 
-.btnSubmit:hover:not(:disabled) {
-  background: var(--color-primary-dark);
+.btnSubmit:hover {
+  background: #a01014;
 }
 
 .btnSubmit:disabled {
-  opacity: 0.7;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 

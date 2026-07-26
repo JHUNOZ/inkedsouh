@@ -11,6 +11,14 @@
   background: transparent;
 }
 
+/* Fondo parallax animado con framer-motion */
+.bgParallax {
+  position: absolute;
+  inset: -100px; /* Extend slightly to allow parallax room */
+  z-index: 0;
+  pointer-events: none;
+}
+
 /* Gradiente inferior */
 .hero::before {
   content: '';

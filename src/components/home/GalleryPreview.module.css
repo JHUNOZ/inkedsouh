@@ -74,14 +74,25 @@
 }
 
 /* Carrusel Horizontal */
+.carouselWrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.carouselWrap:active {
+  cursor: grabbing;
+}
+
 .carousel {
   display: flex;
-  gap: 40px;
+  gap: 30px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
   padding-bottom: 20px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-red) var(--color-bg);
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .carousel::-webkit-scrollbar {

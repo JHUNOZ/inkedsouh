@@ -1,21 +1,16 @@
 'use client'
-// Preview de productos (productos de prueba editables desde admin)
-import { useEffect, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { ShoppingBag } from 'lucide-react'
+import { motion, useInView } from 'framer-motion'
 import SectionTitle from '@/components/ui/SectionTitle'
 import BubbleButton from '@/components/ui/BubbleButton'
 import styles from './ProductsPreview.module.css'
 
 export default function ProductsPreview() {
-  const sectionRef = useRef(null)
-
-  // Productos de prueba (se reemplazarán desde Supabase)
-  const products = [
-    { id: 1, name: 'Producto de Prueba 1', price: 12990, discount: 0, stock: 25, category: 'Cuidado' },
-    { id: 2, name: 'Producto de Prueba 2', price: 8990, discount: 10, stock: 50, category: 'Cuidado' },
-    { id: 3, name: 'Producto de Prueba 3', price: 24990, discount: 15, stock: 15, category: 'Kits' },
-    { id: 4, name: 'Producto de Prueba 4', price: 6990, discount: 0, stock: 30, category: 'Accesorios' },
-  ]
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: "-100px" })
 
   const formatPrice = (price) =>
     new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price)
@@ -24,64 +19,129 @@ export default function ProductsPreview() {
     Math.round(price * (1 - discount / 100))
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach(e => {
-        if (e.isIntersecting) e.target.classList.add('visible')
-      }),
-      { threshold: 0.08 }
-    )
-    const items = sectionRef.current?.querySelectorAll('.reveal, .reveal-scale')
-    items?.forEach(el => observer.observe(el))
-    return () => observer.disconnect()
+    async function loadProducts() {
+      try {
+        const { createClient } = await import('@/lib/supabase/client')
+        const supabase = createClient()
+        // Try to fetch real products, fallback to empty array if error
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .limit(4)
+          .order('created_at', { ascending: false })
+          
+        if (error) {
+          console.error("Error fetching products", error)
+          setProducts([])
+        } else {
+          setProducts(data || [])
+        }
+      } catch (err) {
+        console.error("Supabase client error", err)
+        setProducts([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadProducts()
   }, [])
 
+  const containerVars = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.15 }
+    }
+  }
+
+  const itemVars = {
+    hidden: { opacity: 0, y: 50, scale: 0.9 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 100 } }
+  }
+
   return (
-    <section className={styles.section} id="productos-preview" ref={sectionRef}>
+    <section className={styles.section} id="productos-preview" ref={ref}>
       <div className={styles.inner}>
-        <div className="reveal">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.8 }}
+        >
           <SectionTitle subtitle="Cuida y protege tu arte">PRODUCTOS</SectionTitle>
-        </div>
+        </motion.div>
 
-        <p className={`${styles.hint} reveal`}>
-          Productos de prueba — Editables desde el panel de administración
-        </p>
-
-        {/* Grid de productos */}
-        <div className={styles.grid}>
-          {products.map((product, i) => (
-            <div key={product.id} className={`${styles.card} reveal-scale reveal-delay-${Math.min(i + 1, 4)}`}>
-              {product.discount > 0 && (
-                <span className={styles.discountBadge}>-{product.discount}%</span>
-              )}
-              <div className={styles.cardImage}>
-                <ShoppingBag size={32} />
-              </div>
-              <div className={styles.cardBody}>
-                <span className={styles.cardCategory}>{product.category}</span>
-                <h3 className={styles.cardName}>{product.name}</h3>
-                <div className={styles.cardPricing}>
-                  {product.discount > 0 ? (
-                    <>
-                      <span className={styles.price}>
-                        {formatPrice(getDiscountedPrice(product.price, product.discount))}
-                      </span>
-                      <span className={styles.priceOld}>{formatPrice(product.price)}</span>
-                    </>
+        {loading ? (
+          <div className={styles.loadingState}>
+            <div className={styles.spinner}></div>
+            <p>Cargando productos...</p>
+          </div>
+        ) : products.length === 0 ? (
+          <motion.div 
+            className={styles.emptyState}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <ShoppingBag size={48} className={styles.emptyIcon} />
+            <p>Aún no tenemos productos disponibles</p>
+          </motion.div>
+        ) : (
+          <motion.div 
+            className={styles.grid}
+            variants={containerVars}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+          >
+            {products.map((product) => (
+              <motion.div 
+                key={product.id} 
+                className={`${styles.card} interactive`}
+                variants={itemVars}
+                whileHover={{ scale: 1.05, rotateY: 5, rotateX: 5 }}
+                style={{ perspective: 1000 }}
+              >
+                {product.discount > 0 && (
+                  <span className={styles.discountBadge}>-{product.discount}%</span>
+                )}
+                <div className={styles.cardImage}>
+                  {product.image_url ? (
+                    <img src={product.image_url} alt={product.name} />
                   ) : (
-                    <span className={styles.price}>{formatPrice(product.price)}</span>
+                    <ShoppingBag size={32} />
                   )}
                 </div>
-                <span className={styles.stock}>{product.stock} disponibles</span>
-              </div>
-            </div>
-          ))}
-        </div>
+                <div className={styles.cardBody}>
+                  <span className={styles.cardCategory}>{product.category}</span>
+                  <h3 className={styles.cardName}>{product.name}</h3>
+                  <div className={styles.cardPricing}>
+                    {product.discount > 0 ? (
+                      <>
+                        <span className={styles.price}>
+                          {formatPrice(getDiscountedPrice(product.price, product.discount))}
+                        </span>
+                        <span className={styles.priceOld}>{formatPrice(product.price)}</span>
+                      </>
+                    ) : (
+                      <span className={styles.price}>{formatPrice(product.price)}</span>
+                    )}
+                  </div>
+                  <span className={styles.stock}>{product.stock} disponibles</span>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
-        <div className={`${styles.btnWrap} reveal`}>
+        <motion.div 
+          className={styles.btnWrap}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+        >
           <BubbleButton href="/productos" variant="outline">
             Ver Catálogo
           </BubbleButton>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

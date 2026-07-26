@@ -1,4 +1,4 @@
-/* Login — Diseño split premium */
+/* Login — Diseño split premium y responsive */
 .page {
   display: flex;
   min-height: 100vh;
@@ -6,14 +6,14 @@
   overflow: hidden;
 }
 
-/* ── Lado izquierdo: Formulario ── */
+/* ── Lado izquierdo: Formulario de Login ── */
 .formSide {
   width: 45%;
-  min-width: 480px;
+  min-width: 450px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px;
+  padding: 40px;
   background: rgba(10, 10, 10, 0.6);
   backdrop-filter: blur(20px);
   position: relative;
@@ -24,41 +24,45 @@
 
 .formInner {
   width: 100%;
-  max-width: 400px;
-  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  max-width: 380px;
 }
 
 .backLink {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  font-size: 0.8rem;
-  color: var(--color-gray-500);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-white);
   letter-spacing: 1px;
-  margin-bottom: 60px;
+  margin: 0 auto 50px auto;
   transition: all 0.3s ease;
-  padding: 8px 16px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid transparent;
+  padding: 12px 24px;
+  border-radius: 30px;
+  background: rgba(232, 36, 40, 0.2);
+  border: 1px solid var(--color-red);
+  width: fit-content;
+  text-transform: uppercase;
+  box-shadow: 0 0 15px rgba(232, 36, 40, 0.2);
+}
+
+.backLinkWrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .backLink:hover {
-  color: var(--color-white);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.1);
-  transform: translateX(-4px);
+  background: var(--color-red);
+  box-shadow: 0 0 25px rgba(232, 36, 40, 0.5);
+  transform: translateY(-2px);
 }
 
 .logo {
   font-family: var(--font-display);
-  font-size: 2.5rem;
-  letter-spacing: 6px;
+  font-size: 2.2rem;
+  letter-spacing: 5px;
   color: var(--color-white);
   margin-bottom: 8px;
   display: flex;
@@ -72,7 +76,7 @@
 
 .title {
   font-family: var(--font-display);
-  font-size: 2rem;
+  font-size: 1.8rem;
   letter-spacing: 2px;
   color: var(--color-white);
   margin-bottom: 6px;
@@ -80,15 +84,16 @@
 }
 
 .subtitle {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--color-gray-400);
   letter-spacing: 2px;
   text-transform: uppercase;
-  margin-bottom: 48px;
+  margin-bottom: 40px;
   display: flex;
   align-items: center;
   gap: 12px;
 }
+
 .subtitle::after {
   content: '';
   flex: 1;
@@ -99,13 +104,13 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 24px;
 }
 
 .fieldGroup {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .label {
@@ -120,11 +125,11 @@
 .inputWrap {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 20px;
+  gap: 12px;
+  padding: 14px 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.02);
-  border-radius: 16px;
+  border-radius: 12px;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -141,13 +146,14 @@
   transition: color 0.3s ease;
 }
 
-.inputWrap:focus-within .inputIcon {
+.inputWrap:focus-within .inputIcon,
+.inputWrapCompact:focus-within .inputIcon {
   color: var(--color-red);
 }
 
 .input {
   flex: 1;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--color-white);
   background: transparent;
   outline: none;
@@ -173,31 +179,18 @@
 
 .togglePass:hover {
   color: var(--color-white);
-  transform: scale(1.1);
 }
 
 .error {
   font-size: 0.85rem;
   color: #ff4a4a;
-  padding: 14px 18px;
+  padding: 12px 16px;
   border: 1px solid rgba(255, 74, 74, 0.3);
   background: rgba(255, 74, 74, 0.1);
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   gap: 10px;
-  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-}
-
-.error p {
-  margin: 0;
-}
-
-@keyframes shake {
-  10%, 90% { transform: translateX(-1px); }
-  20%, 80% { transform: translateX(2px); }
-  30%, 50%, 70% { transform: translateX(-4px); }
-  40%, 60% { transform: translateX(4px); }
 }
 
 .submitBtn {
@@ -205,7 +198,7 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 18px;
+  padding: 16px;
   background: linear-gradient(135deg, var(--color-red) 0%, #a01014 100%);
   color: var(--color-white);
   font-size: 0.85rem;
@@ -213,10 +206,9 @@
   letter-spacing: 3px;
   text-transform: uppercase;
   border: none;
-  border-radius: 16px;
-  cursor: pointer;
+  border-radius: 12px;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  margin-top: 12px;
+  margin-top: 8px;
   position: relative;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(232, 36, 40, 0.3);
@@ -234,7 +226,6 @@
 }
 
 .submitBtn:hover {
-  transform: translateY(-3px);
   box-shadow: 0 15px 40px rgba(232, 36, 40, 0.5);
 }
 
@@ -242,16 +233,11 @@
   left: 100%;
 }
 
-.submitBtn:active {
-  transform: scale(0.98);
-}
-
 .submitBtn:disabled {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   color: var(--color-gray-500);
   box-shadow: none;
-  cursor: not-allowed;
 }
 
 .btnLine {
@@ -262,170 +248,156 @@
   margin-left: 8px;
 }
 
-.footerText {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 48px;
-  justify-content: center;
-}
-
-.footerText span {
-  font-size: 0.75rem;
-  color: var(--color-gray-500);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-}
-
-.dividerLine {
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-}
-
 .credits {
   text-align: center;
   font-size: 0.75rem;
   color: var(--color-gray-600);
-  margin-top: 16px;
   letter-spacing: 2px;
 }
 
-/* ── Lado derecho: Visual ── */
+/* ── Lado derecho: Visual & Formulario de Registro ── */
 .visualSide {
   flex: 1;
   position: relative;
-  overflow: hidden;
   background: #050505;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.visualSide::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: 
-    radial-gradient(circle at 50% 50%, rgba(232, 36, 40, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 30%);
-  animation: rotateGlow 30s linear infinite;
-  z-index: 0;
-}
-
-@keyframes rotateGlow {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  padding: 40px;
 }
 
 .visualGlow {
   position: absolute;
-  width: 800px;
-  height: 800px;
-  background: radial-gradient(circle, rgba(232, 36, 40, 0.15) 0%, transparent 60%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(232, 36, 40, 0.12) 0%, transparent 60%);
   border-radius: 50%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  animation: pulseGlow 6s ease-in-out infinite alternate;
   filter: blur(40px);
   z-index: 1;
+  pointer-events: none;
 }
 
-.visualContent {
+/* ── Formulario de Registro Compacto ── */
+.registerCard {
   position: relative;
-  z-index: 2;
-  perspective: 1000px;
+  z-index: 5;
+  width: 100%;
+  max-width: 360px;
+  background: rgba(15, 15, 18, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 30px rgba(232, 36, 40, 0.05);
 }
 
-.visualLogo {
-  font-family: var(--font-display);
-  font-size: clamp(6rem, 12vw, 12rem);
-  letter-spacing: -2px;
-  font-weight: 800;
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.05);
-  line-height: 0.85;
+.registerHeader {
   text-align: center;
-  transform-style: preserve-3d;
-  animation: floatLogo 8s ease-in-out infinite;
+  margin-bottom: 24px;
 }
 
-.visualLogo span {
-  display: block;
-  background: linear-gradient(180deg, var(--color-red) 0%, #500 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 0;
-  text-shadow: 0 20px 40px rgba(232, 36, 40, 0.3);
-  margin-top: 10px;
+.registerHeader h3 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  color: var(--color-white);
+  margin-bottom: 8px;
 }
 
-@keyframes floatLogo {
-  0%, 100% { transform: translateY(0) rotateX(0deg) rotateY(0deg); }
-  25% { transform: translateY(-10px) rotateX(5deg) rotateY(-5deg); }
-  50% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
-  75% { transform: translateY(10px) rotateX(-5deg) rotateY(5deg); }
+.registerHeader p {
+  font-size: 0.8rem;
+  color: var(--color-gray-400);
+  line-height: 1.4;
 }
 
-.visualCorner {
-  position: absolute;
-  bottom: 60px;
-  right: 60px;
-  width: 80px;
-  height: 80px;
-  border-bottom: 2px solid rgba(232, 36, 40, 0.4);
-  border-right: 2px solid rgba(232, 36, 40, 0.4);
-  z-index: 2;
-  box-shadow: 20px 20px 40px rgba(232, 36, 40, 0.2);
+.registerForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.visualCorner::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: -2px;
-  width: 2px;
-  height: 40%;
-  background: var(--color-red);
-  box-shadow: 0 0 10px var(--color-red);
+.inputWrapCompact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+  transition: all 0.3s ease;
 }
 
-.visualCorner::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  height: 2px;
-  width: 40%;
-  background: var(--color-red);
-  box-shadow: 0 0 10px var(--color-red);
+.inputWrapCompact:focus-within {
+  border-color: rgba(232, 36, 40, 0.5);
+  background: rgba(232, 36, 40, 0.02);
 }
 
-@keyframes pulseGlow {
-  0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.9); }
-  100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+.registerBtn {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  border: 1px solid var(--color-red);
+  color: var(--color-red);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-radius: 10px;
+  margin-top: 8px;
+  transition: all 0.3s ease;
 }
 
-@media (max-width: 1024px) {
-  .formSide { width: 50%; min-width: auto; padding: 40px; }
-  .visualLogo { font-size: clamp(4rem, 8vw, 8rem); }
+.registerBtn:hover {
+  background: rgba(232, 36, 40, 0.1);
+  box-shadow: 0 0 20px rgba(232, 36, 40, 0.2);
 }
 
+.registerBtn:disabled {
+  opacity: 0.5;
+}
+
+.errorCompact {
+  font-size: 0.75rem;
+  color: #ff4a4a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+
+/* ── Mobile Optimization ── */
 @media (max-width: 900px) {
-  .page { flex-direction: column; }
+  .page { 
+    flex-direction: column; 
+    overflow-y: auto;
+  }
+  
   .formSide { 
     width: 100%; 
-    min-height: 100vh;
+    min-width: 100%;
+    min-height: auto;
     padding: 40px 20px; 
     border-right: none;
-    box-shadow: none;
-    background: radial-gradient(ellipse at top right, rgba(232, 36, 40, 0.1) 0%, var(--color-bg) 60%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: radial-gradient(ellipse at top right, rgba(232, 36, 40, 0.05) 0%, var(--color-bg) 60%);
   }
-  .visualSide { display: none; }
-  .logo { font-size: 2rem; }
-  .title { font-size: 1.5rem; }
+
+  .formInner {
+    max-width: 100%;
+  }
+  
+  .visualSide { 
+    width: 100%;
+    min-height: auto;
+    padding: 40px 20px;
+  }
+
+  .registerCard {
+    max-width: 100%;
+  }
 }

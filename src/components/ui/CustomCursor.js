@@ -1,70 +1,86 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { motion, useMotionValue, useSpring } from 'framer-motion'
 import styles from './CustomCursor.module.css'
 
 export default function CustomCursor() {
-  const dotRef = useRef(null)
-  const ringRef = useRef(null)
   const [isHovering, setIsHovering] = useState(false)
+  
+  // Motion values for raw mouse position
+  const cursorX = useMotionValue(-100)
+  const cursorY = useMotionValue(-100)
+
+  // Spring physics for smooth movement
+  const springConfig = { damping: 25, stiffness: 200, mass: 0.5 }
+  const cursorXSpring = useSpring(cursorX, springConfig)
+  const cursorYSpring = useSpring(cursorY, springConfig)
 
   useEffect(() => {
-    // Ocultar cursor default en el body
+    // Hide default cursor globally
     document.body.style.cursor = 'none'
-    
-    // Es posible que algunos elementos interactivos sigan mostrando el cursor pointer.
-    // Esto se solucionará con una regla CSS global, pero por si acaso.
 
-    let mouseX = -100
-    let mouseY = -100
-    let ringX = -100
-    let ringY = -100
+    // Disable if touch device
+    if (window.matchMedia('(pointer: coarse)').matches) return
 
-    const handleMouseMove = (e) => {
-      mouseX = e.clientX
-      mouseY = e.clientY
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`
-      }
-      // Actualizar variables globales para el Spotlight Effect
-      document.documentElement.style.setProperty('--mouse-x', `${mouseX}px`)
-      document.documentElement.style.setProperty('--mouse-y', `${mouseY}px`)
+    const moveCursor = (e) => {
+      cursorX.set(e.clientX - 16) // Offset by half the width of the ring
+      cursorY.set(e.clientY - 16)
     }
 
     const handleMouseOver = (e) => {
-      if (e.target.closest('a, button, input, textarea, select, .interactive')) {
+      const target = e.target
+      if (
+        target.closest('a, button, input, textarea, select, .interactive, .magnetic')
+      ) {
         setIsHovering(true)
       } else {
         setIsHovering(false)
       }
     }
 
-    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mousemove', moveCursor)
     window.addEventListener('mouseover', handleMouseOver)
 
-    let animId
-    const animateRing = () => {
-      // Movimiento suave del anillo (Lerp)
-      ringX += (mouseX - ringX) * 0.15
-      ringY += (mouseY - ringY) * 0.15
-      if (ringRef.current) {
-        ringRef.current.style.transform = `translate3d(${ringX}px, ${ringY}px, 0)`
-      }
-      animId = requestAnimationFrame(animateRing)
-    }
-    animateRing()
-
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mousemove', moveCursor)
       window.removeEventListener('mouseover', handleMouseOver)
-      cancelAnimationFrame(animId)
       document.body.style.cursor = 'auto'
     }
-  }, [])
+  }, [cursorX, cursorY])
+
+  // Don't render on mobile/touch devices
+  if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
+    return null
+  }
 
   return (
     <div className={styles.cursorWrapper}>
-      <div ref={ringRef} className={`${styles.ring} ${isHovering ? styles.ringHover : ''}`} />
-      <div ref={dotRef} className={`${styles.dot} ${isHovering ? styles.dotHover : ''}`} />
+      <motion.div
+        className={styles.cursorRing}
+        style={{
+          x: cursorXSpring,
+          y: cursorYSpring,
+        }}
+        animate={{
+          scale: isHovering ? 2.5 : 1,
+          backgroundColor: isHovering ? 'rgba(255, 42, 61, 0.1)' : 'transparent',
+          borderColor: isHovering ? 'transparent' : 'rgba(255, 42, 61, 0.5)',
+          mixBlendMode: isHovering ? 'normal' : 'difference'
+        }}
+        transition={{ duration: 0.2 }}
+      />
+      <motion.div
+        className={styles.cursorDot}
+        style={{
+          x: cursorXSpring,
+          y: cursorYSpring,
+        }}
+        animate={{
+          scale: isHovering ? 0 : 1,
+          opacity: isHovering ? 0 : 1
+        }}
+        transition={{ duration: 0.2 }}
+      />
     </div>
   )
 }

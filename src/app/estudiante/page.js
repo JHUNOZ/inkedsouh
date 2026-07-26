@@ -11,41 +11,40 @@ export default function EstudianteDashboard() {
   const supabase = createClient()
 
   useEffect(() => {
-    fetchMyCourses()
-  }, [])
+    async function load() {
+      setLoading(true)
+      const { data: { user } } = await supabase.auth.getUser()
 
-  const fetchMyCourses = async () => {
-    setLoading(true)
-    const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        // Get all active student records for this user
+        const { data: enrollments } = await supabase
+          .from('students')
+          .select(`
+            status,
+            expires_at,
+            courses (
+              id,
+              title,
+              description,
+              image_url
+            )
+          `)
+          .eq('user_id', user.id)
+          .eq('status', 'activo') // Only active
 
-    if (user) {
-      // Get all active student records for this user
-      const { data: enrollments } = await supabase
-        .from('students')
-        .select(`
-          status,
-          expires_at,
-          courses (
-            id,
-            title,
-            description,
-            image_url
-          )
-        `)
-        .eq('user_id', user.id)
-        .eq('status', 'activo') // Only active
-
-      if (enrollments) {
-        // Filter out expired courses
-        const validCourses = enrollments.filter(en => {
-          if (!en.expires_at) return true
-          return new Date(en.expires_at) > new Date()
-        })
-        setCourses(validCourses)
+        if (enrollments) {
+          // Filter out expired courses
+          const validCourses = enrollments.filter(en => {
+            if (!en.expires_at) return true
+            return new Date(en.expires_at) > new Date()
+          })
+          setCourses(validCourses)
+        }
       }
+      setLoading(false)
     }
-    setLoading(false)
-  }
+    load()
+  }, [])
 
   return (
     <div className={styles.container}>

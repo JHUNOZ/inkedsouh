@@ -1,17 +1,41 @@
-// Pie de página del sitio
+// Pie de página del sitio con animaciones Framer Motion
+'use client'
 import Link from 'next/link'
+import { motion, useInView } from 'framer-motion'
+import { useRef } from 'react'
 import { MessageCircle, MapPin, Mail, Phone } from 'lucide-react'
 import { NAV_LINKS, SITE_NAME, SITE_LOCATION } from '@/lib/constants'
 import styles from './Footer.module.css'
 
 export default function Footer() {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: "-50px" })
+
+  const containerVars = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  }
+
+  const itemVars = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
+  }
+
   return (
-    <footer className={styles.footer}>
+    <footer className={styles.footer} ref={ref}>
       <div className={styles.inner}>
-        <div className={styles.grid}>
+        <motion.div 
+          className={styles.grid}
+          variants={containerVars}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+        >
           {/* Columna marca */}
-          <div className={styles.brand}>
-            <div className={styles.logo}>
+          <motion.div className={styles.brand} variants={itemVars}>
+            <div className={`${styles.logo} interactive magnetic`}>
               INKED<span className={styles.logoAccent}>SOUH</span>
             </div>
             <p className={styles.description}>
@@ -22,7 +46,7 @@ export default function Footer() {
                 href="https://www.instagram.com/inked.tto/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={styles.socialLink}
+                className={`${styles.socialLink} interactive magnetic`}
                 aria-label="Instagram"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
@@ -31,33 +55,38 @@ export default function Footer() {
                 href="https://wa.me/56930254425"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={styles.socialLink}
+                className={`${styles.socialLink} interactive magnetic`}
                 aria-label="WhatsApp"
               >
                 <MessageCircle size={20} />
               </a>
               <a
                 href="mailto:inkedsouhtattoo@gmail.com"
-                className={styles.socialLink}
+                className={`${styles.socialLink} interactive magnetic`}
                 aria-label="Email"
               >
                 <Mail size={20} />
               </a>
             </div>
-          </div>
+          </motion.div>
 
           {/* Columna explorar */}
-          <div className={styles.column}>
+          <motion.div className={styles.column} variants={itemVars}>
             <h4 className={styles.columnTitle}>EXPLORAR</h4>
             {NAV_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className={styles.columnLink}>
+              <Link 
+                key={link.href} 
+                href={link.href} 
+                className={`${styles.columnLink} interactive magnetic`}
+                style={{ position: 'relative', zIndex: 10 }} // Ensure clickable
+              >
                 {link.label}
               </Link>
             ))}
-          </div>
+          </motion.div>
 
           {/* Columna contacto */}
-          <div className={styles.column}>
+          <motion.div className={styles.column} variants={itemVars}>
             <h4 className={styles.columnTitle}>CONTACTO</h4>
             <div className={styles.address}>
               <MapPin size={16} className={styles.addressIcon} />
@@ -71,14 +100,25 @@ export default function Footer() {
               <Mail size={16} className={styles.addressIcon} />
               <span>inkedsouhtattoo@gmail.com</span>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className={styles.divider} />
+        <motion.div 
+          className={styles.divider} 
+          initial={{ scaleX: 0 }}
+          animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          style={{ transformOrigin: 'left' }}
+        />
 
-        <div className={styles.bottom}>
+        <motion.div 
+          className={styles.bottom}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+        >
           <p className={styles.copyright}>© {SITE_NAME}. Todos los derechos reservados.</p>
-        </div>
+        </motion.div>
       </div>
     </footer>
   )

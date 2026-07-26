@@ -1,7 +1,7 @@
 'use client'
-// Sección CTA Agendar — Split Layout con Video Placeholder y Geometría
-import { useEffect, useRef } from 'react'
-import { ArrowRight, Video } from 'lucide-react'
+import { useRef } from 'react'
+import { ArrowRight } from 'lucide-react'
+import { motion, useInView } from 'framer-motion'
 import BubbleButton from '@/components/ui/BubbleButton'
 import { useConfig } from '@/context/ConfigContext'
 import styles from './BookingCTA.module.css'
@@ -9,18 +9,26 @@ import styles from './BookingCTA.module.css'
 export default function BookingCTA() {
   const sectionRef = useRef(null)
   const { textos } = useConfig()
+  const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach(e => {
-        if (e.isIntersecting) e.target.classList.add('visible')
-      }),
-      { threshold: 0.2 }
-    )
-    const items = sectionRef.current?.querySelectorAll('.reveal-left, .reveal-right')
-    items?.forEach(el => observer.observe(el))
-    return () => observer.disconnect()
-  }, [])
+  const slideLeft = {
+    hidden: { opacity: 0, x: -50, rotateY: 10 },
+    visible: { 
+      opacity: 1, 
+      x: 0, 
+      rotateY: 0, 
+      transition: { duration: 0.8, type: 'spring', stiffness: 100 } 
+    }
+  }
+
+  const slideRight = {
+    hidden: { opacity: 0, x: 50 },
+    visible: { 
+      opacity: 1, 
+      x: 0, 
+      transition: { duration: 0.8, delay: 0.2, type: 'spring', stiffness: 100 } 
+    }
+  }
 
   return (
     <section className={styles.section} ref={sectionRef}>
@@ -35,7 +43,14 @@ export default function BookingCTA() {
 
       <div className={styles.inner}>
         {/* Lado Izquierdo: Placeholder Video Elegante */}
-        <div className={`${styles.videoBox} reveal-left`}>
+        <motion.div 
+          className={`${styles.videoBox} interactive magnetic`}
+          variants={slideLeft}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          whileHover={{ scale: 1.02, rotateY: 5 }}
+          style={{ perspective: 1000 }}
+        >
           <video 
             src="/images/videoprom.mp4" 
             autoPlay 
@@ -47,10 +62,15 @@ export default function BookingCTA() {
           {/* Esquinas decorativas */}
           <div className={styles.cornerTopLeft} />
           <div className={styles.cornerBottomRight} />
-        </div>
+        </motion.div>
 
         {/* Lado Derecho: Contenido y CTA */}
-        <div className={`${styles.content} reveal-right`}>
+        <motion.div 
+          className={styles.content}
+          variants={slideRight}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+        >
           <h2 className={styles.title}>{textos.ctaTitle}</h2>
           
           <div className={styles.divider}>
@@ -66,7 +86,7 @@ export default function BookingCTA() {
           <BubbleButton href="/reservar" size="large" className={styles.ctaButton}>
             {textos.ctaButton} <ArrowRight size={18} />
           </BubbleButton>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

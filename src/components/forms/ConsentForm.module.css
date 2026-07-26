@@ -1,0 +1,271 @@
+/* Consent Form Styles */
+.wrapper {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  color: var(--color-white);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 30px;
+}
+
+.headerIcon {
+  color: var(--color-red);
+  margin-bottom: 16px;
+}
+
+.header h2 {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.header p {
+  color: var(--color-gray-400);
+  font-size: 0.95rem;
+}
+
+.section {
+  margin-bottom: 40px;
+}
+
+.section h3 {
+  font-size: 1.2rem;
+  color: var(--color-red);
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.sectionHint {
+  color: var(--color-gray-500);
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .gridContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+.inputWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputWrap label {
+  font-size: 0.85rem;
+  color: var(--color-gray-400);
+}
+
+.inputWrap input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 14px;
+  border-radius: 12px;
+  color: var(--color-white);
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.inputWrap input:focus {
+  outline: none;
+  border-color: var(--color-red);
+  background: rgba(232, 36, 40, 0.05);
+}
+
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .checkboxGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--color-gray-300);
+  user-select: none;
+}
+
+.checkboxLabel input, .ackLabel input {
+  display: none;
+}
+
+.customCheckbox {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--color-gray-500);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-red);
+  transition: all 0.2s ease;
+}
+
+.checkboxLabel:hover .customCheckbox,
+.ackLabel:hover .customCheckbox {
+  border-color: var(--color-red);
+}
+
+.checkboxLabel input:checked + .customCheckbox,
+.ackLabel input:checked + .customCheckbox {
+  border-color: var(--color-red);
+  background: rgba(232, 36, 40, 0.1);
+}
+
+.ackList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ackLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.ackLabel:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.ackLabel input:checked ~ .ackText {
+  color: var(--color-white);
+}
+
+.ackLabel input:checked ~ .ackText strong {
+  color: var(--color-red);
+}
+
+.ackText {
+  font-size: 0.9rem;
+  color: var(--color-gray-400);
+  line-height: 1.5;
+  transition: all 0.3s ease;
+}
+
+.ackText strong {
+  color: var(--color-gray-300);
+  transition: all 0.3s ease;
+}
+
+.signatureContainer {
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.sigPad {
+  width: 100%;
+  height: 200px;
+  cursor: crosshair;
+}
+
+.clearSigBtn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(20, 20, 20, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-gray-400);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clearSigBtn:hover {
+  color: var(--color-white);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.errorMsg {
+  color: #ff4a4a;
+  font-size: 0.85rem;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 30px;
+}
+
+.btnSubmit {
+  flex: 2;
+  padding: 16px;
+  background: var(--color-red);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btnSubmit:hover {
+  background: #a01014;
+  transform: translateY(-2px);
+}
+
+.btnCancel {
+  flex: 1;
+  padding: 16px;
+  background: transparent;
+  color: var(--color-gray-400);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btnCancel:hover {
+  color: var(--color-white);
+  border-color: rgba(255, 255, 255, 0.4);
+}
