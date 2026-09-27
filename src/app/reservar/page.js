@@ -1,21 +1,17 @@
 'use client'
-// Página de reservas con lógica de disponibilidad y categorías
-import { useState, useMemo } from 'react'
-import { Calendar, Clock, User, Mail, Phone, FileText, Upload, ChevronLeft, ChevronRight, Check, ArrowLeft, Link as LinkIcon, Image as ImageIcon } from 'lucide-react'
+// Página de reservas con disponibilidad en tiempo real, subida de referencias y consentimiento digital
+import { useState, useEffect, useMemo } from 'react'
+import { Calendar, Clock, User, Mail, Phone, FileText, Upload, ChevronLeft, ChevronRight, Check, ArrowLeft, Link as LinkIcon, Image as ImageIcon, ShieldCheck } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import SectionTitle from '@/components/ui/SectionTitle'
 import BubbleButton from '@/components/ui/BubbleButton'
+import ConsentForm from '@/components/forms/ConsentForm'
 import { SERVICE_CATEGORIES, SERVICE_TYPES } from '@/lib/constants'
+import { createClient } from '@/lib/supabase/client'
 import styles from './reservar.module.css'
 
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-
-// --- MOCK DATA PARA PROBAR BLOQUEOS ---
-const MOCK_BOOKINGS = [
-  { date: '2026-05-18', startTime: 12, duration: 3 },
-  { date: '2026-05-19', startTime: 10, duration: 5 },
-]
 
 export default function ReservarPage() {
   const [step, setStep] = useState(1)
@@ -30,14 +26,35 @@ export default function ReservarPage() {
     notes: '',
     referenceType: 'none', // 'none', 'link', 'file'
     referenceLink: '',
-    referenceFile: null
+    referenceFile: null,
+    consentData: null
   })
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [dbBookings, setDbBookings] = useState([])
+  const [dbBlocks, setDbBlocks] = useState([])
   const [submitted, setSubmitted] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [linkError, setLinkError] = useState('')
 
+  const supabase = createClient()
   const selectedService = useMemo(() => SERVICE_TYPES.find(s => s.id === form.serviceId), [form.serviceId])
+
+  // Cargar disponibilidad en tiempo real desde la API (Feature Vice)
+  useEffect(() => {
+    async function loadAvailability() {
+      try {
+        const res = await fetch('/api/availability')
+        if (res.ok) {
+          const data = await res.json()
+          setDbBookings(data.bookings || [])
+          setDbBlocks(data.blocks || [])
+        }
+      } catch (err) {
+        console.error('Error al cargar disponibilidad:', err)
+      }
+    }
+    loadAvailability()
+  }, [])
 
   // Lógica de Calendario
   const getDaysInMonth = (date) => {
@@ -60,7 +77,13 @@ export default function ReservarPage() {
     today.setHours(0, 0, 0, 0)
     
     if (date < today) return false
-    if (date.getDay() === 0) return false // Domingo
+    if (date.getDay() === 0) return false // Domingo cerrado
+
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+
+    // Verificar si el día entero está bloqueado manualmente por el admin
+    const fullDayBlock = dbBlocks.some(b => b.block_date === dateStr && !b.start_time)
+    if (fullDayBlock) return false
 
     if (selectedService && selectedService.time === 10 && date.getDay() === 6) {
       return false
@@ -72,17 +95,16 @@ export default function ReservarPage() {
   const selectDate = (day) => {
     if (!isDateAvailable(day)) return
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
-    setForm({ ...form, date, time: '' })
+    setForm(prev => ({ ...prev, date, time: '' }))
   }
 
-  // Generación de Horarios Disponibles
+  // Generación de Horarios Disponibles dinámicos
   const availableTimeSlots = useMemo(() => {
     if (!form.date || !selectedService) return []
 
     const dayOfWeek = form.date.getDay()
     const openHour = 10
     let closeHour = dayOfWeek === 6 ? 15 : 19 
-
     const duration = selectedService.time
     const slots = []
 
@@ -91,16 +113,34 @@ export default function ReservarPage() {
     }
 
     const dateStr = `${form.date.getFullYear()}-${String(form.date.getMonth() + 1).padStart(2, '0')}-${String(form.date.getDate()).padStart(2, '0')}`
-    const todaysBookings = MOCK_BOOKINGS.filter(b => b.date === dateStr)
+    
+    // Filtrar reservas y bloqueos para la fecha elegida
+    const dayBookings = dbBookings.filter(b => b.requested_date === dateStr)
+    const dayBlocks = dbBlocks.filter(b => b.block_date === dateStr && b.start_time)
 
     for (let currentHour = openHour; currentHour <= closeHour - duration; currentHour += 0.5) {
-      const hasConflict = todaysBookings.some(booking => {
-        const bookingEnd = booking.startTime + booking.duration
-        const currentEnd = currentHour + duration
-        return currentHour < bookingEnd && currentEnd > booking.startTime
+      const currentEnd = currentHour + duration
+
+      // Conflicto con reservas agendadas
+      const hasBookingConflict = dayBookings.some(b => {
+        if (!b.requested_time) return false
+        const [bh, bm] = b.requested_time.split(':').map(Number)
+        const bStart = bh + (bm / 60)
+        const bDuration = 2 // estimación por defecto si no hay service_type específico
+        const bEnd = bStart + bDuration
+        return currentHour < bEnd && currentEnd > bStart
       })
 
-      if (!hasConflict) {
+      // Conflicto con bloqueos manuales del admin
+      const hasBlockConflict = dayBlocks.some(bl => {
+        const [sh, sm] = bl.start_time.split(':').map(Number)
+        const [eh, em] = bl.end_time.split(':').map(Number)
+        const blockStart = sh + (sm / 60)
+        const blockEnd = eh + (em / 60)
+        return currentHour < blockEnd && currentEnd > blockStart
+      })
+
+      if (!hasBookingConflict && !hasBlockConflict) {
         const h = Math.floor(currentHour)
         const m = currentHour % 1 === 0 ? '00' : '30'
         slots.push(`${h.toString().padStart(2, '0')}:${m}`)
@@ -108,7 +148,7 @@ export default function ReservarPage() {
     }
 
     return slots
-  }, [form.date, selectedService])
+  }, [form.date, selectedService, dbBookings, dbBlocks])
 
   const getEndTime = (startTimeStr, durationHours) => {
     if (!startTimeStr) return ''
@@ -154,6 +194,11 @@ export default function ReservarPage() {
     }
   }
 
+  const handleConsentComplete = (consent) => {
+    updateForm('consentData', consent)
+    setStep(5)
+  }
+
   const handleSubmit = async () => {
     if (form.referenceType === 'link' && !validateLink(form.referenceLink)) {
       return
@@ -163,17 +208,22 @@ export default function ReservarPage() {
     let finalReferenceUrl = ''
 
     try {
+      // Subida real a Supabase Storage bucket 'admin_uploads'
       if (form.referenceType === 'file' && form.referenceFile) {
-        // TODO: Supabase Storage Upload
-        // Cuando configures Supabase, aquí subirías el archivo usando:
-        // const fileExt = form.referenceFile.name.split('.').pop()
-        // const fileName = `${Date.now()}.${fileExt}`
-        // const { data, error } = await supabase.storage.from('references').upload(fileName, form.referenceFile)
-        // finalReferenceUrl = supabase.storage.from('references').getPublicUrl(fileName).data.publicUrl
+        const fileExt = form.referenceFile.name.split('.').pop()
+        const fileName = `references/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`
         
-        // Simulación temporal de subida
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        finalReferenceUrl = `https://mock-storage.com/references/${form.referenceFile.name}`
+        const { error: uploadError } = await supabase.storage
+          .from('admin_uploads')
+          .upload(fileName, form.referenceFile)
+
+        if (uploadError) throw uploadError
+
+        const { data: urlData } = supabase.storage
+          .from('admin_uploads')
+          .getPublicUrl(fileName)
+
+        finalReferenceUrl = urlData.publicUrl
       } else if (form.referenceType === 'link') {
         finalReferenceUrl = form.referenceLink
       }
@@ -186,7 +236,8 @@ export default function ReservarPage() {
         appointment_time: form.time,
         service_type: form.serviceId,
         notes: form.notes,
-        reference_url: finalReferenceUrl
+        reference_url: finalReferenceUrl,
+        consent_data: form.consentData || null
       }
 
       const res = await fetch('/api/appointments', {
@@ -205,7 +256,7 @@ export default function ReservarPage() {
     }
   }
 
-  const updateForm = (field, value) => setForm({ ...form, [field]: value })
+  const updateForm = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
 
   if (submitted) {
     return (
@@ -216,9 +267,9 @@ export default function ReservarPage() {
             <div className={styles.successIcon}>
               <Check size={48} />
             </div>
-            <h2 className={styles.successTitle}>¡Cita Reservada!</h2>
+            <h2 className={styles.successTitle}>¡Cita Reservada Exitosamente!</h2>
             <p className={styles.successText}>
-              Te hemos enviado un correo a <strong>{form.email}</strong>. 
+              Hemos recibido tu solicitud y consentimiento. Te hemos enviado un correo de confirmación a <strong>{form.email}</strong>.
             </p>
             <BubbleButton href="/" variant="outline">Volver al Inicio</BubbleButton>
           </div>
@@ -245,7 +296,7 @@ export default function ReservarPage() {
           <SectionTitle subtitle="Reserva tu sesión" red>AGENDAR CITA</SectionTitle>
 
           <div className={styles.steps}>
-            {['Servicio', 'Fecha', 'Hora', 'Datos'].map((label, i) => (
+            {['Servicio', 'Fecha', 'Hora', 'Datos', 'Consentimiento'].map((label, i) => (
               <div key={label} className={`${styles.step} ${step >= i + 1 ? styles.stepActive : ''}`}>
                 <div className={styles.stepNumber}>{i + 1}</div>
                 <span className={styles.stepLabel}>{label}</span>
@@ -399,10 +450,10 @@ export default function ReservarPage() {
             </div>
           )}
 
-          {/* Paso 4: Datos */}
+          {/* Paso 4: Datos personales & referencias */}
           {step === 4 && (
             <div className={styles.stepContent}>
-              <h3 className={styles.stepTitle}>Tus datos</h3>
+              <h3 className={styles.stepTitle}>Tus datos de contacto</h3>
               <div className={styles.form}>
                 <div className={styles.inputGroup}>
                   <User size={18} className={styles.inputIcon} />
@@ -423,7 +474,7 @@ export default function ReservarPage() {
               </div>
 
               <div className={styles.referenceSection}>
-                <h4 className={styles.referenceTitle}>¿Tienes una idea en mente? (Opcional)</h4>
+                <h4 className={styles.referenceTitle}>¿Tienes una idea o referencia? (Opcional)</h4>
                 <div className={styles.referenceTabs}>
                   <button 
                     className={`${styles.refTab} ${form.referenceType === 'none' ? styles.refTabActive : ''}`}
@@ -441,7 +492,7 @@ export default function ReservarPage() {
                     className={`${styles.refTab} ${form.referenceType === 'file' ? styles.refTabActive : ''}`}
                     onClick={() => updateForm('referenceType', 'file')}
                   >
-                    <Upload size={16} /> Imagen
+                    <Upload size={16} /> Subir Imagen
                   </button>
                 </div>
 
@@ -479,7 +530,7 @@ export default function ReservarPage() {
                       ) : (
                         <div className={styles.filePlaceholder}>
                           <Upload size={24} className={styles.fileIcon} />
-                          <span>Haz clic para subir una imagen</span>
+                          <span>Haz clic para subir una imagen de referencia</span>
                           <small>JPG, PNG o WEBP (Max 5MB)</small>
                         </div>
                       )}
@@ -488,31 +539,59 @@ export default function ReservarPage() {
                 )}
               </div>
 
-              <div className={styles.summary}>
-                <h4>Resumen</h4>
-                <div className={styles.summaryRow}>
-                  <span>Servicio:</span>
-                  <strong>{selectedService?.title} ({selectedService?.timeStr})</strong>
-                </div>
-                <div className={styles.summaryRow}>
-                  <span>Fecha:</span>
-                  <strong>{form.date?.toLocaleDateString('es-CL')}</strong>
-                </div>
-                <div className={styles.summaryRow}>
-                  <span>Hora:</span>
-                  <strong>{form.time} hrs</strong>
-                </div>
-              </div>
-
               <div className={styles.stepActions}>
                 <BubbleButton variant="ghost" onClick={() => setStep(3)}>Atrás</BubbleButton>
                 <BubbleButton 
-                  onClick={handleSubmit} 
-                  disabled={!form.name || !form.email || !form.phone || isUploading || (form.referenceType === 'link' && linkError)}
+                  onClick={() => setStep(5)} 
+                  disabled={!form.name || !form.email || !form.phone || (form.referenceType === 'link' && linkError)}
                 >
-                  {isUploading ? 'Procesando...' : 'Confirmar Reserva'}
+                  Ir al Consentimiento y Firma
                 </BubbleButton>
               </div>
+            </div>
+          )}
+
+          {/* Paso 5: Consentimiento y Firma Digital */}
+          {step === 5 && (
+            <div className={styles.stepContent}>
+              <ConsentForm 
+                onSubmit={handleConsentComplete}
+                onCancel={() => setStep(4)}
+              />
+
+              {form.consentData && (
+                <div className={styles.summary} style={{ marginTop: '30px' }}>
+                  <h4>Resumen Final de Reserva</h4>
+                  <div className={styles.summaryRow}>
+                    <span>Servicio:</span>
+                    <strong>{selectedService?.title} ({selectedService?.timeStr})</strong>
+                  </div>
+                  <div className={styles.summaryRow}>
+                    <span>Fecha y Hora:</span>
+                    <strong>{form.date?.toLocaleDateString('es-CL')} a las {form.time} hrs</strong>
+                  </div>
+                  <div className={styles.summaryRow}>
+                    <span>Cliente:</span>
+                    <strong>{form.name} ({form.email})</strong>
+                  </div>
+                  <div className={styles.summaryRow}>
+                    <span>Consentimiento Digital:</span>
+                    <strong style={{ color: '#22c55e', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <ShieldCheck size={18} /> Firmado y Aceptado
+                    </strong>
+                  </div>
+
+                  <div className={styles.stepActions} style={{ marginTop: '24px' }}>
+                    <BubbleButton variant="ghost" onClick={() => setStep(4)}>Atrás</BubbleButton>
+                    <BubbleButton 
+                      onClick={handleSubmit} 
+                      disabled={isUploading}
+                    >
+                      {isUploading ? 'Procesando Reserva...' : 'Finalizar y Confirmar Cita'}
+                    </BubbleButton>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

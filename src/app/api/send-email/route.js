@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { createServerClient } from '@/lib/supabase/server'
 
 export async function POST(req) {
   try {
+    const supabase = createServerClient()
+    const { data: { session } } = await supabase.auth.getSession()
+
+    // Solo administradores autenticados pueden gatillar correos de confirmación/reprogramación
+    if (!session) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+
     const resend = new Resend(process.env.RESEND_API_KEY || 'dummy_key')
     const body = await req.json()
     const { type, booking } = body
@@ -55,7 +64,7 @@ export async function POST(req) {
     }
 
     const data = await resend.emails.send({
-      from: 'INKEDSOUH Reservas <reservas@inkedsouh.com>', // Configurar dominio en Resend
+      from: 'INKEDSOUH Reservas <reservas@inkedsouh.com>',
       to: [booking.client_email],
       subject,
       html,
