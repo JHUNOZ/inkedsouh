@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Upload, Camera, Save } from 'lucide-react'
+import { Upload, Camera, Save, ShieldCheck } from 'lucide-react'
 import styles from './perfil.module.css'
 
 export default function PerfilPage() {
@@ -10,7 +10,7 @@ export default function PerfilPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null)
   
-  // Profile Photo State
+  // Admin Avatar Photo State (Solo para el panel de administración)
   const [photoUrl, setPhotoUrl] = useState(null)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [photoMessage, setPhotoMessage] = useState(null)
@@ -19,7 +19,7 @@ export default function PerfilPage() {
 
   useEffect(() => {
     fetchUser()
-    fetchArtistPhoto()
+    fetchAdminAvatar()
   }, [])
 
   const fetchUser = async () => {
@@ -27,11 +27,11 @@ export default function PerfilPage() {
     setUser(user)
   }
 
-  const fetchArtistPhoto = async () => {
-    const { data, error } = await supabase
+  const fetchAdminAvatar = async () => {
+    const { data } = await supabase
       .from('site_settings')
       .select('value')
-      .eq('key', 'artist_photo')
+      .eq('key', 'admin_avatar_photo')
       .single()
     
     if (data && data.value) {
@@ -69,38 +69,31 @@ export default function PerfilPage() {
 
       const file = e.target.files[0]
       const fileExt = file.name.split('.').pop()
-      const fileName = `artist-profile-${Math.random()}.${fileExt}`
+      const fileName = `admin-avatar-${Date.now()}.${fileExt}`
       const filePath = `profile/${fileName}`
 
-      // Upload to bucket
       const { error: uploadError } = await supabase.storage
         .from('admin_uploads')
         .upload(filePath, file, { upsert: true })
 
-      if (uploadError) {
-        throw uploadError
-      }
+      if (uploadError) throw uploadError
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('admin_uploads')
         .getPublicUrl(filePath)
 
-      // Save to site_settings
       const { error: settingsError } = await supabase
         .from('site_settings')
         .upsert({ 
-          key: 'artist_photo', 
+          key: 'admin_avatar_photo', 
           value: { url: publicUrl },
           updated_at: new Date()
         }, { onConflict: 'key' })
 
-      if (settingsError) {
-        throw settingsError
-      }
+      if (settingsError) throw settingsError
 
       setPhotoUrl(publicUrl)
-      setPhotoMessage({ type: 'success', text: 'Foto actualizada correctamente' })
+      setPhotoMessage({ type: 'success', text: 'Avatar de administrador actualizado' })
     } catch (error) {
       console.error(error)
       setPhotoMessage({ type: 'error', text: error.message || 'Error al subir la imagen' })
@@ -112,24 +105,24 @@ export default function PerfilPage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Mi Perfil</h1>
-        <p className={styles.subtitle}>Configura tu cuenta y foto de artista</p>
+        <h1 className={styles.title}>Mi Perfil de Administrador</h1>
+        <p className={styles.subtitle}>Configura tu cuenta privada de acceso al panel</p>
       </div>
 
       <div className={styles.grid}>
-        {/* Foto de Perfil */}
+        {/* Foto de Perfil del Admin */}
         <div className={styles.card}>
-          <h2 className={styles.cardTitle}>Foto del Artista (Biografía)</h2>
-          <p className={styles.cardDesc}>Esta foto se mostrará en la página principal.</p>
+          <h2 className={styles.cardTitle}>Avatar del Administrador</h2>
+          <p className={styles.cardDesc}>Foto de perfil exclusiva para la cuenta en el panel de control.</p>
 
           <div className={styles.photoSection}>
             <div className={styles.photoPreview}>
               {photoUrl ? (
-                <img src={photoUrl} alt="Artista" className={styles.image} />
+                <img src={photoUrl} alt="Avatar Admin" className={styles.image} />
               ) : (
                 <div className={styles.photoPlaceholder}>
                   <Camera size={32} />
-                  <span>Sin Foto</span>
+                  <span>Sin Avatar</span>
                 </div>
               )}
             </div>
@@ -137,7 +130,7 @@ export default function PerfilPage() {
             <div className={styles.uploadControls}>
               <label className={styles.uploadBtn}>
                 <Upload size={16} />
-                {uploadingPhoto ? 'Subiendo...' : 'Subir Nueva Foto'}
+                {uploadingPhoto ? 'Subiendo...' : 'Subir Foto de Avatar'}
                 <input
                   type="file"
                   accept="image/*"
@@ -158,8 +151,8 @@ export default function PerfilPage() {
 
         {/* Seguridad */}
         <div className={styles.card}>
-          <h2 className={styles.cardTitle}>Seguridad</h2>
-          <p className={styles.cardDesc}>Actualiza tu contraseña de acceso.</p>
+          <h2 className={styles.cardTitle}>Seguridad y Acceso</h2>
+          <p className={styles.cardDesc}>Actualiza la contraseña de acceso a tu cuenta.</p>
           
           <div className={styles.formGroup} style={{ marginBottom: '24px' }}>
             <label>Correo Electrónico Actual</label>
@@ -170,7 +163,7 @@ export default function PerfilPage() {
               disabled 
               style={{ opacity: 0.7, cursor: 'not-allowed' }}
             />
-            <small style={{ color: '#888', marginTop: '4px' }}>El correo no se puede cambiar por seguridad.</small>
+            <small style={{ color: '#888', marginTop: '4px' }}>El correo de administrador no se puede cambiar por seguridad.</small>
           </div>
 
           <form onSubmit={handleUpdatePassword}>

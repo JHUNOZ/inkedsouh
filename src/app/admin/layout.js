@@ -30,7 +30,7 @@ export default function AdminLayout({ children }) {
     { href: '/admin/reservas', label: 'Reservas', icon: Calendar },
     { href: '/admin/productos', label: 'Productos', icon: Package },
     { href: '/admin/cursos', label: 'Cursos', icon: BookOpen },
-    { href: '/admin/galeria', label: 'Galería IG', icon: ImageIcon },
+    { href: '/admin/galeria', label: 'Multimedia', icon: ImageIcon },
     { href: '/admin/configuracion', label: 'Configuración', icon: Settings },
     { href: '/admin/perfil', label: 'Mi Perfil', icon: User }
   ]

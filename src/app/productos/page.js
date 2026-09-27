@@ -1,32 +1,49 @@
 'use client'
-// Página de productos con carrito lateral
-import { useState } from 'react'
-import { ShoppingBag, ShoppingCart, Plus, Minus, X, Filter, Search } from 'lucide-react'
+// Página de productos real sincronizada con Supabase y Carrito
+import { useState, useEffect } from 'react'
+import { ShoppingBag, ShoppingCart, Plus, Minus, X, Search } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import SectionTitle from '@/components/ui/SectionTitle'
 import BubbleButton from '@/components/ui/BubbleButton'
 import { PRODUCT_CATEGORIES } from '@/lib/constants'
+import { createClient } from '@/lib/supabase/client'
 import styles from './productos.module.css'
 
 export default function ProductosPage() {
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
   const [cart, setCart] = useState([])
   const [cartOpen, setCartOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState('Todos')
   const [search, setSearch] = useState('')
 
-  // Productos placeholder
-  const products = [
-    { id: 1, name: 'Crema Cicatrizante Tattoo', description: 'Crema especial para el cuidado post-tatuaje.', price: 12990, discount: 0, stock: 25, category: 'Cuidado', image: null },
-    { id: 2, name: 'Film Protector Premium', description: 'Film transparente de segunda piel para proteger tu tatuaje nuevo.', price: 8990, discount: 10, stock: 50, category: 'Cuidado', image: null },
-    { id: 3, name: 'Kit Aftercare Completo', description: 'Kit completo con crema, jabón y film protector.', price: 24990, discount: 15, stock: 15, category: 'Kits', image: null },
-    { id: 4, name: 'Jabón Antibacterial Tattoo', description: 'Jabón suave sin fragancia para limpieza del tatuaje.', price: 6990, discount: 0, stock: 30, category: 'Cuidado', image: null },
-    { id: 5, name: 'Diseño Personalizado Digital', description: 'Diseño exclusivo digital a medida según tus ideas.', price: 35000, discount: 0, stock: 99, category: 'Diseños', image: null },
-    { id: 6, name: 'Bálsamo Hidratante', description: 'Bálsamo natural para mantener tu tatuaje vibrante.', price: 9990, discount: 5, stock: 0, category: 'Cuidado', image: null }
-  ]
+  const supabase = createClient()
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setLoading(true)
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        setProducts(data || [])
+      } catch (err) {
+        console.error('Error al cargar productos:', err)
+        setProducts([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadProducts()
+  }, [])
 
   const formatPrice = (price) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price)
-  const getDiscountedPrice = (price, discount) => Math.round(price * (1 - discount / 100))
+  const getDiscountedPrice = (price, discount) => Math.round(price * (1 - (discount || 0) / 100))
 
   const addToCart = (product) => {
     if (product.stock <= 0) return
@@ -59,7 +76,7 @@ export default function ProductosPage() {
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
-  // Filtrar productos
+  // Filtrar productos reales
   const filtered = products.filter((p) => {
     const matchCategory = activeCategory === 'Todos' || p.category === activeCategory
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase())
@@ -98,51 +115,68 @@ export default function ProductosPage() {
             </div>
           </div>
 
-          {/* Grid de productos */}
-          <div className={styles.grid}>
-            {filtered.map((product) => (
-              <div key={product.id} className={styles.card}>
-                <div className={styles.cardImage}>
-                  <ShoppingBag size={36} />
-                  {product.discount > 0 && (
-                    <span className={styles.discountBadge}>-{product.discount}%</span>
-                  )}
-                  {product.stock <= 0 && (
-                    <div className={styles.outOfStock}>AGOTADO</div>
-                  )}
-                </div>
-                <div className={styles.cardBody}>
-                  <span className={styles.cardCategory}>{product.category}</span>
-                  <h3 className={styles.cardName}>{product.name}</h3>
-                  <p className={styles.cardDesc}>{product.description}</p>
-                  <div className={styles.cardFooter}>
-                    <div className={styles.priceWrap}>
-                      {product.discount > 0 ? (
-                        <>
-                          <span className={styles.price}>
-                            {formatPrice(getDiscountedPrice(product.price, product.discount))}
-                          </span>
-                          <span className={styles.priceOriginal}>{formatPrice(product.price)}</span>
-                        </>
-                      ) : (
-                        <span className={styles.price}>{formatPrice(product.price)}</span>
-                      )}
-                    </div>
-                    <button
-                      className={styles.addBtn}
-                      onClick={() => addToCart(product)}
-                      disabled={product.stock <= 0}
-                    >
-                      <Plus size={18} />
-                    </button>
+          {/* Grid de productos reales de Supabase */}
+          {loading ? (
+            <div style={{ textAlign: 'center', color: '#888', padding: '60px' }}>Cargando catálogo...</div>
+          ) : products.length === 0 ? (
+            <div style={{ textAlign: 'center', color: 'var(--color-gray-400)', padding: '80px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px dashed rgba(255,255,255,0.1)', maxWidth: '600px', margin: '40px auto' }}>
+              <ShoppingBag size={48} style={{ marginBottom: '16px', opacity: 0.5, color: 'var(--color-red)' }} />
+              <h3>Aún no tenemos productos disponibles</h3>
+              <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '8px' }}>
+                Los productos publicados por el administrador en el panel aparecerán aquí automáticamente.
+              </p>
+            </div>
+          ) : (
+            <div className={styles.grid}>
+              {filtered.map((product) => (
+                <div key={product.id} className={styles.card}>
+                  <div className={styles.cardImage}>
+                    {product.image_url ? (
+                      <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <ShoppingBag size={36} />
+                    )}
+
+                    {product.discount > 0 && (
+                      <span className={styles.discountBadge}>-{product.discount}%</span>
+                    )}
+                    {product.stock <= 0 && (
+                      <div className={styles.outOfStock}>AGOTADO</div>
+                    )}
                   </div>
-                  <span className={product.stock > 0 ? styles.stockLabel : styles.stockOut}>
-                    {product.stock > 0 ? `${product.stock} disponibles` : 'Sin stock'}
-                  </span>
+                  <div className={styles.cardBody}>
+                    <span className={styles.cardCategory}>{product.category}</span>
+                    <h3 className={styles.cardName}>{product.name}</h3>
+                    <p className={styles.cardDesc}>{product.description || 'Sin descripción.'}</p>
+                    <div className={styles.cardFooter}>
+                      <div className={styles.priceWrap}>
+                        {product.discount > 0 ? (
+                          <>
+                            <span className={styles.price}>
+                              {formatPrice(getDiscountedPrice(product.price, product.discount))}
+                            </span>
+                            <span className={styles.priceOriginal}>{formatPrice(product.price)}</span>
+                          </>
+                        ) : (
+                          <span className={styles.price}>{formatPrice(product.price)}</span>
+                        )}
+                      </div>
+                      <button
+                        className={styles.addBtn}
+                        onClick={() => addToCart(product)}
+                        disabled={product.stock <= 0}
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
+                    <span className={product.stock > 0 ? styles.stockLabel : styles.stockOut}>
+                      {product.stock > 0 ? `${product.stock} disponibles` : 'Sin stock'}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Botón flotante del carrito */}

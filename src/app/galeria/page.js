@@ -1,25 +1,39 @@
 'use client'
-// Página de galería — Feed de Instagram
+// Página de galería pública sincronizada con Supabase e Instagram
 import { useState, useEffect } from 'react'
-import { X, Heart, MessageCircle, ExternalLink } from 'lucide-react'
+import { X, Heart, MessageCircle, ExternalLink, Image as ImageIcon } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import SectionTitle from '@/components/ui/SectionTitle'
+import { createClient } from '@/lib/supabase/client'
 import styles from './galeria.module.css'
 
 export default function GaleriaPage() {
   const [lightbox, setLightbox] = useState(null)
-
-  // Posts de Instagram placeholder
   const [posts, setPosts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const supabase = createClient()
 
   useEffect(() => {
-    const generatedPosts = Array.from({ length: 18 }, (_, i) => ({
-      id: i + 1,
-      likes: Math.floor(Math.random() * 300) + 50,
-      comments: Math.floor(Math.random() * 30) + 3,
-    }))
-    setPosts(generatedPosts)
+    async function loadGallery() {
+      try {
+        setLoading(true)
+        const { data, error } = await supabase
+          .from('instagram_cache')
+          .select('*')
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        setPosts(data || [])
+      } catch (err) {
+        console.error('Error al cargar la galería:', err)
+        setPosts([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadGallery()
   }, [])
 
   return (
@@ -27,7 +41,7 @@ export default function GaleriaPage() {
       <Navbar />
       <main className={styles.page}>
         <div className={styles.header}>
-          <SectionTitle subtitle="Nuestro trabajo en Instagram">GALERÍA</SectionTitle>
+          <SectionTitle subtitle="Nuestro trabajo y portafolio">GALERÍA MULTIMEDIA</SectionTitle>
           <a
             href="https://www.instagram.com/inked.tto/"
             target="_blank"
@@ -40,25 +54,41 @@ export default function GaleriaPage() {
           </a>
         </div>
 
-        {/* Grid */}
-        <div className={styles.grid}>
-          {posts.map((post) => (
-            <div
-              key={post.id}
-              className={styles.gridItem}
-              onClick={() => setLightbox(post)}
-            >
-              <div className={styles.placeholder} />
-              <div className={styles.overlay}>
-                <div className={styles.stats}>
-                  <span className={styles.stat}><Heart size={16} /> {post.likes}</span>
-                  <span className={styles.stat}><MessageCircle size={16} /> {post.comments}</span>
+        {/* Grid de Galería Real */}
+        {loading ? (
+          <div style={{ textAlign: 'center', color: '#888', padding: '60px' }}>Cargando galería...</div>
+        ) : posts.length === 0 ? (
+          <div style={{ textAlign: 'center', color: 'var(--color-gray-400)', padding: '80px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px dashed rgba(255,255,255,0.1)', maxWidth: '600px', margin: '40px auto' }}>
+            <ImageIcon size={48} style={{ marginBottom: '16px', opacity: 0.5, color: 'var(--color-red)' }} />
+            <h3>Aún no tenemos elementos en la galería</h3>
+            <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '8px' }}>
+              El administrador actualizará el contenido pronto. Sigue nuestras redes sociales para estar al día.
+            </p>
+          </div>
+        ) : (
+          <div className={styles.grid}>
+            {posts.map((post) => (
+              <div
+                key={post.id}
+                className={styles.gridItem}
+                onClick={() => setLightbox(post)}
+              >
+                {post.media_type === 'VIDEO' ? (
+                  <video src={post.media_url} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <img src={post.media_url} alt="Portafolio InkedSouh" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
+                
+                <div className={styles.overlay}>
+                  <div className={styles.stats}>
+                    <span className={styles.stat}><Heart size={16} /> Ver</span>
+                  </div>
                 </div>
+                <div className={styles.neonBorder} />
               </div>
-              <div className={styles.neonBorder} />
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Lightbox */}
         {lightbox && (
@@ -67,13 +97,11 @@ export default function GaleriaPage() {
               <X size={28} />
             </button>
             <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
-              <div className={styles.lightboxImage} />
-              <div className={styles.lightboxInfo}>
-                <div className={styles.lightboxStats}>
-                  <span><Heart size={18} /> {lightbox.likes}</span>
-                  <span><MessageCircle size={18} /> {lightbox.comments}</span>
-                </div>
-              </div>
+              {lightbox.media_type === 'VIDEO' ? (
+                <video src={lightbox.media_url} controls autoPlay style={{ maxWidth: '100%', maxHeight: '80vh' }} />
+              ) : (
+                <img src={lightbox.media_url} alt="Detalle Tatuaje" style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }} />
+              )}
             </div>
           </div>
         )}
