@@ -1,16 +1,12 @@
 // Pie de página del sitio con animaciones Framer Motion
 'use client'
 import Link from 'next/link'
-import { motion, useInView } from 'framer-motion'
-import { useRef } from 'react'
+import { motion } from 'framer-motion'
 import { MessageCircle, MapPin, Mail, Phone } from 'lucide-react'
 import { NAV_LINKS, SITE_NAME, SITE_LOCATION } from '@/lib/constants'
 import styles from './Footer.module.css'
 
 export default function Footer() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-50px" })
-
   const containerVars = {
     hidden: { opacity: 0 },
     visible: {
@@ -25,13 +21,14 @@ export default function Footer() {
   }
 
   return (
-    <footer className={styles.footer} ref={ref}>
+    <footer className={styles.footer}>
       <div className={styles.inner}>
         <motion.div 
           className={styles.grid}
           variants={containerVars}
           initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
         >
           {/* Columna marca */}
           <motion.div className={styles.brand} variants={itemVars}>
@@ -106,7 +103,8 @@ export default function Footer() {
         <motion.div 
           className={styles.divider} 
           initial={{ scaleX: 0 }}
-          animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.8, delay: 0.3 }}
           style={{ transformOrigin: 'left' }}
         />
@@ -114,7 +112,8 @@ export default function Footer() {
         <motion.div 
           className={styles.bottom}
           initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
           <p className={styles.copyright}>© {SITE_NAME}. Todos los derechos reservados.</p>

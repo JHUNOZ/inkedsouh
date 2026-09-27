@@ -1,7 +1,7 @@
 'use client'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { ShoppingBag } from 'lucide-react'
-import { motion, useInView } from 'framer-motion'
+import { motion } from 'framer-motion'
 import SectionTitle from '@/components/ui/SectionTitle'
 import BubbleButton from '@/components/ui/BubbleButton'
 import styles from './ProductsPreview.module.css'
@@ -9,8 +9,6 @@ import styles from './ProductsPreview.module.css'
 export default function ProductsPreview() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
 
   const formatPrice = (price) =>
     new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price)
@@ -60,11 +58,12 @@ export default function ProductsPreview() {
   }
 
   return (
-    <section className={styles.section} id="productos-preview" ref={ref}>
+    <section className={styles.section} id="productos-preview">
       <div className={styles.inner}>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8 }}
         >
           <SectionTitle subtitle="Cuida y protege tu arte">PRODUCTOS</SectionTitle>
@@ -79,7 +78,8 @@ export default function ProductsPreview() {
           <motion.div 
             className={styles.emptyState}
             initial={{ opacity: 0, scale: 0.9 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <ShoppingBag size={48} className={styles.emptyIcon} />
@@ -90,7 +90,8 @@ export default function ProductsPreview() {
             className={styles.grid}
             variants={containerVars}
             initial="hidden"
-            animate={isInView ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
           >
             {products.map((product) => (
               <motion.div 
@@ -135,7 +136,8 @@ export default function ProductsPreview() {
         <motion.div 
           className={styles.btnWrap}
           initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
           <BubbleButton href="/productos" variant="outline">

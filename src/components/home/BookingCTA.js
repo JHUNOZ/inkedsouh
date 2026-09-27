@@ -1,15 +1,13 @@
 'use client'
 import { useRef } from 'react'
 import { ArrowRight } from 'lucide-react'
-import { motion, useInView } from 'framer-motion'
+import { motion } from 'framer-motion'
 import BubbleButton from '@/components/ui/BubbleButton'
 import { useConfig } from '@/context/ConfigContext'
 import styles from './BookingCTA.module.css'
 
 export default function BookingCTA() {
-  const sectionRef = useRef(null)
   const { textos } = useConfig()
-  const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
 
   const slideLeft = {
     hidden: { opacity: 0, x: -50, rotateY: 10 },
@@ -31,7 +29,7 @@ export default function BookingCTA() {
   }
 
   return (
-    <section className={styles.section} ref={sectionRef}>
+    <section className={styles.section}>
       {/* Partículas Geométricas de Tatuaje de fondo */}
       <div className={styles.geometricParticles}>
         <div className={`${styles.geoShape} ${styles.diamond}`} />
@@ -47,7 +45,8 @@ export default function BookingCTA() {
           className={`${styles.videoBox} interactive magnetic`}
           variants={slideLeft}
           initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
           whileHover={{ scale: 1.02, rotateY: 5 }}
           style={{ perspective: 1000 }}
         >
@@ -69,7 +68,8 @@ export default function BookingCTA() {
           className={styles.content}
           variants={slideRight}
           initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
         >
           <h2 className={styles.title}>{textos.ctaTitle}</h2>
           

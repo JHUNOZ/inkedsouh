@@ -1,15 +1,12 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { motion, useInView } from 'framer-motion'
+import { motion } from 'framer-motion'
 import SectionTitle from '@/components/ui/SectionTitle'
 import styles from './GalleryPreview.module.css'
 
 export default function GalleryPreview() {
-  const sectionRef = useRef(null)
   const carouselRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, margin: "-50px" })
-
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -59,14 +56,15 @@ export default function GalleryPreview() {
   }
 
   return (
-    <section className={styles.section} id="galeria-preview" ref={sectionRef}>
+    <section className={styles.section} id="galeria-preview">
       <div className={styles.inner}>
         
         {/* Encabezado Superior (Botones y Título) */}
         <motion.div 
           className={styles.header}
           initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
         >
           <SectionTitle number="01" subtitle="PORTFOLIO">GALERÍA</SectionTitle>
@@ -76,7 +74,8 @@ export default function GalleryPreview() {
         <motion.div 
           className={styles.controlsRow}
           initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
           <div className={styles.navButtons}>
@@ -104,7 +103,8 @@ export default function GalleryPreview() {
           className={styles.carouselWrap}
           variants={containerVars}
           initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
         >
           <motion.div 
             className={styles.carousel} 
