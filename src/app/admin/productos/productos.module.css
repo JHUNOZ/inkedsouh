@@ -60,7 +60,7 @@
 
 .honeBrand {
   font-family: var(--font-display, sans-serif);
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   letter-spacing: 2px;
   color: var(--color-red, #ff2a3d);
   font-weight: 800;
@@ -76,6 +76,15 @@
   padding: 3px 8px;
   border-radius: 6px;
   letter-spacing: 0.5px;
+}
+
+.shortcutTip {
+  font-size: 0.7rem;
+  color: #636366;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .title {
@@ -96,6 +105,7 @@
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .btnSecondary {
@@ -110,6 +120,7 @@
   font-size: 0.88rem;
   font-weight: 500;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .btnSecondary:hover {
@@ -137,6 +148,7 @@
   font-weight: 600;
   box-shadow: 0 4px 16px rgba(255, 42, 61, 0.25);
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .btnAdd:hover {
@@ -196,7 +208,7 @@
 .textWarning { color: #facc15 !important; }
 .textDanger { color: #f87171 !important; }
 
-/* Bulk Uploader Zone */
+/* Bulk & Import Uploader Zone */
 .bulkContainer {
   background: rgba(24, 24, 32, 0.7);
   border: 1px solid rgba(255, 42, 61, 0.2);
@@ -211,6 +223,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .bulkHeader h3 {
@@ -290,6 +304,26 @@
   border-color: var(--color-red, #ff2a3d);
 }
 
+.btnGenIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 42, 61, 0.15);
+  border: 1px solid rgba(255, 42, 61, 0.3);
+  color: #ff8591;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btnGenIcon:hover {
+  background: var(--color-red, #ff2a3d);
+  color: #fff;
+}
+
 .tagPending { color: #8e8e9f; font-size: 0.8rem; }
 .tagUploading { color: #60a5fa; font-size: 0.8rem; }
 .tagDone { color: #4ade80; font-size: 0.8rem; display: flex; align-items: center; gap: 4px; }
@@ -342,6 +376,9 @@
   top: 50%;
   transform: translateY(-50%);
   color: #8e8e9f;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 .filterGroup {
@@ -390,6 +427,7 @@
   border-radius: 7px;
   color: #8e8e9f;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .viewBtnActive {
@@ -432,12 +470,14 @@
   border-radius: 8px;
   font-size: 0.82rem;
   font-weight: 600;
+  cursor: pointer;
 }
 
 .btnCancelSelect {
   color: #8e8e9f;
   font-size: 0.82rem;
   padding: 6px 10px;
+  cursor: pointer;
 }
 
 .btnCancelSelect:hover {
@@ -496,6 +536,7 @@
   justify-content: center;
   color: #636366;
   padding: 2px;
+  cursor: pointer;
 }
 
 .checkedIcon {
@@ -550,12 +591,41 @@
   color: #fff;
 }
 
-.skuTag {
+.skuActionRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.75rem;
+  gap: 6px;
+}
+
+.skuText {
+  font-family: monospace;
+  font-size: 0.8rem;
   color: #8e8e9f;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.skuTagInline {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #ff8591;
+  background: rgba(255, 42, 61, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.copySkuBtn {
+  color: #636366;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.copySkuBtn:hover {
+  color: #fff;
 }
 
 .badgePill {
@@ -566,6 +636,7 @@
   padding: 1px 6px;
   border-radius: 4px;
   text-transform: uppercase;
+  width: fit-content;
 }
 
 .categoryBadge {
@@ -591,6 +662,32 @@
   font-size: 0.75rem;
   color: #8e8e9f;
   text-decoration: line-through;
+}
+
+/* Fast stock controls */
+.fastStockControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stockIncBtn {
+  color: #636366;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s ease;
+}
+
+.stockIncBtn:hover:not(:disabled) {
+  color: #ff2a3d;
+}
+
+.stockIncBtn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
 }
 
 .stockIndicator {
@@ -628,6 +725,7 @@
   font-size: 0.78rem;
   font-weight: 500;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .statusDot {
@@ -675,6 +773,7 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
   color: #c7c7cc;
   transition: all 0.15s ease;
+  cursor: pointer;
 }
 
 .btnActionIcon:hover {
@@ -712,6 +811,23 @@
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
   margin-bottom: 14px;
+}
+
+.btnGenSku {
+  background: rgba(255, 42, 61, 0.15);
+  border: 1px solid rgba(255, 42, 61, 0.3);
+  color: #ff8591;
+  padding: 0 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.btnGenSku:hover {
+  background: var(--color-red, #ff2a3d);
+  color: #fff;
 }
 
 .quickEditCheckboxWrap {
@@ -821,6 +937,7 @@
   justify-content: center;
   backdrop-filter: blur(4px);
   transition: transform 0.15s ease, background 0.15s ease;
+  cursor: pointer;
 }
 
 .gridOverlayBtn:hover {
@@ -904,6 +1021,9 @@
 
 .closeModal {
   color: #8e8e9f;
+  background: none;
+  border: none;
+  cursor: pointer;
   transition: color 0.15s ease;
 }
 
@@ -926,6 +1046,7 @@
   border-bottom: 2px solid transparent;
   white-space: nowrap;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .modalTab:hover {
@@ -972,6 +1093,43 @@
   color: #c7c7cc;
 }
 
+.btnGenSkuAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 42, 61, 0.12);
+  border: 1px solid rgba(255, 42, 61, 0.3);
+  color: #ff8591;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnGenSkuAction:hover {
+  background: var(--color-red, #ff2a3d);
+  color: #fff;
+}
+
+.copySkuBtnModal {
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #8e8e9f;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.copySkuBtnModal:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
 .input, .textarea {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -980,6 +1138,7 @@
   color: #fff;
   font-size: 0.9rem;
   transition: all 0.2s ease;
+  width: 100%;
 }
 
 .input:focus, .textarea:focus {
@@ -1128,6 +1287,7 @@
   padding: 4px 8px;
   border-radius: 4px;
   font-weight: 600;
+  cursor: pointer;
 }
 
 .btnSetPrimary:hover {
@@ -1137,6 +1297,9 @@
 .btnRemoveImg {
   color: #f87171;
   padding: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 /* Specs Tab */
