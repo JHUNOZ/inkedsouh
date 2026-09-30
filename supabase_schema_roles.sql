@@ -27,14 +27,16 @@ CREATE POLICY "Allow authenticated to read user roles" ON public.user_roles
 
 -- 5. TRIGGER AUTOMÁTICO PARA NUEVOS REGISTROS
 -- Cada vez que alguien se registre en el sistema, por defecto será 'estudiante'.
--- Si eres tú (junomaemaul@gmail.com), se te asigna 'admin' automáticamente.
+-- 5. TRIGGER AUTOMÁTICO PARA NUEVOS REGISTROS
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  IF NEW.email = 'junomaemaul@gmail.com' THEN
-    INSERT INTO public.user_roles (id, role) VALUES (NEW.id, 'admin');
+  IF LOWER(NEW.email) IN (LOWER('Inkedsouhtattoo@gmail.com'), LOWER('junomaemaul@gmail.com')) THEN
+    INSERT INTO public.user_roles (id, role) VALUES (NEW.id, 'admin')
+    ON CONFLICT (id) DO UPDATE SET role = 'admin';
   ELSE
-    INSERT INTO public.user_roles (id, role) VALUES (NEW.id, 'estudiante');
+    INSERT INTO public.user_roles (id, role) VALUES (NEW.id, 'estudiante')
+    ON CONFLICT (id) DO NOTHING;
   END IF;
   RETURN NEW;
 END;
@@ -47,8 +49,9 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
--- 6. ASIGNAR ROL AL ADMIN EXISTENTE
--- Como tu usuario admin ya existe, le asignamos el rol 'admin' manualmente (si no lo tiene).
+-- 6. ASIGNAR ROL AL ADMIN EXISTENTE (Inserta o actualiza a admin sin importar mayúsculas/minúsculas)
 INSERT INTO public.user_roles (id, role)
-SELECT id, 'admin' FROM auth.users WHERE email = 'junomaemaul@gmail.com'
-ON CONFLICT (id) DO NOTHING;
+SELECT id, 'admin' 
+FROM auth.users 
+WHERE LOWER(email) = LOWER('Inkedsouhtattoo@gmail.com')
+ON CONFLICT (id) DO UPDATE SET role = 'admin';
