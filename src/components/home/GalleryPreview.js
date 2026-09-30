@@ -1,83 +1,31 @@
 'use client'
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { ArrowLeft, ArrowRight, X, ExternalLink, Eye, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, X, ExternalLink, Eye, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import SectionTitle from '@/components/ui/SectionTitle'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import styles from './GalleryPreview.module.css'
 
-const CURATED_GALLERY = [
-  {
-    id: 'cg-1',
-    mediaUrl: 'https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?q=80&w=800&auto=format&fit=crop',
-    mediaType: 'IMAGE',
-    caption: 'Realismo Sombras & Samurai',
-    category: 'Realismo'
-  },
-  {
-    id: 'cg-2',
-    mediaUrl: 'https://images.unsplash.com/photo-1562962230-16e4623d36e6?q=80&w=800&auto=format&fit=crop',
-    mediaType: 'IMAGE',
-    caption: 'Blackwork Floral & Botánica',
-    category: 'Blackwork'
-  },
-  {
-    id: 'cg-3',
-    mediaUrl: 'https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?q=80&w=800&auto=format&fit=crop',
-    mediaType: 'IMAGE',
-    caption: 'Fine Line & Espalda Completa',
-    category: 'Fine Line'
-  },
-  {
-    id: 'cg-4',
-    mediaUrl: 'https://images.unsplash.com/photo-1542382257-80dedb725088?q=80&w=800&auto=format&fit=crop',
-    mediaType: 'IMAGE',
-    caption: 'Lettering & Tipografía',
-    category: 'Lettering'
-  },
-  {
-    id: 'cg-5',
-    mediaUrl: 'https://images.unsplash.com/photo-1597852074816-d933c7d2b988?q=80&w=800&auto=format&fit=crop',
-    mediaType: 'IMAGE',
-    caption: 'Neotradicional & Ilustración',
-    category: 'Neotradicional'
-  },
-  {
-    id: 'cg-6',
-    mediaUrl: 'https://images.unsplash.com/photo-1560707303-4e980ce876ad?q=80&w=800&auto=format&fit=crop',
-    mediaType: 'IMAGE',
-    caption: 'Geometría & Puntillismo',
-    category: 'Blackwork'
-  },
-  {
-    id: 'cg-7',
-    mediaUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=800&auto=format&fit=crop',
-    mediaType: 'IMAGE',
-    caption: 'Arte Conceptual & Escultura',
-    category: 'Realismo'
-  }
-]
-
 export default function GalleryPreview() {
   const carouselRef = useRef(null)
-  const [posts, setPosts] = useState(CURATED_GALLERY)
+  const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [lightboxIndex, setLightboxIndex] = useState(null)
 
   useEffect(() => {
     async function loadGallery() {
       try {
+        setLoading(true)
         const supabase = createClient()
         const { data, error } = await supabase
           .from('instagram_cache')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(8)
 
         if (!error && data && data.length > 0) {
           const formatted = data.map(item => {
-            let itemTitle = 'Tatuaje InkedSouh'
+            let itemTitle = 'Obra InkedSouh'
             let itemCategory = 'Tatuaje'
             if (item.permalink) {
               try {
@@ -102,13 +50,13 @@ export default function GalleryPreview() {
               category: itemCategory
             }
           })
-          setPosts([...formatted, ...CURATED_GALLERY])
+          setPosts(formatted)
         } else {
-          setPosts(CURATED_GALLERY)
+          setPosts([])
         }
       } catch (err) {
         console.error('Error loading gallery feed:', err)
-        setPosts(CURATED_GALLERY)
+        setPosts([])
       } finally {
         setLoading(false)
       }
@@ -120,10 +68,10 @@ export default function GalleryPreview() {
   const handleKeyDown = useCallback((e) => {
     if (lightboxIndex === null) return
     if (e.key === 'Escape') setLightboxIndex(null)
-    if (e.key === 'ArrowRight') {
+    if (e.key === 'ArrowRight' && posts.length > 0) {
       setLightboxIndex((prev) => (prev + 1) % posts.length)
     }
-    if (e.key === 'ArrowLeft') {
+    if (e.key === 'ArrowLeft' && posts.length > 0) {
       setLightboxIndex((prev) => (prev - 1 + posts.length) % posts.length)
     }
   }, [lightboxIndex, posts.length])
@@ -158,7 +106,7 @@ export default function GalleryPreview() {
     visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 100 } }
   }
 
-  const currentItem = lightboxIndex !== null ? posts[lightboxIndex] : null
+  const currentItem = lightboxIndex !== null && posts[lightboxIndex] ? posts[lightboxIndex] : null
 
   return (
     <section className={styles.section} id="galeria-preview">
@@ -190,7 +138,7 @@ export default function GalleryPreview() {
             <button className={`${styles.navBtn} interactive magnetic`} onClick={scrollRight} aria-label="Siguiente">
               <ArrowRight size={18} />
             </button>
-            <span className={styles.counter}>{posts.length > 0 ? `01 / ${String(posts.length).padStart(2, '0')}` : '...'}</span>
+            <span className={styles.counter}>{posts.length > 0 ? `01 / ${String(posts.length).padStart(2, '0')}` : '00 / 00'}</span>
           </div>
 
           <Link
@@ -202,33 +150,56 @@ export default function GalleryPreview() {
           </Link>
         </motion.div>
 
-        <motion.div 
-          className={styles.carouselWrap}
-          variants={containerVars}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-        >
+        {loading ? (
+          <div className={styles.carousel}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className={`${styles.card} bracket-borders scanlines`}>
+                <div className={styles.placeholder} />
+                <div className={styles.cardFooter}>
+                  <span className={styles.cardNumber}>--</span>
+                  <div className={styles.cardLine}></div>
+                  <span className={styles.cardLabel}>CARGANDO...</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : posts.length === 0 ? (
+          <div className={styles.emptyGalleryBanner}>
+            <div className={styles.emptyIconWrap}>
+              <ImageIcon size={44} style={{ color: '#ff2a3d' }} />
+            </div>
+            <h3>Portafolio en Actualización</h3>
+            <p>El artista está subiendo nuevos trabajos y sesiones de tatuaje. Puedes seguir las publicaciones diarias en Instagram o cotizar tu cita.</p>
+            <div className={styles.emptyActions}>
+              <a 
+                href="https://www.instagram.com/inked.tto/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={styles.btnEmptyIg}
+              >
+                Seguir @inked.tto
+              </a>
+              <Link href="/reservar" className={styles.btnEmptyBook}>
+                Agendar Cita
+              </Link>
+            </div>
+          </div>
+        ) : (
           <motion.div 
-            className={styles.carousel} 
-            ref={carouselRef}
-            drag="x"
-            dragConstraints={{ left: -1000, right: 0 }}
-            whileTap={{ cursor: "grabbing" }}
+            className={styles.carouselWrap}
+            variants={containerVars}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
           >
-            {loading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <motion.div key={i} className={`${styles.card} bracket-borders scanlines`} variants={itemVars}>
-                  <div className={styles.placeholder} />
-                  <div className={styles.cardFooter}>
-                    <span className={styles.cardNumber}>--</span>
-                    <div className={styles.cardLine}></div>
-                    <span className={styles.cardLabel}>CARGANDO...</span>
-                  </div>
-                </motion.div>
-              ))
-            ) : (
-              posts.map((post, index) => (
+            <motion.div 
+              className={styles.carousel} 
+              ref={carouselRef}
+              drag="x"
+              dragConstraints={{ left: -1000, right: 0 }}
+              whileTap={{ cursor: "grabbing" }}
+            >
+              {posts.map((post, index) => (
                 <div 
                   key={post.id || index} 
                   className={`${styles.card} bracket-borders scanlines interactive magnetic`}
@@ -244,16 +215,12 @@ export default function GalleryPreview() {
                       src={post.mediaUrl} 
                       alt={post.caption || 'Galería de Tatuajes'} 
                       className={styles.igMedia}
-                      onError={(e) => {
-                        // Fallback in case of external network issues
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?q=80&w=800&auto=format&fit=crop'
-                      }}
                     />
                   )}
                   
                   <div className={styles.hoverOverlay}>
                     <div className={styles.hoverAction}>
-                      <Eye size={20} />
+                      <Eye size={18} />
                       <span>Ver Obra</span>
                     </div>
                   </div>
@@ -266,10 +233,10 @@ export default function GalleryPreview() {
                     </span>
                   </div>
                 </div>
-              ))
-            )}
+              ))}
+            </motion.div>
           </motion.div>
-        </motion.div>
+        )}
 
       </div>
 
@@ -292,27 +259,31 @@ export default function GalleryPreview() {
             </button>
 
             {/* Nav Arrows */}
-            <button 
-              className={`${styles.lightboxNavBtn} ${styles.lightboxPrev}`} 
-              onClick={(e) => {
-                e.stopPropagation()
-                setLightboxIndex((prev) => (prev - 1 + posts.length) % posts.length)
-              }}
-              aria-label="Foto anterior"
-            >
-              <ChevronLeft size={28} />
-            </button>
+            {posts.length > 1 && (
+              <>
+                <button 
+                  className={`${styles.lightboxNavBtn} ${styles.lightboxPrev}`} 
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setLightboxIndex((prev) => (prev - 1 + posts.length) % posts.length)
+                  }}
+                  aria-label="Foto anterior"
+                >
+                  <ChevronLeft size={28} />
+                </button>
 
-            <button 
-              className={`${styles.lightboxNavBtn} ${styles.lightboxNext}`} 
-              onClick={(e) => {
-                e.stopPropagation()
-                setLightboxIndex((prev) => (prev + 1) % posts.length)
-              }}
-              aria-label="Siguiente foto"
-            >
-              <ChevronRight size={28} />
-            </button>
+                <button 
+                  className={`${styles.lightboxNavBtn} ${styles.lightboxNext}`} 
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setLightboxIndex((prev) => (prev + 1) % posts.length)
+                  }}
+                  aria-label="Siguiente foto"
+                >
+                  <ChevronRight size={28} />
+                </button>
+              </>
+            )}
 
             <motion.div 
               className={styles.lightboxContent}

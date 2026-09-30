@@ -1,7 +1,7 @@
 'use client'
-// Página de galería pública sincronizada con Supabase e Instagram
+// Página de galería pública sincronizada directamente con las subidas del administrador
 import { useState, useEffect, useCallback } from 'react'
-import { X, Heart, ExternalLink, ChevronLeft, ChevronRight, Filter, Sparkles } from 'lucide-react'
+import { X, Heart, ExternalLink, ChevronLeft, ChevronRight, Image as ImageIcon, Sparkles } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import SectionTitle from '@/components/ui/SectionTitle'
@@ -9,68 +9,9 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import styles from './galeria.module.css'
 
-const CURATED_WORKS = [
-  {
-    id: 'art-1',
-    media_url: 'https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?q=80&w=1200&auto=format&fit=crop',
-    media_type: 'IMAGE',
-    caption: 'Realismo Sombras & Máscara Samurai Tradicional',
-    category: 'Realismo'
-  },
-  {
-    id: 'art-2',
-    media_url: 'https://images.unsplash.com/photo-1562962230-16e4623d36e6?q=80&w=1200&auto=format&fit=crop',
-    media_type: 'IMAGE',
-    caption: 'Blackwork Floral & Botánica de Alta Definición',
-    category: 'Blackwork'
-  },
-  {
-    id: 'art-3',
-    media_url: 'https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?q=80&w=1200&auto=format&fit=crop',
-    media_type: 'IMAGE',
-    caption: 'Fine Line & Cobertura Integral de Espalda',
-    category: 'Fine Line'
-  },
-  {
-    id: 'art-4',
-    media_url: 'https://images.unsplash.com/photo-1542382257-80dedb725088?q=80&w=1200&auto=format&fit=crop',
-    media_type: 'IMAGE',
-    caption: 'Lettering Gótico & Tipografía Personalizada',
-    category: 'Lettering'
-  },
-  {
-    id: 'art-5',
-    media_url: 'https://images.unsplash.com/photo-1597852074816-d933c7d2b988?q=80&w=1200&auto=format&fit=crop',
-    media_type: 'IMAGE',
-    caption: 'Neotradicional & Ilustración de Alto Contraste',
-    category: 'Neotradicional'
-  },
-  {
-    id: 'art-6',
-    media_url: 'https://images.unsplash.com/photo-1560707303-4e980ce876ad?q=80&w=1200&auto=format&fit=crop',
-    media_type: 'IMAGE',
-    caption: 'Geometría Sagrada & Puntillismo de Precisión',
-    category: 'Blackwork'
-  },
-  {
-    id: 'art-7',
-    media_url: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=1200&auto=format&fit=crop',
-    media_type: 'IMAGE',
-    caption: 'Arte Conceptual & Escultura Clásica',
-    category: 'Realismo'
-  },
-  {
-    id: 'art-8',
-    media_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1200&auto=format&fit=crop',
-    media_type: 'IMAGE',
-    caption: 'Retrato Hiperrealista & Texturas',
-    category: 'Realismo'
-  }
-]
-
 export default function GaleriaPage() {
   const [lightboxIndex, setLightboxIndex] = useState(null)
-  const [posts, setPosts] = useState(CURATED_WORKS)
+  const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('Todos')
 
@@ -111,13 +52,13 @@ export default function GaleriaPage() {
               category: itemCategory
             }
           })
-          setPosts([...dbItems, ...CURATED_WORKS])
+          setPosts(dbItems)
         } else {
-          setPosts(CURATED_WORKS)
+          setPosts([])
         }
       } catch (err) {
         console.error('Error al cargar la galería:', err)
-        setPosts(CURATED_WORKS)
+        setPosts([])
       } finally {
         setLoading(false)
       }
@@ -125,22 +66,23 @@ export default function GaleriaPage() {
     loadGallery()
   }, [])
 
-  // Categories list
-  const categories = ['Todos', 'Blackwork', 'Lettering', 'Realismo', 'Fine Line', 'Neotradicional']
+  // Dynamic unique categories from uploaded works
+  const dynamicCategories = Array.from(new Set(posts.map(p => p.category).filter(Boolean)))
+  const categories = ['Todos', ...dynamicCategories]
 
   const filteredPosts = posts.filter(post => {
     if (activeCategory === 'Todos') return true
     return (post.category || '').toLowerCase() === activeCategory.toLowerCase()
   })
 
-  // Keyboard navigation
+  // Keyboard navigation for Lightbox
   const handleKeyDown = useCallback((e) => {
     if (lightboxIndex === null) return
     if (e.key === 'Escape') setLightboxIndex(null)
-    if (e.key === 'ArrowRight') {
+    if (e.key === 'ArrowRight' && filteredPosts.length > 0) {
       setLightboxIndex((prev) => (prev + 1) % filteredPosts.length)
     }
-    if (e.key === 'ArrowLeft') {
+    if (e.key === 'ArrowLeft' && filteredPosts.length > 0) {
       setLightboxIndex((prev) => (prev - 1 + filteredPosts.length) % filteredPosts.length)
     }
   }, [lightboxIndex, filteredPosts.length])
@@ -150,14 +92,14 @@ export default function GaleriaPage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])
 
-  const activeItem = lightboxIndex !== null ? filteredPosts[lightboxIndex] : null
+  const activeItem = lightboxIndex !== null && filteredPosts[lightboxIndex] ? filteredPosts[lightboxIndex] : null
 
   return (
     <>
       <Navbar />
       <main className={styles.page}>
         <div className={styles.header}>
-          <SectionTitle subtitle="Portafolio de Tatuajes y Obras de Arte">GALERÍA MULTIMEDIA</SectionTitle>
+          <SectionTitle subtitle="Portafolio Oficial de Tatuajes y Obras">GALERÍA MULTIMEDIA</SectionTitle>
           <a
             href="https://www.instagram.com/inked.tto/"
             target="_blank"
@@ -170,27 +112,52 @@ export default function GaleriaPage() {
           </a>
         </div>
 
-        {/* Categories Bar */}
-        <div className={styles.categoryBar}>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setActiveCategory(cat)
-                setLightboxIndex(null)
-              }}
-              className={`${styles.catBtn} ${activeCategory === cat ? styles.catBtnActive : ''}`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        {/* Categories Bar (solo se muestra si hay categorías creadas) */}
+        {categories.length > 1 && (
+          <div className={styles.categoryBar}>
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => {
+                  setActiveCategory(cat)
+                  setLightboxIndex(null)
+                }}
+                className={`${styles.catBtn} ${activeCategory === cat ? styles.catBtnActive : ''}`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Grid de Galería */}
         {loading ? (
           <div className={styles.loadingBox}>
             <div className={styles.spinner} />
             <p>Cargando portafolio de arte...</p>
+          </div>
+        ) : posts.length === 0 ? (
+          <div className={styles.emptyGalleryBox}>
+            <div className={styles.emptyIconWrap}>
+              <ImageIcon size={48} style={{ color: '#ff2a3d' }} />
+            </div>
+            <h3>Portafolio en Actualización</h3>
+            <p>
+              Próximamente se publicarán nuevas fotografías de sesiones y piezas de tatuaje exclusivas.
+            </p>
+            <div className={styles.emptyActions}>
+              <a 
+                href="https://www.instagram.com/inked.tto/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={styles.btnEmptyIg}
+              >
+                Ver Trabajos en Instagram
+              </a>
+              <Link href="/reservar" className={styles.btnEmptyBook}>
+                Agendar Cita
+              </Link>
+            </div>
           </div>
         ) : (
           <div className={styles.grid}>
@@ -207,15 +174,12 @@ export default function GaleriaPage() {
                     src={post.media_url} 
                     alt={post.caption || "Portafolio InkedSouh"} 
                     className={styles.mediaImg}
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?q=80&w=800&auto=format&fit=crop'
-                    }}
                   />
                 )}
                 
                 <div className={styles.overlay}>
                   <div className={styles.stats}>
-                    <span className={styles.stat}><Heart size={16} /> Ver Detalle</span>
+                    <span className={styles.stat}><Heart size={16} /> Ver Obra</span>
                   </div>
                   <span className={styles.itemCaption}>{post.caption}</span>
                 </div>

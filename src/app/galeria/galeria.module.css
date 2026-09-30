@@ -357,3 +357,86 @@
   .catBtn { white-space: nowrap; }
   .lightboxFooter { flex-direction: column; align-items: flex-start; }
 }
+
+/* Empty Gallery Box */
+.emptyGalleryBox {
+  background: #0a0a0e;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 60px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 580px;
+  margin: 40px auto;
+}
+
+.emptyIconWrap {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: rgba(255, 42, 61, 0.1);
+  border: 1px solid rgba(255, 42, 61, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.emptyGalleryBox h3 {
+  color: #ffffff;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.emptyGalleryBox p {
+  color: #a0a0ab;
+  font-size: 0.9rem;
+  max-width: 460px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.emptyActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.btnEmptyIg {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btnEmptyIg:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.btnEmptyBook {
+  background: #ff2a3d;
+  color: #ffffff;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btnEmptyBook:hover {
+  background: #e02435;
+}
+
