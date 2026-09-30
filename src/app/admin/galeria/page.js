@@ -28,13 +28,18 @@ export default function MultimediaPage() {
 
   const fetchBioPhoto = async () => {
     const { data } = await supabase
-      .from('site_settings')
+      .from('site_config')
       .select('value')
-      .eq('key', 'artist_photo')
-      .single()
+      .eq('key_name', 'artist_photo')
+      .maybeSingle()
     
     if (data && data.value) {
-      setBioPhotoUrl(data.value.url)
+      try {
+        const parsed = JSON.parse(data.value)
+        setBioPhotoUrl(parsed.url || data.value)
+      } catch {
+        setBioPhotoUrl(data.value)
+      }
     }
   }
 
@@ -76,12 +81,13 @@ export default function MultimediaPage() {
         .getPublicUrl(filePath)
 
       const { error: settingsError } = await supabase
-        .from('site_settings')
+        .from('site_config')
         .upsert({ 
-          key: 'artist_photo', 
-          value: { url: publicUrl },
-          updated_at: new Date()
-        }, { onConflict: 'key' })
+          section: 'Biografía & Artista',
+          key_name: 'artist_photo', 
+          value: publicUrl,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key_name' })
 
       if (settingsError) throw settingsError
 

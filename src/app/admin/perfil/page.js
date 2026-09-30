@@ -29,13 +29,18 @@ export default function PerfilPage() {
 
   const fetchAdminAvatar = async () => {
     const { data } = await supabase
-      .from('site_settings')
+      .from('site_config')
       .select('value')
-      .eq('key', 'admin_avatar_photo')
-      .single()
+      .eq('key_name', 'admin_avatar_photo')
+      .maybeSingle()
     
     if (data && data.value) {
-      setPhotoUrl(data.value.url)
+      try {
+        const parsed = JSON.parse(data.value)
+        setPhotoUrl(parsed.url || data.value)
+      } catch {
+        setPhotoUrl(data.value)
+      }
     }
   }
 
@@ -83,12 +88,13 @@ export default function PerfilPage() {
         .getPublicUrl(filePath)
 
       const { error: settingsError } = await supabase
-        .from('site_settings')
+        .from('site_config')
         .upsert({ 
-          key: 'admin_avatar_photo', 
-          value: { url: publicUrl },
-          updated_at: new Date()
-        }, { onConflict: 'key' })
+          section: 'Perfil Admin',
+          key_name: 'admin_avatar_photo', 
+          value: publicUrl,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key_name' })
 
       if (settingsError) throw settingsError
 

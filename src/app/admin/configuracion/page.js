@@ -4,46 +4,104 @@ import { createClient } from '@/lib/supabase/client'
 import { 
   Save, RefreshCw, Plus, Search, Check, AlertCircle, 
   Trash2, RotateCcw, Sliders, Globe, Sparkles, Layout, 
-  MessageSquare, Share2, HelpCircle, Eye, EyeOff, Layers,
-  ExternalLink, CheckCheck
+  MessageSquare, Share2, UploadCloud, Layers,
+  CheckCheck, User, Calendar
 } from 'lucide-react'
 import styles from './configuracion.module.css'
 
-// Default seed configurations in case the database is empty
-const DEFAULT_CONFIGS = [
-  { section: 'Inicio', key_name: 'hero_badge', value: 'TATTOO STUDIO & TATTOO SUPPLIES' },
-  { section: 'Inicio', key_name: 'hero_title', value: 'ARTE EN TU PIEL' },
-  { section: 'Inicio', key_name: 'hero_subtitle', value: 'Cada tatuaje es una historia única, creada con pasión, higiene y precisión quirúrgica.' },
-  { section: 'Inicio', key_name: 'hero_bio', value: 'Artista del tatuaje especializado en Blackwork y Lettering en Rancagua. Con años de experiencia transformando tus ideas en obras maestras permanentes.' },
-  { section: 'Llamados a la Acción', key_name: 'cta_title', value: 'AGENDA TU CITA EXCLUSIVA' },
-  { section: 'Llamados a la Acción', key_name: 'cta_subtitle', value: 'Reserva tu sesión de tatuaje de forma rápida y sencilla con nuestro sistema en tiempo real.' },
-  { section: 'Llamados a la Acción', key_name: 'cta_button_text', value: 'RESERVAR SESIÓN AHORA' },
-  { section: 'Contacto & Redes', key_name: 'contact_instagram_handle', value: '@inked.tto' },
-  { section: 'Contacto & Redes', key_name: 'contact_instagram_url', value: 'https://www.instagram.com/inked.tto/' },
-  { section: 'Contacto & Redes', key_name: 'contact_whatsapp', value: '+56 9 1234 5678' },
-  { section: 'Contacto & Redes', key_name: 'contact_address', value: 'Rancagua, Región de O\'Higgins, Chile' },
-  { section: 'Footer & Legal', key_name: 'footer_description', value: 'Estudio profesional de tatuajes y academia de formación artística en Rancagua. Calidad premium y bioseguridad certificada.' },
-  { section: 'Footer & Legal', key_name: 'footer_copyright', value: '© 2026 INKED TATTOO STUDIO. Todos los derechos reservados.' }
+// Standard essential site configurations
+const ESSENTIAL_CONFIGS = [
+  { 
+    section: 'Biografía & Artista', 
+    key_name: 'hero_bio', 
+    value: 'Artista del tatuaje especializado en Blackwork y Lettering en Rancagua. Con años de experiencia transformando tus ideas en obras maestras permanentes y personalizadas.',
+    friendly_label: 'Biografía y Descripción del Artista'
+  },
+  { 
+    section: 'Biografía & Artista', 
+    key_name: 'artist_photo', 
+    value: '',
+    friendly_label: 'Fotografía Oficial del Artista (URL o subida)'
+  },
+  { 
+    section: 'Agendar Cita', 
+    key_name: 'cta_title', 
+    value: 'AGENDA TU CITA EXCLUSIVA',
+    friendly_label: 'Título Principal del Banner de Agendamiento'
+  },
+  { 
+    section: 'Agendar Cita', 
+    key_name: 'cta_subtitle', 
+    value: 'Reserva tu sesión de tatuaje de forma rápida y sencilla. Selecciona el estilo, elige la fecha en nuestro calendario y prepárate para llevar arte único en tu piel.',
+    friendly_label: 'Subtítulo / Texto Explicativo de Agendar Cita'
+  },
+  { 
+    section: 'Agendar Cita', 
+    key_name: 'cta_button_text', 
+    value: 'RESERVAR SESIÓN AHORA',
+    friendly_label: 'Texto del Botón de Reserva'
+  },
+  { 
+    section: 'Inicio & Hero', 
+    key_name: 'hero_badge', 
+    value: 'TATTOO STUDIO & TATTOO SUPPLIES',
+    friendly_label: 'Insignia / Badge Superior del Hero'
+  },
+  { 
+    section: 'Inicio & Hero', 
+    key_name: 'hero_title', 
+    value: 'ARTE EN TU PIEL',
+    friendly_label: 'Título Principal del Hero'
+  },
+  { 
+    section: 'Inicio & Hero', 
+    key_name: 'hero_subtitle', 
+    value: 'Cada tatuaje es una historia única, creada con pasión, higiene y precisión quirúrgica.',
+    friendly_label: 'Subtítulo del Hero'
+  },
+  { 
+    section: 'Contacto & Redes', 
+    key_name: 'contact_instagram_handle', 
+    value: '@inked.tto',
+    friendly_label: 'Usuario de Instagram'
+  },
+  { 
+    section: 'Contacto & Redes', 
+    key_name: 'contact_instagram_url', 
+    value: 'https://www.instagram.com/inked.tto/',
+    friendly_label: 'Enlace Directo a Instagram'
+  },
+  { 
+    section: 'Contacto & Redes', 
+    key_name: 'contact_whatsapp', 
+    value: '+56 9 3025 4425',
+    friendly_label: 'Número de WhatsApp Oficial'
+  },
+  { 
+    section: 'Contacto & Redes', 
+    key_name: 'contact_address', 
+    value: 'Rancagua, Región de O\'Higgins, Chile',
+    friendly_label: 'Dirección o Ubicación del Estudio'
+  },
+  { 
+    section: 'Footer & Legal', 
+    key_name: 'footer_description', 
+    value: 'Estudio profesional de tatuajes y academia de formación artística en Rancagua. Calidad premium y bioseguridad certificada.',
+    friendly_label: 'Descripción del Pie de Página (Footer)'
+  },
+  { 
+    section: 'Footer & Legal', 
+    key_name: 'footer_copyright', 
+    value: '© 2026 INKEDSOUH TATTOO STUDIO. Todos los derechos reservados.',
+    friendly_label: 'Texto de Derechos Reservados (Copyright)'
+  }
 ]
 
-// Friendly label helper
+// Friendly label resolver
 const getFriendlyKeyLabel = (keyName) => {
-  const map = {
-    hero_badge: 'Insignia / Badge Superior del Hero',
-    hero_title: 'Título Principal del Hero',
-    hero_subtitle: 'Subtítulo del Hero',
-    hero_bio: 'Biografía / Descripción del Artista',
-    cta_title: 'Título del Banner de Agendamiento',
-    cta_subtitle: 'Subtítulo del Banner de Agendamiento',
-    cta_button_text: 'Texto del Botón de Reserva',
-    contact_instagram_handle: 'Usuario de Instagram',
-    contact_instagram_url: 'Enlace Directo de Instagram',
-    contact_whatsapp: 'Número de WhatsApp',
-    contact_address: 'Dirección o Ubicación del Estudio',
-    footer_description: 'Descripción del Pie de Página (Footer)',
-    footer_copyright: 'Texto de Derechos Reservados (Copyright)'
-  }
-  return map[keyName] || keyName.replace(/_/g, ' ').toUpperCase()
+  const found = ESSENTIAL_CONFIGS.find(c => c.key_name === keyName)
+  if (found && found.friendly_label) return found.friendly_label
+  return keyName.replace(/_/g, ' ').toUpperCase()
 }
 
 export default function ConfiguracionPage() {
@@ -52,21 +110,22 @@ export default function ConfiguracionPage() {
   const [loading, setLoading] = useState(true)
   const [savingId, setSavingId] = useState(null)
   const [savingAll, setSavingAll] = useState(false)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
   
   // Search & Filter
   const [search, setSearch] = useState('')
   const [selectedSection, setSelectedSection] = useState('all')
-  const [showLivePreview, setShowLivePreview] = useState(true)
 
   // New config modal
   const [modalOpen, setModalOpen] = useState(false)
-  const [newSection, setNewSection] = useState('Inicio')
+  const [newSection, setNewSection] = useState('Biografía & Artista')
   const [newKey, setNewKey] = useState('')
   const [newValue, setNewValue] = useState('')
 
   // Toast
   const [toast, setToast] = useState(null)
   const searchInputRef = useRef(null)
+  const photoInputRef = useRef(null)
   const supabase = createClient()
 
   const showToast = (message, type = 'success') => {
@@ -78,7 +137,7 @@ export default function ConfiguracionPage() {
     fetchConfigs()
   }, [])
 
-  // Keyboard shortcut for saving changes (Ctrl+S)
+  // Keyboard shortcut (Ctrl+S to save)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
@@ -98,14 +157,42 @@ export default function ConfiguracionPage() {
         .select('*')
         .order('section', { ascending: true })
       
+      let merged = []
       if (!error && data) {
-        setConfigs(data)
-        setOriginalConfigs(JSON.parse(JSON.stringify(data)))
-      } else if (error) {
-        console.error('Error fetching site_config:', error)
+        // Start with fetched data
+        merged = [...data]
+        
+        // Ensure all essential configs exist in the state
+        ESSENTIAL_CONFIGS.forEach(essential => {
+          const exists = merged.find(m => m.key_name === essential.key_name)
+          if (!exists) {
+            merged.push({
+              id: `temp-${essential.key_name}`,
+              section: essential.section,
+              key_name: essential.key_name,
+              value: essential.value
+            })
+          }
+        })
+      } else {
+        merged = ESSENTIAL_CONFIGS.map((e, idx) => ({
+          id: `temp-${e.key_name}-${idx}`,
+          section: e.section,
+          key_name: e.key_name,
+          value: e.value
+        }))
       }
+
+      setConfigs(merged)
+      setOriginalConfigs(JSON.parse(JSON.stringify(merged)))
     } catch (err) {
       console.error('Fetch exception:', err)
+      setConfigs(ESSENTIAL_CONFIGS.map((e, idx) => ({
+        id: `temp-${e.key_name}-${idx}`,
+        section: e.section,
+        key_name: e.key_name,
+        value: e.value
+      })))
     } finally {
       setLoading(false)
     }
@@ -113,9 +200,9 @@ export default function ConfiguracionPage() {
 
   // Check which configs have unsaved modifications
   const modifiedMap = configs.reduce((acc, c) => {
-    const orig = originalConfigs.find(o => o.id === c.id)
+    const orig = originalConfigs.find(o => o.key_name === c.key_name)
     if (orig && orig.value !== c.value) {
-      acc[c.id] = true
+      acc[c.key_name] = true
     }
     return acc
   }, {})
@@ -123,22 +210,62 @@ export default function ConfiguracionPage() {
   const modifiedCount = Object.keys(modifiedMap).length
 
   // Update field value locally
-  const handleChange = (id, value) => {
-    setConfigs(configs.map(c => c.id === id ? { ...c, value } : c))
+  const handleChange = (key_name, value) => {
+    setConfigs(configs.map(c => c.key_name === key_name ? { ...c, value } : c))
   }
 
-  // Save single configuration row
-  const handleUpdate = async (id, newValue) => {
-    setSavingId(id)
+  // Upload artist photo directly
+  const handleUploadArtistPhoto = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingPhoto(true)
     try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `artist_bio_${Date.now()}.${fileExt}`
+      const filePath = `profile/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('admin_uploads')
+        .upload(filePath, file, { cacheControl: '3600', upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('admin_uploads')
+        .getPublicUrl(filePath)
+
+      handleChange('artist_photo', publicUrl)
+      await handleUpdate('artist_photo', publicUrl)
+      showToast('¡Foto del artista subida y guardada exitosamente!')
+    } catch (err) {
+      showToast('Error al subir foto: ' + err.message, 'error')
+    } finally {
+      setUploadingPhoto(false)
+    }
+  }
+
+  // Save single configuration row (with upsert)
+  const handleUpdate = async (key_name, newValue) => {
+    setSavingId(key_name)
+    try {
+      const item = configs.find(c => c.key_name === key_name)
+      const section = item?.section || 'General'
+
+      const payload = {
+        section,
+        key_name,
+        value: newValue,
+        updated_at: new Date().toISOString()
+      }
+
       const { error } = await supabase
         .from('site_config')
-        .update({ value: newValue, updated_at: new Date().toISOString() })
-        .eq('id', id)
+        .upsert(payload, { onConflict: 'key_name' })
         
       if (!error) {
-        setOriginalConfigs(prev => prev.map(o => o.id === id ? { ...o, value: newValue } : o))
-        showToast('Texto guardado y sincronizado con éxito')
+        setOriginalConfigs(prev => prev.map(o => o.key_name === key_name ? { ...o, value: newValue } : o))
+        showToast(`"${getFriendlyKeyLabel(key_name)}" guardado y sincronizado`)
       } else {
         showToast('Error al guardar: ' + error.message, 'error')
       }
@@ -151,7 +278,7 @@ export default function ConfiguracionPage() {
 
   // Save all modified configurations in batch
   const handleSaveAll = async () => {
-    const modifiedItems = configs.filter(c => modifiedMap[c.id])
+    const modifiedItems = configs.filter(c => modifiedMap[c.key_name])
     if (modifiedItems.length === 0) {
       showToast('No hay cambios pendientes por guardar', 'info')
       return
@@ -162,8 +289,12 @@ export default function ConfiguracionPage() {
       for (const item of modifiedItems) {
         await supabase
           .from('site_config')
-          .update({ value: item.value, updated_at: new Date().toISOString() })
-          .eq('id', item.id)
+          .upsert({
+            section: item.section || 'General',
+            key_name: item.key_name,
+            value: item.value,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'key_name' })
       }
       setOriginalConfigs(JSON.parse(JSON.stringify(configs)))
       showToast(`¡Se guardaron ${modifiedItems.length} cambios exitosamente!`)
@@ -175,10 +306,10 @@ export default function ConfiguracionPage() {
   }
 
   // Discard changes for a single item
-  const handleRevertSingle = (id) => {
-    const orig = originalConfigs.find(o => o.id === id)
+  const handleRevertSingle = (key_name) => {
+    const orig = originalConfigs.find(o => o.key_name === key_name)
     if (orig) {
-      setConfigs(configs.map(c => c.id === id ? { ...c, value: orig.value } : c))
+      setConfigs(configs.map(c => c.key_name === key_name ? { ...c, value: orig.value } : c))
       showToast('Cambios revertidos')
     }
   }
@@ -193,10 +324,10 @@ export default function ConfiguracionPage() {
   const handleDelete = async (id, keyName) => {
     if (confirm(`¿Eliminar definitivamente el parámetro "${keyName}"?`)) {
       try {
-        const { error } = await supabase.from('site_config').delete().eq('id', id)
+        const { error } = await supabase.from('site_config').delete().eq('key_name', keyName)
         if (!error) {
-          setConfigs(configs.filter(c => c.id !== id))
-          setOriginalConfigs(originalConfigs.filter(c => c.id !== id))
+          setConfigs(configs.filter(c => c.key_name !== keyName))
+          setOriginalConfigs(originalConfigs.filter(c => c.key_name !== keyName))
           showToast(`Parámetro "${keyName}" eliminado`)
         } else {
           showToast('Error al eliminar: ' + error.message, 'error')
@@ -217,7 +348,6 @@ export default function ConfiguracionPage() {
 
     const cleanKey = newKey.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_')
     
-    // Check if key already exists
     if (configs.some(c => c.key_name.toLowerCase() === cleanKey)) {
       showToast(`La clave "${cleanKey}" ya existe`, 'error')
       return
@@ -250,33 +380,37 @@ export default function ConfiguracionPage() {
     }
   }
 
-  // Seed default configurations if empty
+  // Seed all essential configs
   const handleSeedDefaults = async () => {
-    if (!confirm('¿Deseas insertar los textos predeterminados del estudio? No sobrescribirá los ya existentes.')) {
+    if (!confirm('¿Deseas asegurar y sincronizar todos los textos base del estudio en la base de datos?')) {
       return
     }
 
     try {
       setLoading(true)
       let insertedCount = 0
-      for (const item of DEFAULT_CONFIGS) {
-        const exists = configs.some(c => c.key_name === item.key_name)
-        if (!exists) {
-          const { error } = await supabase.from('site_config').insert([item])
-          if (!error) insertedCount++
-        }
+      for (const item of ESSENTIAL_CONFIGS) {
+        const { error } = await supabase
+          .from('site_config')
+          .upsert({
+            section: item.section,
+            key_name: item.key_name,
+            value: item.value,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'key_name' })
+        if (!error) insertedCount++
       }
-      showToast(`¡Se insertaron ${insertedCount} parámetros iniciales!`)
+      showToast(`¡Se sincronizaron ${insertedCount} parámetros base!`)
       fetchConfigs()
     } catch (err) {
-      showToast('Error al cargar datos predeterminados: ' + err.message, 'error')
+      showToast('Error al sincronizar textos: ' + err.message, 'error')
     } finally {
       setLoading(false)
     }
   }
 
   // Sections extraction
-  const sections = ['all', ...Array.from(new Set(configs.map(c => c.section).filter(Boolean)))]
+  const sections = ['all', 'Biografía & Artista', 'Agendar Cita', 'Inicio & Hero', 'Contacto & Redes', 'Footer & Legal']
 
   // Filtered configs
   const filteredConfigs = configs.filter(config => {
@@ -288,12 +422,6 @@ export default function ConfiguracionPage() {
     const matchSection = selectedSection === 'all' || config.section === selectedSection
     return matchSearch && matchSection
   })
-
-  // Helper to find current value for preview
-  const getConfigVal = (keyName, fallback = '') => {
-    const item = configs.find(c => c.key_name === keyName)
-    return item ? item.value : fallback
-  }
 
   return (
     <div className={styles.container}>
@@ -316,31 +444,21 @@ export default function ConfiguracionPage() {
             <span className={styles.versionBadge}>WEB CONFIG V1.0</span>
             <span className={styles.shortcutTip}>Atajo: Ctrl+S para guardar</span>
           </div>
-          <h1 className={styles.title}>Configuración & Contenidos Web</h1>
+          <h1 className={styles.title}>Configuración & Textos del Sitio</h1>
           <p className={styles.subtitle}>
-            Personaliza en tiempo real los textos, eslóganes, llamados a la acción e información institucional visibles en tu tienda y academia.
+            Modifica en tiempo real la biografía del artista, los llamados para agendar cita, eslóganes e información institucional sincronizada con tu página web.
           </p>
         </div>
 
         <div className={styles.topActions}>
           <button 
             type="button" 
-            onClick={() => setShowLivePreview(!showLivePreview)} 
-            className={`${styles.btnSecondary} ${showLivePreview ? styles.btnActive : ''}`}
-            title="Mostrar / Ocultar Vista Previa del Sitio"
-          >
-            {showLivePreview ? <Eye size={16} /> : <EyeOff size={16} />}
-            <span>{showLivePreview ? 'Ocultar Previa' : 'Ver Previa'}</span>
-          </button>
-
-          <button 
-            type="button" 
             onClick={handleSeedDefaults} 
             className={styles.btnSecondary}
-            title="Cargar catálogo de textos recomendados si faltan valores"
+            title="Sincronizar plantilla de textos base si faltan parámetros"
           >
             <Sparkles size={16} />
-            <span>Cargar Textos Base</span>
+            <span>Sincronizar Textos Base</span>
           </button>
 
           <button 
@@ -365,9 +483,9 @@ export default function ConfiguracionPage() {
         </div>
 
         <div className={styles.metricCard}>
-          <span className={styles.metricLabel}>Secciones Activas</span>
+          <span className={styles.metricLabel}>Secciones Principales</span>
           <div className={styles.metricValueWrap}>
-            <span className={styles.metricValue}>{sections.filter(s => s !== 'all').length}</span>
+            <span className={styles.metricValue}>5 Secciones</span>
             <Layers size={18} className={styles.metricIcon} />
           </div>
         </div>
@@ -383,55 +501,20 @@ export default function ConfiguracionPage() {
         </div>
 
         <div className={styles.metricCard}>
-          <span className={styles.metricLabel}>Estado de Sincronización</span>
+          <span className={styles.metricLabel}>Sincronización Web</span>
           <div className={styles.metricValueWrap}>
-            <span className={`${styles.metricValue} ${styles.textSuccess}`}>En Línea</span>
+            <span className={`${styles.metricValue} ${styles.textSuccess}`}>En Tiempo Real</span>
             <CheckCheck size={18} className={styles.metricIcon} />
           </div>
         </div>
       </div>
-
-      {/* LIVE SIMULATED PREVIEW ACCORDION */}
-      {showLivePreview && (
-        <div className={styles.previewContainer}>
-          <div className={styles.previewHeader}>
-            <div className={styles.previewTitleWrap}>
-              <Sparkles size={16} className={styles.previewIcon} />
-              <h4>Vista Previa en Vivo (Simulador Web)</h4>
-            </div>
-            <span className={styles.previewHint}>Los cambios que edites abajo se reflejan aquí de inmediato</span>
-          </div>
-
-          <div className={styles.previewMockup}>
-            <div className={styles.mockupHero}>
-              <div className={styles.mockupBadge}>
-                {getConfigVal('hero_badge', 'TATTOO STUDIO & TATTOO SUPPLIES')}
-              </div>
-              <h2 className={styles.mockupTitle}>
-                {getConfigVal('hero_title', 'ARTE EN TU PIEL')}
-              </h2>
-              <p className={styles.mockupSubtitle}>
-                {getConfigVal('hero_subtitle', 'Cada tatuaje es una historia única, creada con pasión y precisión.')}
-              </p>
-              <div className={styles.mockupButtons}>
-                <button className={styles.mockupBtnPrimary}>
-                  {getConfigVal('cta_button_text', 'RESERVAR AHORA')}
-                </button>
-                <div className={styles.mockupIgTag}>
-                  {getConfigVal('contact_instagram_handle', '@inked.tto')}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* MODIFIED CHANGES BANNER */}
       {modifiedCount > 0 && (
         <div className={styles.changesStickyBar}>
           <div className={styles.changesInfo}>
             <AlertCircle size={18} className={styles.changesIcon} />
-            <span>Tienes <strong>{modifiedCount}</strong> cambio(s) sin guardar en la configuración web.</span>
+            <span>Tienes <strong>{modifiedCount}</strong> cambio(s) sin guardar en los textos del sitio web.</span>
           </div>
           <div className={styles.changesActions}>
             <button 
@@ -505,22 +588,25 @@ export default function ConfiguracionPage() {
         <div className={styles.emptyState}>
           <Globe size={48} className={styles.emptyIcon} />
           <h3>No se encontraron parámetros</h3>
-          <p>Prueba con otros términos de búsqueda o añade una nueva clave de configuración.</p>
+          <p>Prueba con otros términos de búsqueda o sincroniza los textos base recomendados.</p>
           <button type="button" onClick={handleSeedDefaults} className={styles.btnAdd}>
-            <Sparkles size={16} /> Cargar Textos Recomendados
+            <Sparkles size={16} /> Sincronizar Textos Base
           </button>
         </div>
       ) : (
         <div className={styles.grid}>
           {filteredConfigs.map((config) => {
-            const isDirty = !!modifiedMap[config.id]
-            const isSavingThis = savingId === config.id
-            const isLongText = (config.value || '').length > 70 || (config.value || '').includes('\n')
+            const isDirty = !!modifiedMap[config.key_name]
+            const isSavingThis = savingId === config.key_name
+            const isBio = config.key_name === 'hero_bio'
+            const isCTA = config.key_name.startsWith('cta_')
+            const isPhoto = config.key_name === 'artist_photo'
+            const isLongText = (config.value || '').length > 60 || (config.value || '').includes('\n') || isBio || config.key_name === 'cta_subtitle'
 
             return (
               <div 
-                key={config.id} 
-                className={`${styles.card} ${isDirty ? styles.cardDirty : ''}`}
+                key={config.key_name} 
+                className={`${styles.card} ${isDirty ? styles.cardDirty : ''} ${isBio || isCTA ? styles.cardHighlight : ''}`}
               >
                 <div className={styles.cardHeader}>
                   <div className={styles.cardTitleWrap}>
@@ -536,16 +622,51 @@ export default function ConfiguracionPage() {
                 
                 <div className={styles.formGroup}>
                   <div className={styles.labelRow}>
-                    <label>Contenido del Texto:</label>
+                    <label>
+                      {isBio ? 'Texto de la Biografía del Artista:' : 
+                       isCTA ? 'Texto para el Banner de Agendamiento:' : 
+                       isPhoto ? 'URL o Imagen del Artista:' : 'Contenido del Texto:'}
+                    </label>
                     <span className={styles.charCount}>{(config.value || '').length} caracteres</span>
                   </div>
 
-                  {isLongText ? (
+                  {isPhoto ? (
+                    <div className={styles.photoControlGroup}>
+                      <input 
+                        type="text" 
+                        className={styles.input} 
+                        value={config.value || ''}
+                        onChange={(e) => handleChange(config.key_name, e.target.value)}
+                        placeholder="https://... o sube una imagen desde tu PC"
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => photoInputRef.current?.click()}
+                        className={styles.btnUploadPhoto}
+                        disabled={uploadingPhoto}
+                      >
+                        <UploadCloud size={16} />
+                        <span>{uploadingPhoto ? 'Subiendo...' : 'Subir Foto'}</span>
+                      </button>
+                      <input 
+                        type="file" 
+                        ref={photoInputRef}
+                        accept="image/*"
+                        onChange={handleUploadArtistPhoto}
+                        style={{ display: 'none' }}
+                      />
+                      {config.value && (
+                        <div className={styles.photoPreviewThumb}>
+                          <img src={config.value} alt="Preview artista" />
+                        </div>
+                      )}
+                    </div>
+                  ) : isLongText ? (
                     <textarea 
                       className={`${styles.input} ${styles.textarea}`} 
-                      rows={Math.min(6, Math.max(3, Math.ceil((config.value || '').length / 45)))}
+                      rows={isBio ? 5 : 4}
                       value={config.value || ''}
-                      onChange={(e) => handleChange(config.id, e.target.value)}
+                      onChange={(e) => handleChange(config.key_name, e.target.value)}
                       placeholder="Escribe el texto aquí..."
                     />
                   ) : (
@@ -553,7 +674,7 @@ export default function ConfiguracionPage() {
                       type="text" 
                       className={styles.input} 
                       value={config.value || ''}
-                      onChange={(e) => handleChange(config.id, e.target.value)}
+                      onChange={(e) => handleChange(config.key_name, e.target.value)}
                       placeholder="Escribe el texto aquí..."
                     />
                   )}
@@ -573,7 +694,7 @@ export default function ConfiguracionPage() {
                     {isDirty && (
                       <button 
                         type="button" 
-                        onClick={() => handleRevertSingle(config.id)} 
+                        onClick={() => handleRevertSingle(config.key_name)} 
                         className={styles.btnRevert}
                         title="Descartar cambios en este campo"
                       >
@@ -585,7 +706,7 @@ export default function ConfiguracionPage() {
                   <button 
                     type="button"
                     className={`${styles.btnSave} ${isDirty ? styles.btnSaveHighlight : ''}`} 
-                    onClick={() => handleUpdate(config.id, config.value)}
+                    onClick={() => handleUpdate(config.key_name, config.value)}
                     disabled={isSavingThis || !isDirty}
                   >
                     {isSavingThis ? (
@@ -639,12 +760,12 @@ export default function ConfiguracionPage() {
                   className={styles.input}
                   required
                 >
-                  <option value="Inicio">Inicio (Hero & Bio)</option>
-                  <option value="Llamados a la Acción">Llamados a la Acción (CTA)</option>
+                  <option value="Biografía & Artista">Biografía & Artista</option>
+                  <option value="Agendar Cita">Agendar Cita (CTA)</option>
+                  <option value="Inicio & Hero">Inicio & Hero</option>
                   <option value="Contacto & Redes">Contacto & Redes</option>
                   <option value="Footer & Legal">Footer & Legal</option>
-                  <option value="Tienda">Tienda & Productos</option>
-                  <option value="Academia">Academia & Cursos</option>
+                  <option value="Tienda & Productos">Tienda & Productos</option>
                   <option value="General">General</option>
                 </select>
               </div>

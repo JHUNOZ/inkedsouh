@@ -152,12 +152,6 @@
   color: #ffffff;
 }
 
-.btnActive {
-  background: rgba(255, 42, 61, 0.15) !important;
-  color: #ff2a3d !important;
-  border-color: rgba(255, 42, 61, 0.4) !important;
-}
-
 .btnAdd {
   display: inline-flex;
   align-items: center;
@@ -228,140 +222,6 @@
 
 .textWarning {
   color: #f59e0b !important;
-}
-
-/* LIVE PREVIEW SIMULATOR */
-.previewContainer {
-  background: #0d0d12;
-  border: 1px solid rgba(255, 42, 61, 0.25);
-  border-radius: 14px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-}
-
-.previewContainer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #ff2a3d, transparent 60%);
-}
-
-.previewHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  padding-bottom: 12px;
-}
-
-.previewTitleWrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.previewIcon {
-  color: #ff2a3d;
-}
-
-.previewTitleWrap h4 {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.previewHint {
-  font-size: 0.75rem;
-  color: #a0a0ab;
-}
-
-.previewMockup {
-  background: radial-gradient(circle at 50% 30%, #16161f 0%, #08080c 100%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
-  padding: 40px 24px;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-}
-
-.mockupHero {
-  max-width: 650px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-}
-
-.mockupBadge {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: #ff2a3d;
-  background: rgba(255, 42, 61, 0.1);
-  border: 1px solid rgba(255, 42, 61, 0.3);
-  padding: 4px 14px;
-  border-radius: 20px;
-  text-transform: uppercase;
-}
-
-.mockupTitle {
-  font-family: var(--font-display, sans-serif);
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #ffffff;
-  margin: 0;
-  letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-}
-
-.mockupSubtitle {
-  font-size: 0.95rem;
-  color: #a0a0ab;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.mockupButtons {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.mockupBtnPrimary {
-  background: #ff2a3d;
-  color: #ffffff;
-  border: none;
-  padding: 10px 22px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  cursor: default;
-}
-
-.mockupIgTag {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #e4e4e7;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* CHANGES STICKY BANNER */
@@ -514,6 +374,11 @@
   border-color: rgba(255, 255, 255, 0.12);
 }
 
+.cardHighlight {
+  border-color: rgba(255, 42, 61, 0.25);
+  background: linear-gradient(180deg, rgba(255, 42, 61, 0.03) 0%, #0a0a0e 100%);
+}
+
 .cardDirty {
   border-color: rgba(245, 158, 11, 0.4) !important;
   background: #0f0d0a !important;
@@ -617,7 +482,50 @@
 .textarea {
   resize: vertical;
   line-height: 1.5;
-  min-height: 70px;
+  min-height: 80px;
+}
+
+/* Photo control in card */
+.photoControlGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btnUploadPhoto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnUploadPhoto:hover {
+  background: rgba(255, 42, 61, 0.15);
+  border-color: #ff2a3d;
+  color: #ff8591;
+}
+
+.photoPreviewThumb {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.photoPreviewThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .cardFooter {
@@ -846,11 +754,5 @@
   }
   .title {
     font-size: 1.5rem;
-  }
-  .previewMockup {
-    padding: 24px 14px;
-  }
-  .mockupTitle {
-    font-size: 1.6rem;
   }
 }
