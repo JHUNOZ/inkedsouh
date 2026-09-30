@@ -108,6 +108,33 @@
   flex-wrap: wrap;
 }
 
+.importBtnGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btnHelpQuestion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #8e8e9f;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btnHelpQuestion:hover {
+  background: rgba(255, 42, 61, 0.15);
+  border-color: rgba(255, 42, 61, 0.4);
+  color: #ff8591;
+  transform: scale(1.08);
+}
+
 .btnSecondary {
   display: inline-flex;
   align-items: center;
@@ -170,11 +197,6 @@
   border-radius: 14px;
   padding: 18px 20px;
   backdrop-filter: blur(8px);
-  transition: border-color 0.2s ease;
-}
-
-.metricCard:hover {
-  border-color: rgba(255, 255, 255, 0.14);
 }
 
 .metricLabel {
@@ -419,20 +441,30 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 3px;
-  gap: 2px;
+  gap: 3px;
 }
 
 .viewBtn {
-  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
   border-radius: 7px;
   color: #8e8e9f;
+  font-size: 0.82rem;
+  font-weight: 500;
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
-.viewBtnActive {
-  background: rgba(255, 255, 255, 0.1);
+.viewBtn:hover {
   color: #fff;
+}
+
+.viewBtnActive {
+  background: rgba(255, 42, 61, 0.15);
+  border: 1px solid rgba(255, 42, 61, 0.3);
+  color: #fff !important;
 }
 
 /* Bulk Action Bar */
@@ -969,6 +1001,50 @@
   display: flex;
   align-items: baseline;
   gap: 8px;
+}
+
+/* Help Modal for Import */
+.helpModal {
+  background: #0e0e13;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 580px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+}
+
+.helpModalContent {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  color: #c7c7cc;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.helpSection h4 {
+  font-size: 0.92rem;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.helpSection ul {
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: disc;
+}
+
+.codeBox {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #4ade80;
+  font-family: monospace;
+  font-size: 0.82rem;
 }
 
 /* Product Modal WP Style */

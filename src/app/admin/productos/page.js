@@ -4,10 +4,10 @@ import { createClient } from '@/lib/supabase/client'
 import { 
   Plus, Edit2, Trash2, X, Image as ImageIcon, Search, 
   Layers, UploadCloud, Download, Check, AlertTriangle, 
-  Eye, RefreshCw, Sliders, ChevronDown, CheckSquare, 
+  Eye, RefreshCw, Sliders, CheckSquare, 
   Square, Copy, Sparkles, Zap, Package, ArrowUpDown, Filter,
   Dice5, FileSpreadsheet, PlusCircle, MinusCircle, Clipboard,
-  CheckCheck, ArrowRight, CornerDownRight, Tag
+  CheckCheck, HelpCircle, FileText
 } from 'lucide-react'
 import styles from './productos.module.css'
 
@@ -33,6 +33,9 @@ export default function HoneCatalogPage() {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3500)
   }
+
+  // Help Modal for Import
+  const [showImportHelp, setShowImportHelp] = useState(false)
 
   // Modals & Editors
   const [modalOpen, setModalOpen] = useState(false)
@@ -90,7 +93,6 @@ export default function HoneCatalogPage() {
       catCode = catName.trim().substring(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X')
     }
     
-    // Generate random 4-5 digit number + optional letter to ensure absolute uniqueness
     let attempts = 0
     let candidate = ''
     const existingSkus = new Set(products.map(p => (p.sku || '').toUpperCase()))
@@ -284,7 +286,6 @@ export default function HoneCatalogPage() {
     const newStock = Math.max(0, currentStock + delta)
     if (newStock === currentStock) return
 
-    // Optimistic UI update
     setProducts(products.map(p => p.id === product.id ? { ...p, stock: newStock } : p))
 
     try {
@@ -292,7 +293,6 @@ export default function HoneCatalogPage() {
       if (error) throw error
     } catch (err) {
       console.error('Stock adjust error:', err)
-      // Revert on error
       fetchProducts()
       showToast('Error al actualizar stock', 'error')
     }
@@ -609,7 +609,7 @@ export default function HoneCatalogPage() {
     }
   }
 
-  // Bulk Upload File Handler
+  // Bulk Upload File Handler with stable preservation
   const handleBulkFilesSelect = (e) => {
     const files = Array.from(e.target.files || [])
     if (files.length === 0) return
@@ -621,7 +621,7 @@ export default function HoneCatalogPage() {
         .replace(/\b\w/g, c => c.toUpperCase())
 
       return {
-        id: `temp-${idx}-${Date.now()}`,
+        id: `bulk-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
         file,
         preview: URL.createObjectURL(file),
         name: cleanTitle,
@@ -633,21 +633,21 @@ export default function HoneCatalogPage() {
       }
     })
 
-    setBulkFiles(rows)
+    setBulkFiles(prev => [...prev, ...rows])
   }
 
   const updateBulkRow = (id, field, value) => {
-    setBulkFiles(bulkFiles.map(row => row.id === id ? { ...row, [field]: value } : row))
+    setBulkFiles(prev => prev.map(row => row.id === id ? { ...row, [field]: value } : row))
   }
 
   const regenerateBulkRowSku = (id, category) => {
     const fresh = generateUniqueSKU(category)
-    setBulkFiles(bulkFiles.map(row => row.id === id ? { ...row, sku: fresh } : row))
+    setBulkFiles(prev => prev.map(row => row.id === id ? { ...row, sku: fresh } : row))
     showToast(`Nuevo SKU: ${fresh}`)
   }
 
   const removeBulkRow = (id) => {
-    setBulkFiles(bulkFiles.filter(row => row.id !== id))
+    setBulkFiles(prev => prev.filter(row => row.id !== id))
   }
 
   const processBulkUpload = async () => {
@@ -803,7 +803,7 @@ export default function HoneCatalogPage() {
         <div>
           <div className={styles.badgeRow}>
             <span className={styles.honeBrand}>HONE CATALOG</span>
-            <span className={styles.versionBadge}>ULTRA ENGINE v4.0</span>
+            <span className={styles.versionBadge}>HONE V1.0</span>
             <span className={styles.shortcutTip}>Atajo: Ctrl+K / Ctrl+N</span>
           </div>
           <h1 className={styles.title}>Catálogo & Gestor de Inventario</h1>
@@ -813,17 +813,28 @@ export default function HoneCatalogPage() {
         </div>
 
         <div className={styles.topActions}>
-          <label className={styles.btnSecondary} title="Importar Catálogo (CSV / JSON)">
-            <FileSpreadsheet size={16} />
-            <span>Importar</span>
-            <input 
-              type="file" 
-              ref={importInputRef} 
-              accept=".csv,.json" 
-              onChange={handleImportFileSelect} 
-              style={{ display: 'none' }} 
-            />
-          </label>
+          {/* Import Button with (?) helper */}
+          <div className={styles.importBtnGroup}>
+            <label className={styles.btnSecondary} title="Importar Catálogo (CSV / JSON)">
+              <FileSpreadsheet size={16} />
+              <span>Importar</span>
+              <input 
+                type="file" 
+                ref={importInputRef} 
+                accept=".csv,.json" 
+                onChange={handleImportFileSelect} 
+                style={{ display: 'none' }} 
+              />
+            </label>
+            <button 
+              type="button" 
+              onClick={() => setShowImportHelp(true)} 
+              className={styles.btnHelpQuestion}
+              title="¿Cómo funciona el botón Importar?"
+            >
+              <HelpCircle size={15} />
+            </button>
+          </div>
 
           <button onClick={handleExportJSON} className={styles.btnSecondary} title="Exportar Catálogo en JSON">
             <Download size={16} />
@@ -934,7 +945,7 @@ export default function HoneCatalogPage() {
           <div className={styles.bulkHeader}>
             <div>
               <h3>Carga Masiva de Productos (Drag & Drop Inteligente)</h3>
-              <p>Arrastra varias fotos. El motor HONE generará filas con títulos y SKUs únicos automáticos.</p>
+              <p>Arrastra varias fotos. El motor HONE generará filas con títulos y SKUs únicos automáticos sin desordenar tu lista.</p>
             </div>
             <button className={styles.btnSecondary} onClick={() => setViewMode('table')}>
               Cerrar Carga Masiva
@@ -1143,20 +1154,25 @@ export default function HoneCatalogPage() {
             </select>
           </div>
 
+          {/* View Mode Toggle: Lista (Tabla) vs Galería (Cuadrícula) */}
           <div className={styles.viewModeToggle}>
             <button 
+              type="button"
               onClick={() => setViewMode('table')} 
               className={`${styles.viewBtn} ${viewMode === 'table' ? styles.viewBtnActive : ''}`}
               title="Vista Lista / Tabla WP"
             >
               <Layers size={16} />
+              <span>Lista</span>
             </button>
             <button 
+              type="button"
               onClick={() => setViewMode('grid')} 
               className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.viewBtnActive : ''}`}
-              title="Vista Cuadrícula"
+              title="Vista Cuadrícula / Fotos"
             >
               <ImageIcon size={16} />
+              <span>Fotos</span>
             </button>
           </div>
         </div>
@@ -1435,7 +1451,7 @@ export default function HoneCatalogPage() {
           </table>
         </div>
       ) : (
-        /* GRID VIEW */
+        /* GRID VIEW (VISOR POR FOTOS / TARJETAS) */
         <div className={styles.grid}>
           {filteredProducts.map((product) => (
             <div key={product.id} className={styles.gridCard}>
@@ -1482,6 +1498,59 @@ export default function HoneCatalogPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* HELP MODAL: ¿CÓMO FUNCIONA EL BOTÓN IMPORTAR? */}
+      {showImportHelp && (
+        <div className={styles.modalOverlay} onClick={() => setShowImportHelp(false)}>
+          <div className={styles.helpModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <HelpCircle size={20} style={{ color: '#ff2a3d' }} />
+                <h3 className={styles.modalTitle}>¿Cómo funciona el botón Importar?</h3>
+              </div>
+              <button className={styles.closeModal} onClick={() => setShowImportHelp(false)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className={styles.helpModalContent}>
+              <p>
+                El botón <strong>Importar</strong> te permite cargar catálogos completos en segundos desde un archivo <strong>.CSV</strong> (Excel) o <strong>.JSON</strong> sin tener que ingresar producto por producto.
+              </p>
+
+              <div className={styles.helpSection}>
+                <h4>Formatos Soportados</h4>
+                <ul>
+                  <li><strong>Archivos .JSON:</strong> Array de objetos con las propiedades del producto.</li>
+                  <li><strong>Archivos .CSV:</strong> Tabla separada por comas con cabecera en la primera fila.</li>
+                </ul>
+              </div>
+
+              <div className={styles.helpSection}>
+                <h4>Columnas recomendadas para tu archivo:</h4>
+                <div className={styles.codeBox}>
+                  <code>name, price, stock, category, sku, description, image_url</code>
+                </div>
+              </div>
+
+              <div className={styles.helpSection}>
+                <h4>Características inteligentes de HONE CATALOG:</h4>
+                <ul>
+                  <li>Si no incluyes el <strong>SKU</strong>, el sistema lo <strong>autogenerará de forma aleatoria y única</strong>.</li>
+                  <li>Antes de guardar, verás una <strong>pantalla de previsualización</strong> con todos los datos detectados.</li>
+                  <li>Al hacer clic en <em>&quot;Confirmar e Importar Todos&quot;</em>, se sincronizarán inmediatamente con la tienda web.</li>
+                </ul>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                <button onClick={() => setShowImportHelp(false)} className={styles.btnAdd}>
+                  Entendido
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1681,7 +1750,8 @@ export default function HoneCatalogPage() {
 
                   <div className={styles.formRow}>
                     <div className={styles.formGroup}>
-                      <label>Stock Disponible en Bodega</label>
+                      {/* Changed label from "Stock Disponible en Bodega" to "Stock disponible" */}
+                      <label>Stock disponible</label>
                       <input 
                         type="number" 
                         required 
