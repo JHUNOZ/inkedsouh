@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import SectionTitle from '@/components/ui/SectionTitle'
+import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 import styles from './GalleryPreview.module.css'
 
 export default function GalleryPreview() {
@@ -10,24 +12,40 @@ export default function GalleryPreview() {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Fetch Instagram Feed via Behold
   useEffect(() => {
-    async function loadInstagram() {
+    async function loadGallery() {
       try {
-        const res = await fetch('https://feeds.behold.so/OUKfskH2X1qKx0Z1aVhr')
-        const data = await res.json()
-        if (data.posts && Array.isArray(data.posts)) {
-          setPosts(data.posts.slice(0, 8)) // Últimas 8 fotos
-        } else if (Array.isArray(data)) {
-          setPosts(data.slice(0, 8))
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('instagram_cache')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(8)
+
+        if (!error && data && data.length > 0) {
+          setPosts(data.map(item => ({
+            id: item.id,
+            permalink: item.permalink || item.media_url,
+            mediaUrl: item.media_url,
+            mediaType: item.media_type,
+            caption: 'InkedSouh Tattoo Art'
+          })))
+        } else {
+          // Curated aesthetic fallback portfolio works
+          setPosts([
+            { id: '1', mediaUrl: 'https://images.unsplash.com/photo-1598371839696-5e8bb81c2018?q=80&w=800&auto=format&fit=crop', mediaType: 'IMAGE', caption: 'Realismo Sombras' },
+            { id: '2', mediaUrl: 'https://images.unsplash.com/photo-1562962230-16e4623d36e6?q=80&w=800&auto=format&fit=crop', mediaType: 'IMAGE', caption: 'Blackwork Sleeve' },
+            { id: '3', mediaUrl: 'https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?q=80&w=800&auto=format&fit=crop', mediaType: 'IMAGE', caption: 'Fine Line & Floral' },
+            { id: '4', mediaUrl: 'https://images.unsplash.com/photo-1542382257-80dedb725088?q=80&w=800&auto=format&fit=crop', mediaType: 'IMAGE', caption: 'Lettering & Caligrafía' }
+          ])
         }
       } catch (err) {
-        console.error('Error loading IG feed:', err)
+        console.error('Error loading gallery feed:', err)
       } finally {
         setLoading(false)
       }
     }
-    loadInstagram()
+    loadGallery()
   }, [])
 
   const scrollLeft = () => {
@@ -67,10 +85,10 @@ export default function GalleryPreview() {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
         >
-          <SectionTitle number="01" subtitle="PORTFOLIO">GALERÍA</SectionTitle>
+          <SectionTitle number="01" subtitle="PORTAFOLIO DE TRABAJOS">GALERÍA DE ARTE</SectionTitle>
         </motion.div>
 
-        {/* Controles del Carrusel y Link a IG */}
+        {/* Controles del Carrusel y Link a Galería */}
         <motion.div 
           className={styles.controlsRow}
           initial={{ opacity: 0 }}
@@ -88,15 +106,12 @@ export default function GalleryPreview() {
             <span className={styles.counter}>{posts.length > 0 ? `01 / ${String(posts.length).padStart(2, '0')}` : '...'}</span>
           </div>
 
-          <a
-            href="https://www.instagram.com/inked.tto/"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/galeria"
             className={`${styles.igLink} interactive magnetic`}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
-            <span>+ INSTAGRAM</span>
-          </a>
+            <span>VER GALERÍA COMPLETA</span>
+          </Link>
         </motion.div>
 
         <motion.div 
@@ -121,35 +136,31 @@ export default function GalleryPreview() {
                   <div className={styles.cardFooter}>
                     <span className={styles.cardNumber}>--</span>
                     <div className={styles.cardLine}></div>
-                    <span className={styles.cardLabel}>LOADING...</span>
+                    <span className={styles.cardLabel}>CARGANDO...</span>
                   </div>
                 </motion.div>
               ))
             ) : (
               posts.map((post, index) => (
-                <motion.a 
+                <Link 
                   key={post.id} 
-                  href={post.permalink}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/galeria"
                   className={`${styles.card} bracket-borders scanlines interactive magnetic`}
-                  variants={itemVars}
-                  whileHover={{ scale: 0.98 }}
                 >
                   {post.mediaType === 'VIDEO' ? (
                     <video src={post.mediaUrl} autoPlay muted loop playsInline className={styles.igMedia} />
                   ) : (
-                    <img src={post.mediaUrl} alt={post.caption || 'Instagram Post'} className={styles.igMedia} />
+                    <img src={post.mediaUrl} alt={post.caption || 'Galería de Tatuajes'} className={styles.igMedia} />
                   )}
                   
                   <div className={styles.cardFooter}>
                     <span className={styles.cardNumber}>{String(index + 1).padStart(2, '0')}</span>
                     <div className={styles.cardLine}></div>
                     <span className={styles.cardLabel}>
-                      {post.mediaType === 'VIDEO' ? 'REEL' : 'PORTFOLIO'}
+                      {post.mediaType === 'VIDEO' ? 'REEL' : 'TATUAJE'}
                     </span>
                   </div>
-                </motion.a>
+                </Link>
               ))
             )}
           </motion.div>

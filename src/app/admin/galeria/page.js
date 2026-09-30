@@ -1,25 +1,23 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Upload, Camera, RefreshCw, Trash2, Image as ImageIcon, Video, User } from 'lucide-react'
+import { Upload, Trash2, Image as ImageIcon, Video, User, Check, AlertTriangle, RefreshCw } from 'lucide-react'
 import styles from './galeria.module.css'
 
 export default function MultimediaPage() {
-  const [activeTab, setActiveTab] = useState('bio_photo') // 'bio_photo' | 'gallery_manual' | 'instagram'
+  const [activeTab, setActiveTab] = useState('gallery_manual') // 'gallery_manual' | 'bio_photo'
   const [media, setMedia] = useState([])
   const [loading, setLoading] = useState(true)
-  const [syncing, setSyncing] = useState(false)
 
   // Foto de Biografía Pública
   const [bioPhotoUrl, setBioPhotoUrl] = useState(null)
   const [uploadingBioPhoto, setUploadingBioPhoto] = useState(false)
   const [bioMessage, setBioMessage] = useState(null)
 
-  // Subida Manual Galería
+  // Subida Galería
   const [uploadingMedia, setUploadingMedia] = useState(false)
   const [mediaMessage, setMediaMessage] = useState(null)
   const [mediaType, setMediaType] = useState('IMAGE')
-  const [caption, setCaption] = useState('')
 
   const supabase = createClient()
 
@@ -160,99 +158,42 @@ export default function MultimediaPage() {
     }
   }
 
-  const handleSync = async () => {
-    setSyncing(true)
-    setTimeout(() => {
-      alert('Sincronización automática con Instagram Basic Display API pendiente de configuración de Token.')
-      setSyncing(false)
-    }, 1500)
-  }
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Gestión de Multimedia</h1>
-          <p className={styles.subtitle}>Administra la foto de biografía pública y la galería de la web</p>
+          <h1 className={styles.title}>Gestión de Galería & Multimedia</h1>
+          <p className={styles.subtitle}>Sube y administra directamente los trabajos de tu portafolio y la foto de biografía</p>
         </div>
 
-        {/* Pestanas */}
+        {/* Pestañas */}
         <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-          <button 
-            onClick={() => setActiveTab('bio_photo')}
-            className={styles.btnSync}
-            style={{ background: activeTab === 'bio_photo' ? 'var(--color-red)' : 'rgba(255,255,255,0.05)' }}
-          >
-            <User size={16} /> Foto Biografía Pública
-          </button>
           <button 
             onClick={() => setActiveTab('gallery_manual')}
             className={styles.btnSync}
             style={{ background: activeTab === 'gallery_manual' ? 'var(--color-red)' : 'rgba(255,255,255,0.05)' }}
           >
-            <ImageIcon size={16} /> Galería Manual
+            <ImageIcon size={16} /> Portafolio & Trabajos
           </button>
           <button 
-            onClick={() => setActiveTab('instagram')}
+            onClick={() => setActiveTab('bio_photo')}
             className={styles.btnSync}
-            style={{ background: activeTab === 'instagram' ? 'var(--color-red)' : 'rgba(255,255,255,0.05)' }}
+            style={{ background: activeTab === 'bio_photo' ? 'var(--color-red)' : 'rgba(255,255,255,0.05)' }}
           >
-            <Camera size={16} /> Instagram Graph API
+            <User size={16} /> Foto Biografía Artista
           </button>
         </div>
       </div>
 
-      {/* TAB 1: FOTO DE PERFIL DE BIOGRAFIA PUBLICA */}
-      {activeTab === 'bio_photo' && (
-        <div className={styles.infoBox} style={{ background: 'var(--color-bg-elevated)', flexDirection: 'column', alignItems: 'flex-start' }}>
-          <h3>Foto de Perfil para la Biografía Pública</h3>
-          <p style={{ color: 'var(--color-gray-400)', fontSize: '0.9rem', marginBottom: '20px' }}>
-            Esta foto es la que se muestra en el Hero principal de la web pública (biografía del artista InkedSouh).
-          </p>
-
-          <div style={{ display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ width: '180px', height: '180px', borderRadius: '50%', border: '2px dashed rgba(255,255,255,0.2)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
-              {bioPhotoUrl ? (
-                <img src={bioPhotoUrl} alt="Foto Biografía Artista" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <div style={{ color: '#666', textAlign: 'center', fontSize: '0.8rem' }}>
-                  <Camera size={32} />
-                  <div>Sin Foto</div>
-                </div>
-              )}
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <label className={styles.btnSync} style={{ cursor: 'pointer', background: 'var(--color-red)' }}>
-                <Upload size={16} />
-                {uploadingBioPhoto ? 'Subiendo...' : 'Subir Nueva Foto de Biografía'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleBioPhotoUpload}
-                  disabled={uploadingBioPhoto}
-                  style={{ display: 'none' }}
-                />
-              </label>
-              {bioMessage && (
-                <div style={{ color: bioMessage.type === 'success' ? '#22c55e' : '#ef4444', fontSize: '0.85rem' }}>
-                  {bioMessage.text}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: GALERIA SUBIDA MANUAL */}
+      {/* TAB 1: GALERIA SUBIDA MANUAL */}
       {activeTab === 'gallery_manual' && (
         <div>
           <div className={styles.infoBox} style={{ background: 'var(--color-bg-elevated)', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '30px' }}>
-            <h3>Subir Foto o Reel a la Galería Pública</h3>
+            <h3>Subir Nuevo Trabajo a la Galería</h3>
             <form onSubmit={handleManualMediaUpload} style={{ width: '100%', marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--color-gray-400)', marginBottom: '6px' }}>Tipo de Contenido</label>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--color-gray-400)', marginBottom: '6px' }}>Tipo de Archivo</label>
                   <select 
                     value={mediaType} 
                     onChange={e => setMediaType(e.target.value)}
@@ -293,7 +234,7 @@ export default function MultimediaPage() {
             </form>
           </div>
 
-          <h3 style={{ marginBottom: '15px' }}>Elementos Publicados en Galería ({media.length})</h3>
+          <h3 style={{ marginBottom: '15px' }}>Trabajos Publicados ({media.length})</h3>
 
           {loading ? (
             <div className={styles.loading}>Cargando galería...</div>
@@ -307,13 +248,13 @@ export default function MultimediaPage() {
                 media.map(item => (
                   <div key={item.id} className={styles.card}>
                     {item.media_type === 'VIDEO' ? (
-                      <video src={item.media_url} autoPlay loop muted className={styles.media} />
+                      <video src={item.media_url} autoPlay loop muted playsInline className={styles.media} />
                     ) : (
                       <img src={item.media_url} alt="Galería InkedSouh" className={styles.media} />
                     )}
                     <div className={styles.cardFooter} style={{ justifyContent: 'space-between' }}>
                       <span style={{ fontSize: '0.75rem', color: '#888' }}>
-                        {item.media_type === 'VIDEO' ? 'Reel / Video' : 'Tatuaje / Foto'}
+                        {item.media_type === 'VIDEO' ? 'Video / Reel' : 'Tatuaje / Foto'}
                       </span>
                       <button 
                         onClick={() => handleDeleteMedia(item.id)}
@@ -331,19 +272,44 @@ export default function MultimediaPage() {
         </div>
       )}
 
-      {/* TAB 3: INSTAGRAM GRAPH API */}
-      {activeTab === 'instagram' && (
-        <div>
-          <div className={styles.infoBox}>
-            <Camera size={24} className={styles.igIcon} />
-            <div>
-              <h3>Sincronización con Instagram Graph API</h3>
-              <p>Para importar tus posts automáticamente desde Instagram, ingresa tu Access Token en la configuración o variables de entorno.</p>
+      {/* TAB 2: FOTO DE BIOGRAFIA PUBLICA */}
+      {activeTab === 'bio_photo' && (
+        <div className={styles.infoBox} style={{ background: 'var(--color-bg-elevated)', flexDirection: 'column', alignItems: 'flex-start' }}>
+          <h3>Foto de Perfil para la Biografía Pública</h3>
+          <p style={{ color: 'var(--color-gray-400)', fontSize: '0.9rem', marginBottom: '20px' }}>
+            Esta foto es la que se muestra en la sección de biografía del artista InkedSouh en la web principal.
+          </p>
+
+          <div style={{ display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ width: '180px', height: '180px', borderRadius: '50%', border: '2px dashed rgba(255,255,255,0.2)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
+              {bioPhotoUrl ? (
+                <img src={bioPhotoUrl} alt="Foto Biografía Artista" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ color: '#666', textAlign: 'center', fontSize: '0.8rem' }}>
+                  <ImageIcon size={32} />
+                  <div>Sin Foto</div>
+                </div>
+              )}
             </div>
-            <button onClick={handleSync} className={styles.btnSync} disabled={syncing} style={{ marginLeft: 'auto' }}>
-              <RefreshCw size={18} className={syncing ? styles.spin : ''} />
-              {syncing ? 'Sincronizando...' : 'Sincronizar Ahora'}
-            </button>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <label className={styles.btnSync} style={{ cursor: 'pointer', background: 'var(--color-red)' }}>
+                <Upload size={16} />
+                {uploadingBioPhoto ? 'Subiendo...' : 'Subir Nueva Foto de Biografía'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleBioPhotoUpload}
+                  disabled={uploadingBioPhoto}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              {bioMessage && (
+                <div style={{ color: bioMessage.type === 'success' ? '#22c55e' : '#ef4444', fontSize: '0.85rem' }}>
+                  {bioMessage.text}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
