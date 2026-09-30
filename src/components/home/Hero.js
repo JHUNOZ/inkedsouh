@@ -42,10 +42,12 @@ export default function Hero() {
     offset: ["start start", "end start"]
   })
 
-  // Parallax effects
-  const yBg = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
-  const yText = useTransform(scrollYProgress, [0, 1], ["0%", "100%"])
-  const opacityText = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+  // Cinematic scroll transforms & top darkening
+  const yBg = useTransform(scrollYProgress, [0, 1], ["0%", "35%"])
+  const yText = useTransform(scrollYProgress, [0, 1], ["0%", "60%"])
+  const opacityContent = useTransform(scrollYProgress, [0, 0.5, 0.95], [1, 0.45, 0])
+  const scaleHero = useTransform(scrollYProgress, [0, 1], [1, 0.93])
+  const darkOverlay = useTransform(scrollYProgress, [0, 0.35, 0.8, 1], [0, 0.4, 0.85, 1])
 
   const scrollToNext = () => {
     window.scrollTo({
@@ -86,11 +88,16 @@ export default function Hero() {
 
   return (
     <section className={styles.hero} ref={ref}>
+      {/* Background with Parallax & Particle Glow */}
       <motion.div style={{ y: yBg }} className={styles.bgParallax}>
         <SparklesBg count={45} />
       </motion.div>
 
-      <div className={styles.content}>
+      {/* Main Hero Container that scales and fades smoothly on scroll */}
+      <motion.div 
+        className={styles.content}
+        style={{ scale: scaleHero, opacity: opacityContent }}
+      >
         <motion.div 
           className={styles.inner}
           variants={containerVars}
@@ -117,7 +124,7 @@ export default function Hero() {
           {/* Información con Parallax y Stagger */}
           <motion.div 
             className={styles.info}
-            style={{ y: yText, opacity: opacityText }}
+            style={{ y: yText }}
           >
             <motion.div variants={textLogoVars} className={styles.logoContainer}>
               <h1 className={styles.heroTextLogo}>INKEDSOUH</h1>
@@ -146,7 +153,17 @@ export default function Hero() {
             </motion.div>
           </motion.div>
         </motion.div>
-      </div>
+      </motion.div>
+
+      {/* Dynamic Scroll Darkening Overlay - Elegantly turns black as user scrolls down */}
+      <motion.div 
+        className={styles.scrollDarkOverlay}
+        style={{ opacity: darkOverlay }}
+        aria-hidden="true"
+      />
+
+      {/* Bottom Gradient Transition to next section */}
+      <div className={styles.bottomGradientTransition} />
 
       {/* Flecha de explorar */}
       <motion.div 

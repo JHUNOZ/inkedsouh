@@ -1,7 +1,10 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Upload, Trash2, Image as ImageIcon, Video, User, Check, AlertTriangle, RefreshCw } from 'lucide-react'
+import { 
+  UploadCloud, Trash2, Image as ImageIcon, Video, User, Check, 
+  AlertTriangle, RefreshCw, Plus, Sparkles, Eye, Film, Layers 
+} from 'lucide-react'
 import styles from './galeria.module.css'
 
 export default function MultimediaPage() {
@@ -9,17 +12,28 @@ export default function MultimediaPage() {
   const [media, setMedia] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Foto de Biografía Pública
+  // Subida de Trabajo Individual
+  const [mediaType, setMediaType] = useState('IMAGE') // 'IMAGE' | 'VIDEO'
+  const [category, setCategory] = useState('Blackwork')
+  const [title, setTitle] = useState('')
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
+  const [uploadingMedia, setUploadingMedia] = useState(false)
+
+  // Foto de Biografía
   const [bioPhotoUrl, setBioPhotoUrl] = useState(null)
   const [uploadingBioPhoto, setUploadingBioPhoto] = useState(false)
-  const [bioMessage, setBioMessage] = useState(null)
 
-  // Subida Galería
-  const [uploadingMedia, setUploadingMedia] = useState(false)
-  const [mediaMessage, setMediaMessage] = useState(null)
-  const [mediaType, setMediaType] = useState('IMAGE')
-
+  // Toast
+  const [toast, setToast] = useState(null)
+  const fileInputRef = useRef(null)
+  const bioInputRef = useRef(null)
   const supabase = createClient()
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3500)
+  }
 
   useEffect(() => {
     fetchBioPhoto()
@@ -27,47 +41,151 @@ export default function MultimediaPage() {
   }, [])
 
   const fetchBioPhoto = async () => {
-    const { data } = await supabase
-      .from('site_config')
-      .select('value')
-      .eq('key_name', 'artist_photo')
-      .maybeSingle()
-    
-    if (data && data.value) {
-      try {
-        const parsed = JSON.parse(data.value)
-        setBioPhotoUrl(parsed.url || data.value)
-      } catch {
-        setBioPhotoUrl(data.value)
+    try {
+      const { data } = await supabase
+        .from('site_config')
+        .select('value')
+        .eq('key_name', 'artist_photo')
+        .maybeSingle()
+      
+      if (data && data.value) {
+        try {
+          const parsed = JSON.parse(data.value)
+          setBioPhotoUrl(parsed.url || data.value)
+        } catch {
+          setBioPhotoUrl(data.value)
+        }
       }
+    } catch (err) {
+      console.error('Error fetching bio photo:', err)
     }
   }
 
   const fetchGallery = async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('instagram_cache')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    if (!error && data) {
-      setMedia(data)
+    try {
+      const { data, error } = await supabase
+        .from('instagram_cache')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      if (!error && data) {
+        setMedia(data)
+      }
+    } catch (err) {
+      console.error('Error fetching gallery:', err)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
+  // Handle local file selection with preview
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setSelectedFile(file)
+    setPreviewUrl(URL.createObjectURL(file))
+    
+    // Auto-detect media type if possible
+    if (file.type.startsWith('video/')) {
+      setMediaType('VIDEO')
+    } else {
+      setMediaType('IMAGE')
+    }
+
+    if (!title) {
+      const cleanName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name
+      setTitle(cleanName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()))
+    }
+  }
+
+  // Upload new work
+  const handlePublishWork = async (e) => {
+    e.preventDefault()
+    if (!selectedFile) {
+      showToast('Por favor selecciona una foto o video', 'error')
+      return
+    }
+
+    try {
+      setUploadingMedia(true)
+
+      const fileExt = selectedFile.name.split('.').pop()
+      const cleanFileName = `gallery_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.${fileExt}`
+      const filePath = `gallery/${cleanFileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('admin_uploads')
+        .upload(filePath, selectedFile, { cacheControl: '3600', upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('admin_uploads')
+        .getPublicUrl(filePath)
+
+      // Format title and category in permalink or structured text
+      const workMetadata = JSON.stringify({
+        title: title.trim() || 'Obra InkedSouh',
+        category: category || 'Tatuaje',
+        type: mediaType
+      })
+
+      const { error: dbError } = await supabase
+        .from('instagram_cache')
+        .insert({
+          ig_id: `manual_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          media_url: publicUrl,
+          permalink: workMetadata,
+          media_type: mediaType,
+          created_at: new Date().toISOString()
+        })
+
+      if (dbError) throw dbError
+
+      showToast('¡Obra publicada en la galería y sincronizada con la web!')
+      setSelectedFile(null)
+      setPreviewUrl(null)
+      setTitle('')
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      fetchGallery()
+    } catch (err) {
+      console.error(err)
+      showToast('Error al publicar: ' + err.message, 'error')
+    } finally {
+      setUploadingMedia(false)
+    }
+  }
+
+  // Delete media item
+  const handleDeleteMedia = async (id) => {
+    if (!confirm('¿Deseas eliminar definitivamente este elemento de la galería?')) return
+    try {
+      const { error } = await supabase
+        .from('instagram_cache')
+        .delete()
+        .eq('id', id)
+
+      if (!error) {
+        setMedia(media.filter(m => m.id !== id))
+        showToast('Elemento eliminado de la galería')
+      } else {
+        showToast('Error al eliminar: ' + error.message, 'error')
+      }
+    } catch (err) {
+      showToast('Error al procesar eliminación', 'error')
+    }
+  }
+
+  // Upload Bio Photo
   const handleBioPhotoUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
     try {
       setUploadingBioPhoto(true)
-      setBioMessage(null)
-
-      if (!e.target.files || e.target.files.length === 0) {
-        throw new Error('Debes seleccionar una imagen.')
-      }
-
-      const file = e.target.files[0]
       const fileExt = file.name.split('.').pop()
-      const fileName = `artist-biography-${Date.now()}.${fileExt}`
+      const fileName = `artist_bio_${Date.now()}.${fileExt}`
       const filePath = `profile/${fileName}`
 
       const { error: uploadError } = await supabase.storage
@@ -92,229 +210,330 @@ export default function MultimediaPage() {
       if (settingsError) throw settingsError
 
       setBioPhotoUrl(publicUrl)
-      setBioMessage({ type: 'success', text: '¡Foto de biografía pública actualizada!' })
+      showToast('¡Foto oficial del artista actualizada!')
     } catch (error) {
-      console.error(error)
-      setBioMessage({ type: 'error', text: error.message || 'Error al subir la imagen' })
+      showToast('Error al subir foto: ' + error.message, 'error')
     } finally {
       setUploadingBioPhoto(false)
     }
   }
 
-  const handleManualMediaUpload = async (e) => {
-    e.preventDefault()
-    const fileInput = e.target.elements.mediaFile
-    if (!fileInput.files || fileInput.files.length === 0) {
-      setMediaMessage({ type: 'error', text: 'Por favor selecciona un archivo' })
-      return
+  // Helper to parse item details
+  const getItemDetails = (item) => {
+    let itemTitle = 'Tatuaje InkedSouh'
+    let itemCategory = 'Tatuaje'
+    
+    if (item.permalink) {
+      try {
+        if (item.permalink.startsWith('{')) {
+          const parsed = JSON.parse(item.permalink)
+          if (parsed.title) itemTitle = parsed.title
+          if (parsed.category) itemCategory = parsed.category
+        } else if (!item.permalink.startsWith('http')) {
+          itemTitle = item.permalink
+        }
+      } catch {
+        itemTitle = item.permalink
+      }
     }
 
-    try {
-      setUploadingMedia(true)
-      setMediaMessage(null)
-
-      const file = fileInput.files[0]
-      const fileExt = file.name.split('.').pop()
-      const fileName = `gallery/${Date.now()}-${Math.random().toString(36).substring(2, 6)}.${fileExt}`
-
-      const { error: uploadError } = await supabase.storage
-        .from('admin_uploads')
-        .upload(fileName, file)
-
-      if (uploadError) throw uploadError
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('admin_uploads')
-        .getPublicUrl(fileName)
-
-      const { error: dbError } = await supabase
-        .from('instagram_cache')
-        .insert({
-          ig_id: `manual_${Date.now()}`,
-          media_url: publicUrl,
-          permalink: publicUrl,
-          media_type: mediaType,
-          created_at: new Date()
-        })
-
-      if (dbError) throw dbError
-
-      setMediaMessage({ type: 'success', text: '¡Elemento publicado en la galería!' })
-      e.target.reset()
-      fetchGallery()
-    } catch (err) {
-      console.error(err)
-      setMediaMessage({ type: 'error', text: err.message || 'Error al subir el elemento' })
-    } finally {
-      setUploadingMedia(false)
-    }
-  }
-
-  const handleDeleteMedia = async (id) => {
-    if (!confirm('¿Seguro que deseas eliminar esta foto/video de la galería?')) return
-    const { error } = await supabase
-      .from('instagram_cache')
-      .delete()
-      .eq('id', id)
-
-    if (!error) {
-      fetchGallery()
-    } else {
-      alert('Error al eliminar elemento')
-    }
+    return { title: itemTitle, category: itemCategory }
   }
 
   return (
     <div className={styles.container}>
+      {/* Toast Alert */}
+      {toast && (
+        <div className={`${styles.toast} ${toast.type === 'error' ? styles.toastError : styles.toastSuccess}`}>
+          {toast.type === 'error' ? <AlertTriangle size={18} /> : <Check size={18} />}
+          <span>{toast.message}</span>
+        </div>
+      )}
+
+      {/* Top Header */}
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Gestión de Galería & Multimedia</h1>
-          <p className={styles.subtitle}>Sube y administra directamente los trabajos de tu portafolio y la foto de biografía</p>
+          <div className={styles.badgeRow}>
+            <span className={styles.brandBadge}>INKED CONTROL</span>
+            <span className={styles.versionBadge}>PORTAFOLIO V1.0</span>
+          </div>
+          <h1 className={styles.title}>Gestión de Galería & Portafolio</h1>
+          <p className={styles.subtitle}>
+            Sube fotos y videos especificando su categoría y estilo para que aparezcan en el carrusel de inicio y en la galería completa.
+          </p>
         </div>
 
-        {/* Pestañas */}
-        <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+        {/* Tab Switcher */}
+        <div className={styles.tabGroup}>
           <button 
+            type="button"
             onClick={() => setActiveTab('gallery_manual')}
-            className={styles.btnSync}
-            style={{ background: activeTab === 'gallery_manual' ? 'var(--color-red)' : 'rgba(255,255,255,0.05)' }}
+            className={`${styles.tabBtn} ${activeTab === 'gallery_manual' ? styles.tabBtnActive : ''}`}
           >
-            <ImageIcon size={16} /> Portafolio & Trabajos
+            <ImageIcon size={16} />
+            <span>Portafolio ({media.length})</span>
           </button>
           <button 
+            type="button"
             onClick={() => setActiveTab('bio_photo')}
-            className={styles.btnSync}
-            style={{ background: activeTab === 'bio_photo' ? 'var(--color-red)' : 'rgba(255,255,255,0.05)' }}
+            className={`${styles.tabBtn} ${activeTab === 'bio_photo' ? styles.tabBtnActive : ''}`}
           >
-            <User size={16} /> Foto Biografía Artista
+            <User size={16} />
+            <span>Foto Biografía</span>
           </button>
         </div>
       </div>
 
-      {/* TAB 1: GALERIA SUBIDA MANUAL */}
+      {/* TAB 1: UPLOAD & MANAGE GALLERY */}
       {activeTab === 'gallery_manual' && (
-        <div>
-          <div className={styles.infoBox} style={{ background: 'var(--color-bg-elevated)', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '30px' }}>
-            <h3>Subir Nuevo Trabajo a la Galería</h3>
-            <form onSubmit={handleManualMediaUpload} style={{ width: '100%', marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--color-gray-400)', marginBottom: '6px' }}>Tipo de Archivo</label>
+        <div className={styles.tabContent}>
+          {/* UPLOAD CARD */}
+          <div className={styles.uploadCard}>
+            <div className={styles.cardHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles size={18} style={{ color: '#ff2a3d' }} />
+                <h3>Publicar Nueva Obra o Video</h3>
+              </div>
+              <span className={styles.headerHint}>Se sincronizará en tiempo real con la web</span>
+            </div>
+
+            <form onSubmit={handlePublishWork} className={styles.uploadForm}>
+              <div className={styles.formGrid}>
+                {/* 1. Tipo de Archivo */}
+                <div className={styles.formGroup}>
+                  <label>Tipo de Multimedia *</label>
+                  <div className={styles.typeToggle}>
+                    <button
+                      type="button"
+                      onClick={() => setMediaType('IMAGE')}
+                      className={`${styles.typeBtn} ${mediaType === 'IMAGE' ? styles.typeBtnActive : ''}`}
+                    >
+                      <ImageIcon size={16} />
+                      <span>Fotografía / Tatuaje</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMediaType('VIDEO')}
+                      className={`${styles.typeBtn} ${mediaType === 'VIDEO' ? styles.typeBtnActive : ''}`}
+                    >
+                      <Film size={16} />
+                      <span>Video / Reel</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Categoría / Estilo */}
+                <div className={styles.formGroup}>
+                  <label>Categoría / Estilo del Trabajo *</label>
                   <select 
-                    value={mediaType} 
-                    onChange={e => setMediaType(e.target.value)}
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 14px', borderRadius: '8px', color: '#fff' }}
+                    value={category} 
+                    onChange={e => setCategory(e.target.value)}
+                    className={styles.select}
                   >
-                    <option value="IMAGE" style={{ background: '#111' }}>Imagen / Tatuaje</option>
-                    <option value="VIDEO" style={{ background: '#111' }}>Video / Reel</option>
+                    <option value="Blackwork">Blackwork</option>
+                    <option value="Realismo">Realismo Sombras</option>
+                    <option value="Lettering">Lettering & Caligrafía</option>
+                    <option value="Fine Line">Fine Line / Línea Fina</option>
+                    <option value="Neotradicional">Neotradicional</option>
+                    <option value="Geometría & Puntillismo">Geometría & Puntillismo</option>
+                    <option value="Video Reel">Video Reel / Proceso</option>
+                    <option value="Estudio & Sesiones">Estudio & Sesiones</option>
+                    <option value="Tatuaje">Tatuaje General</option>
                   </select>
                 </div>
 
-                <div style={{ flex: 1, minWidth: '250px' }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--color-gray-400)', marginBottom: '6px' }}>Seleccionar Archivo</label>
+                {/* 3. Título o Descripción */}
+                <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+                  <label>Título o Descripción de la Obra *</label>
                   <input 
-                    type="file" 
-                    name="mediaFile"
-                    accept={mediaType === 'VIDEO' ? 'video/*' : 'image/*'}
+                    type="text" 
+                    placeholder="ej: Manga Japonesa Samurai, Dragón Sombras, etc." 
+                    value={title} 
+                    onChange={e => setTitle(e.target.value)} 
+                    className={styles.input}
                     required
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 14px', borderRadius: '8px', color: '#fff', width: '100%' }}
                   />
+                </div>
+
+                {/* 4. Selector de Archivo con Dropzone */}
+                <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+                  <label>Archivo Multimedia ({mediaType === 'VIDEO' ? 'MP4, WEBM' : 'JPG, PNG, WEBP'}) *</label>
+                  
+                  <div 
+                    className={styles.dropzone}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {previewUrl ? (
+                      <div className={styles.previewContainer}>
+                        {mediaType === 'VIDEO' ? (
+                          <video src={previewUrl} controls className={styles.previewMedia} />
+                        ) : (
+                          <img src={previewUrl} alt="Vista previa" className={styles.previewMedia} />
+                        )}
+                        <span className={styles.changeFileBtn}>Cambiar Archivo</span>
+                      </div>
+                    ) : (
+                      <div className={styles.dropzonePrompt}>
+                        <UploadCloud size={40} className={styles.dropIcon} />
+                        <h4>Haz clic para seleccionar tu {mediaType === 'VIDEO' ? 'video' : 'foto'}</h4>
+                        <p>Sube el archivo en alta definición para el portafolio</p>
+                      </div>
+                    )}
+
+                    <input 
+                      type="file" 
+                      ref={fileInputRef}
+                      accept={mediaType === 'VIDEO' ? 'video/*' : 'image/*'}
+                      onChange={handleFileChange}
+                      style={{ display: 'none' }}
+                    />
+                  </div>
                 </div>
               </div>
 
-              <button 
-                type="submit" 
-                className={styles.btnSync} 
-                disabled={uploadingMedia}
-                style={{ background: 'var(--color-red)', width: 'fit-content' }}
-              >
-                <Upload size={16} />
-                {uploadingMedia ? 'Publicando...' : 'Publicar en Galería'}
-              </button>
-
-              {mediaMessage && (
-                <div style={{ color: mediaMessage.type === 'success' ? '#22c55e' : '#ef4444', fontSize: '0.85rem' }}>
-                  {mediaMessage.text}
-                </div>
-              )}
+              <div className={styles.formFooter}>
+                <button 
+                  type="submit" 
+                  className={styles.btnPublish} 
+                  disabled={uploadingMedia || !selectedFile}
+                >
+                  {uploadingMedia ? (
+                    <>
+                      <RefreshCw size={16} className={styles.spin} />
+                      <span>Subiendo y Publicando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud size={16} />
+                      <span>Publicar en Portafolio Web</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </form>
           </div>
 
-          <h3 style={{ marginBottom: '15px' }}>Trabajos Publicados ({media.length})</h3>
-
-          {loading ? (
-            <div className={styles.loading}>Cargando galería...</div>
-          ) : (
-            <div className={styles.grid}>
-              {media.length === 0 ? (
-                <div className={styles.empty}>
-                  No hay elementos en la galería. Sube tu primer tatuaje arriba.
-                </div>
-              ) : (
-                media.map(item => (
-                  <div key={item.id} className={styles.card}>
-                    {item.media_type === 'VIDEO' ? (
-                      <video src={item.media_url} autoPlay loop muted playsInline className={styles.media} />
-                    ) : (
-                      <img src={item.media_url} alt="Galería InkedSouh" className={styles.media} />
-                    )}
-                    <div className={styles.cardFooter} style={{ justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#888' }}>
-                        {item.media_type === 'VIDEO' ? 'Video / Reel' : 'Tatuaje / Foto'}
-                      </span>
-                      <button 
-                        onClick={() => handleDeleteMedia(item.id)}
-                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
-                        title="Eliminar de la Galería"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
+          {/* PUBLISHED ITEMS GRID */}
+          <div className={styles.listSection}>
+            <div className={styles.listHeader}>
+              <h3>Obras Publicadas por el Administrador ({media.length})</h3>
+              <p>Estas imágenes y videos se visualizan en el carrusel de inicio y en la sección /galeria.</p>
             </div>
-          )}
+
+            {loading ? (
+              <div className={styles.loadingContainer}>
+                <RefreshCw size={28} className={styles.spin} />
+                <p>Cargando galería de Supabase...</p>
+              </div>
+            ) : media.length === 0 ? (
+              <div className={styles.emptyBox}>
+                <ImageIcon size={44} style={{ color: '#ff2a3d', opacity: 0.6 }} />
+                <h4>Aún no has subido obras personalizadas</h4>
+                <p>Utiliza el formulario de arriba para publicar tu primera fotografía o video en el portafolio.</p>
+              </div>
+            ) : (
+              <div className={styles.mediaGrid}>
+                {media.map((item) => {
+                  const details = getItemDetails(item)
+                  const isVideo = item.media_type === 'VIDEO'
+
+                  return (
+                    <div key={item.id} className={styles.mediaCard}>
+                      <div className={styles.mediaThumbWrap}>
+                        {isVideo ? (
+                          <video src={item.media_url} muted loop className={styles.mediaThumb} />
+                        ) : (
+                          <img src={item.media_url} alt={details.title} className={styles.mediaThumb} />
+                        )}
+                        
+                        <span className={`${styles.typeBadge} ${isVideo ? styles.typeBadgeVideo : styles.typeBadgeImg}`}>
+                          {isVideo ? 'VIDEO / REEL' : 'TATUAJE'}
+                        </span>
+                      </div>
+
+                      <div className={styles.mediaCardBody}>
+                        <span className={styles.cardCategory}>{details.category}</span>
+                        <h4 className={styles.cardTitle}>{details.title}</h4>
+                        <span className={styles.cardDate}>
+                          {item.created_at ? new Date(item.created_at).toLocaleDateString('es-CL') : 'Reciente'}
+                        </span>
+                      </div>
+
+                      <div className={styles.mediaCardActions}>
+                        <button 
+                          type="button" 
+                          onClick={() => handleDeleteMedia(item.id)}
+                          className={styles.btnDelete}
+                          title="Eliminar de la galería"
+                        >
+                          <Trash2 size={15} />
+                          <span>Eliminar</span>
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* TAB 2: FOTO DE BIOGRAFIA PUBLICA */}
+      {/* TAB 2: BIO PHOTO */}
       {activeTab === 'bio_photo' && (
-        <div className={styles.infoBox} style={{ background: 'var(--color-bg-elevated)', flexDirection: 'column', alignItems: 'flex-start' }}>
-          <h3>Foto de Perfil para la Biografía Pública</h3>
-          <p style={{ color: 'var(--color-gray-400)', fontSize: '0.9rem', marginBottom: '20px' }}>
-            Esta foto es la que se muestra en la sección de biografía del artista InkedSouh en la web principal.
-          </p>
-
-          <div style={{ display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ width: '180px', height: '180px', borderRadius: '50%', border: '2px dashed rgba(255,255,255,0.2)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
-              {bioPhotoUrl ? (
-                <img src={bioPhotoUrl} alt="Foto Biografía Artista" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <div style={{ color: '#666', textAlign: 'center', fontSize: '0.8rem' }}>
-                  <ImageIcon size={32} />
-                  <div>Sin Foto</div>
-                </div>
-              )}
+        <div className={styles.tabContent}>
+          <div className={styles.uploadCard}>
+            <div className={styles.cardHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <User size={18} style={{ color: '#ff2a3d' }} />
+                <h3>Foto de Perfil / Biografía Pública</h3>
+              </div>
+              <span className={styles.headerHint}>Aparece en el Hero de inicio y en la sección Biografía</span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <label className={styles.btnSync} style={{ cursor: 'pointer', background: 'var(--color-red)' }}>
-                <Upload size={16} />
-                {uploadingBioPhoto ? 'Subiendo...' : 'Subir Nueva Foto de Biografía'}
-                <input
-                  type="file"
+            <div className={styles.bioPhotoSection}>
+              <div className={styles.bioAvatarWrap}>
+                {bioPhotoUrl ? (
+                  <img src={bioPhotoUrl} alt="Artista" className={styles.bioAvatarImg} />
+                ) : (
+                  <div className={styles.bioAvatarPlaceholder}>
+                    <User size={64} />
+                    <span>Sin Foto</span>
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.bioPhotoActions}>
+                <h4>Actualizar Foto del Artista</h4>
+                <p>Sube una fotografía en formato vertical o cuadrado (JPG, PNG) para mostrar en tu biografía oficial.</p>
+
+                <button 
+                  type="button"
+                  onClick={() => bioInputRef.current?.click()}
+                  className={styles.btnPublish}
+                  disabled={uploadingBioPhoto}
+                >
+                  {uploadingBioPhoto ? (
+                    <>
+                      <RefreshCw size={16} className={styles.spin} />
+                      <span>Subiendo Foto...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud size={16} />
+                      <span>Seleccionar y Guardar Foto</span>
+                    </>
+                  )}
+                </button>
+
+                <input 
+                  type="file" 
+                  ref={bioInputRef}
                   accept="image/*"
                   onChange={handleBioPhotoUpload}
-                  disabled={uploadingBioPhoto}
                   style={{ display: 'none' }}
                 />
-              </label>
-              {bioMessage && (
-                <div style={{ color: bioMessage.type === 'success' ? '#22c55e' : '#ef4444', fontSize: '0.85rem' }}>
-                  {bioMessage.text}
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </div>

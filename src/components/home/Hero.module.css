@@ -336,3 +336,24 @@
   .tags { justify-content: center; }
   .scrollArrow { display: none; } /* Ocultar flecha en móvil si estorba */
 }
+
+/* Dynamic Scroll Darkening Overlay */
+.scrollDarkOverlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(6, 6, 8, 0.95) 0%, #060608 100%);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.bottomGradientTransition {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  background: linear-gradient(180deg, transparent 0%, #060608 100%);
+  pointer-events: none;
+  z-index: 6;
+}
+

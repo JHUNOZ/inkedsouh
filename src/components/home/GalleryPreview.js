@@ -76,15 +76,33 @@ export default function GalleryPreview() {
           .limit(8)
 
         if (!error && data && data.length > 0) {
-          const formatted = data.map(item => ({
-            id: item.id,
-            permalink: item.permalink || item.media_url,
-            mediaUrl: item.media_url,
-            mediaType: item.media_type || 'IMAGE',
-            caption: item.caption || 'Tatuaje InkedSouh',
-            category: item.category || 'Tatuaje'
-          }))
-          setPosts(formatted)
+          const formatted = data.map(item => {
+            let itemTitle = 'Tatuaje InkedSouh'
+            let itemCategory = 'Tatuaje'
+            if (item.permalink) {
+              try {
+                if (item.permalink.startsWith('{')) {
+                  const parsed = JSON.parse(item.permalink)
+                  if (parsed.title) itemTitle = parsed.title
+                  if (parsed.category) itemCategory = parsed.category
+                } else if (!item.permalink.startsWith('http')) {
+                  itemTitle = item.permalink
+                }
+              } catch {
+                itemTitle = item.permalink
+              }
+            }
+
+            return {
+              id: item.id,
+              permalink: item.media_url,
+              mediaUrl: item.media_url,
+              mediaType: item.media_type || 'IMAGE',
+              caption: itemTitle,
+              category: itemCategory
+            }
+          })
+          setPosts([...formatted, ...CURATED_GALLERY])
         } else {
           setPosts(CURATED_GALLERY)
         }
