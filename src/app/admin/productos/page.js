@@ -8,7 +8,8 @@ import {
   Square, Copy, Sparkles, Zap, Package, ArrowUpDown, Filter,
   Dice5, FileSpreadsheet, PlusCircle, MinusCircle, Clipboard,
   CheckCheck, HelpCircle, FileText, Tag, Ruler, Palette, Box,
-  Wand2, ListPlus, SlidersHorizontal, CheckCircle2
+  Wand2, ListPlus, SlidersHorizontal, CheckCircle2,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight
 } from 'lucide-react'
 import { 
   parseProductSpecifications, 
@@ -30,6 +31,11 @@ export default function HoneCatalogPage() {
   const [stockFilter, setStockFilter] = useState('all') // 'all' | 'instock' | 'lowstock' | 'outofstock'
   const [statusFilter, setStatusFilter] = useState('all') // 'all' | 'published' | 'draft' | 'discount'
   const [sortBy, setSortBy] = useState('created_at_desc')
+
+  // Pagination & Compact Display State
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10) // 8, 10, 20, 50, 99999
+  const [isCustomCategory, setIsCustomCategory] = useState(false)
   
   // Selection for bulk actions
   const [selectedIds, setSelectedIds] = useState([])
@@ -127,6 +133,11 @@ export default function HoneCatalogPage() {
     fetchProducts()
   }, [])
 
+  // Reset pagination on filter or search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [search, selectedCategory, stockFilter, statusFilter, sortBy])
+
   // Keyboard Shortcuts (Ctrl+K or / to search, Ctrl+N for new product)
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -164,8 +175,9 @@ export default function HoneCatalogPage() {
   }
 
   // Categories extraction (including tattoo defaults)
-  const defaultCategories = ['Agujas', 'Tintas', 'Cuidado', 'Máquinas', 'Kits', 'Diseños', 'Accesorios']
+  const defaultCategories = ['Agujas', 'Tintas', 'Cuidado', 'Máquinas', 'Fuentes & Pedales', 'Grips & Punteras', 'Kits', 'Diseños', 'Accesorios']
   const categories = ['all', ...Array.from(new Set([...defaultCategories, ...products.map(p => p.category).filter(Boolean)]))]
+  const formCategories = Array.from(new Set([...defaultCategories, ...products.map(p => p.category).filter(Boolean)]))
 
   // Calculate Metrics
   const totalProducts = products.length
@@ -218,6 +230,41 @@ export default function HoneCatalogPage() {
     return 0
   })
 
+  // Pagination calculations
+  const totalItems = filteredProducts.length
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage))
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems)
+  const paginatedProducts = itemsPerPage >= 99999 ? filteredProducts : filteredProducts.slice(startIndex, endIndex)
+
+  // Page Numbers Array Builder (e.g. 1, 2, 3, 4 ... N)
+  const getPageNumbers = () => {
+    const delta = 2
+    const range = []
+    const rangeWithDots = []
+    let l
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+        range.push(i)
+      }
+    }
+
+    for (let i of range) {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1)
+        } else if (i - l !== 1) {
+          rangeWithDots.push('...')
+        }
+      }
+      rangeWithDots.push(i)
+      l = i
+    }
+
+    return rangeWithDots
+  }
+
   // Open Modal with full variant parsing
   const handleOpenModal = (product = null) => {
     setActiveTabModal('general')
@@ -238,16 +285,19 @@ export default function HoneCatalogPage() {
         galleryImages = [product.image_url, ...galleryImages]
       }
 
+      const prodCategory = product.category || 'Agujas'
+      setIsCustomCategory(!formCategories.includes(prodCategory))
+
       setFormData({
         name: product.name || '',
-        sku: product.sku || generateUniqueSKU(product.category),
+        sku: product.sku || generateUniqueSKU(prodCategory),
         description: product.description || '',
         specifications: product.specifications || '',
         price: product.price || '',
         old_price: product.old_price || '',
         discount: product.discount || 0,
         stock: product.stock !== undefined ? product.stock : 0,
-        category: product.category || 'Agujas',
+        category: prodCategory,
         image_url: product.image_url || '',
         images: galleryImages,
         badge: product.badge || '',
@@ -256,6 +306,7 @@ export default function HoneCatalogPage() {
       })
     } else {
       setEditingId(null)
+      setIsCustomCategory(false)
       setSpecList([{ key: '', value: '' }])
       setVariantConfig({
         enabled: false,
@@ -683,10 +734,12 @@ export default function HoneCatalogPage() {
 
   // Bulk Selection Handlers
   const handleSelectAll = () => {
-    if (selectedIds.length === filteredProducts.length) {
-      setSelectedIds([])
+    const pageIds = paginatedProducts.map(p => p.id)
+    const allPageSelected = pageIds.length > 0 && pageIds.every(id => selectedIds.includes(id))
+    if (allPageSelected) {
+      setSelectedIds(selectedIds.filter(id => !pageIds.includes(id)))
     } else {
-      setSelectedIds(filteredProducts.map(p => p.id))
+      setSelectedIds(Array.from(new Set([...selectedIds, ...pageIds])))
     }
   }
 
@@ -1379,7 +1432,7 @@ export default function HoneCatalogPage() {
               <tr>
                 <th style={{ width: '40px' }}>
                   <button onClick={handleSelectAll} className={styles.checkboxBtn}>
-                    {selectedIds.length === filteredProducts.length && filteredProducts.length > 0 ? (
+                    {paginatedProducts.length > 0 && paginatedProducts.every(p => selectedIds.includes(p.id)) ? (
                       <CheckSquare size={18} className={styles.checkedIcon} />
                     ) : (
                       <Square size={18} />
@@ -1397,7 +1450,7 @@ export default function HoneCatalogPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.map((product) => {
+              {paginatedProducts.map((product) => {
                 const isSelected = selectedIds.includes(product.id)
                 const isQuickEditing = quickEditId === product.id
 
@@ -1620,7 +1673,7 @@ export default function HoneCatalogPage() {
       ) : (
         /* GRID VIEW (VISOR POR FOTOS / TARJETAS) */
         <div className={styles.grid}>
-          {filteredProducts.map((product) => {
+          {paginatedProducts.map((product) => {
             const { variantConfig: itemVars } = parseProductSpecifications(product.specifications)
             return (
               <div key={product.id} className={styles.gridCard}>
@@ -1681,6 +1734,94 @@ export default function HoneCatalogPage() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* PAGINATION & COMPACT LIST CONTROLS */}
+      {filteredProducts.length > 0 && (
+        <div className={styles.paginationBar}>
+          <div className={styles.paginationInfo}>
+            <span>
+              Mostrando <strong>{totalItems === 0 ? 0 : startIndex + 1}</strong> a <strong>{endIndex}</strong> de <strong>{totalItems}</strong> productos
+            </span>
+            <div className={styles.perPageSelectWrap}>
+              <span>• Ver por página:</span>
+              <select 
+                value={itemsPerPage} 
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value))
+                  setCurrentPage(1)
+                }}
+                className={styles.perPageSelect}
+              >
+                <option value={8}>8 por pág.</option>
+                <option value={10}>10 por pág.</option>
+                <option value={20}>20 por pág.</option>
+                <option value={50}>50 por pág.</option>
+                <option value={99999}>Todos ({totalItems})</option>
+              </select>
+            </div>
+          </div>
+
+          {totalPages > 1 && (
+            <div className={styles.paginationNav}>
+              <button 
+                type="button"
+                className={styles.pageNavBtn}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                title="Página anterior"
+              >
+                <ChevronLeft size={16} />
+                <span>Anterior</span>
+              </button>
+
+              {getPageNumbers().map((pageNum, idx) => {
+                if (pageNum === '...') {
+                  return <span key={`dots-${idx}`} className={styles.pageBtnDots}>...</span>
+                }
+                const isCurrent = currentPage === pageNum
+                return (
+                  <button
+                    key={`page-${pageNum}`}
+                    type="button"
+                    className={`${styles.pageBtn} ${isCurrent ? styles.pageBtnActive : ''}`}
+                    onClick={() => setCurrentPage(pageNum)}
+                    title={`Ir a página ${pageNum}`}
+                  >
+                    {pageNum}
+                  </button>
+                )
+              })}
+
+              <button 
+                type="button"
+                className={styles.pageNavBtn}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                title="Página siguiente"
+              >
+                <span>Siguiente</span>
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Quick "Cargar Más" shortcut button if not showing all and there are more pages */}
+      {totalPages > 1 && currentPage < totalPages && itemsPerPage < 99999 && (
+        <div className={styles.loadMoreWrap}>
+          <button 
+            type="button"
+            className={styles.btnLoadMore}
+            onClick={() => {
+              setItemsPerPage(prev => prev + 10)
+            }}
+          >
+            <Plus size={16} />
+            <span>Cargar 10 productos más ({totalItems - endIndex} restantes)</span>
+          </button>
         </div>
       )}
 
@@ -1758,21 +1899,24 @@ export default function HoneCatalogPage() {
                 className={`${styles.modalTab} ${activeTabModal === 'general' ? styles.modalTabActive : ''}`}
                 onClick={() => setActiveTabModal('general')}
               >
-                1. Datos Básicos & SKU
+                <FileText size={15} />
+                <span>1. Datos Básicos & SKU</span>
               </button>
               <button 
                 type="button"
                 className={`${styles.modalTab} ${activeTabModal === 'pricing' ? styles.modalTabActive : ''}`}
                 onClick={() => setActiveTabModal('pricing')}
               >
-                2. Precio e Inventario
+                <Tag size={15} />
+                <span>2. Precio & Inventario</span>
               </button>
               <button 
                 type="button"
                 className={`${styles.modalTab} ${activeTabModal === 'gallery' ? styles.modalTabActive : ''}`}
                 onClick={() => setActiveTabModal('gallery')}
               >
-                3. Galería de Fotos ({formData.images?.length || 0})
+                <ImageIcon size={15} />
+                <span>3. Galería ({formData.images?.length || 0})</span>
               </button>
               <button 
                 type="button"
@@ -1780,7 +1924,8 @@ export default function HoneCatalogPage() {
                 onClick={() => setActiveTabModal('variants')}
                 style={{ position: 'relative' }}
               >
-                4. Variantes & Medidas {variantConfig.enabled && variantConfig.variants?.length > 0 ? `(${variantConfig.variants.length})` : '(Opcional)'}
+                <SlidersHorizontal size={15} />
+                <span>4. Variantes & Medidas {variantConfig.enabled && variantConfig.variants?.length > 0 ? `(${variantConfig.variants.length})` : '(Opcional)'}</span>
                 {variantConfig.enabled && variantConfig.variants?.length > 0 && (
                   <span style={{ width: '7px', height: '7px', background: '#ff2a3d', borderRadius: '50%', display: 'inline-block', marginLeft: '6px' }}></span>
                 )}
@@ -1790,7 +1935,8 @@ export default function HoneCatalogPage() {
                 className={`${styles.modalTab} ${activeTabModal === 'specs' ? styles.modalTabActive : ''}`}
                 onClick={() => setActiveTabModal('specs')}
               >
-                5. Ficha Técnica
+                <Box size={15} />
+                <span>5. Ficha Técnica</span>
               </button>
             </div>
 
@@ -1848,24 +1994,42 @@ export default function HoneCatalogPage() {
 
                   <div className={styles.formRow}>
                     <div className={styles.formGroup}>
-                      <label>Categoría</label>
-                      <input 
-                        type="text" 
-                        list="categoriesList"
-                        placeholder="Agujas, Tintas, Cuidado, Máquinas..."
-                        value={formData.category} 
-                        onChange={e => setFormData({ ...formData, category: e.target.value })} 
-                        className={styles.input} 
-                      />
-                      <datalist id="categoriesList">
-                        {categories.filter(c => c !== 'all').map(c => (
-                          <option key={c} value={c} />
+                      <label>Categoría del Producto *</label>
+                      <select 
+                        value={isCustomCategory ? '__custom__' : (formCategories.includes(formData.category) ? formData.category : '__custom__')}
+                        onChange={(e) => {
+                          if (e.target.value === '__custom__') {
+                            setIsCustomCategory(true)
+                          } else {
+                            setIsCustomCategory(false)
+                            setFormData({ ...formData, category: e.target.value })
+                          }
+                        }}
+                        className={styles.modalSelect}
+                      >
+                        {formCategories.map(c => (
+                          <option key={c} value={c}>{c}</option>
                         ))}
-                      </datalist>
+                        <option value="__custom__">➕ Otra Categoría (Escribir personalizada)...</option>
+                      </select>
+
+                      {isCustomCategory && (
+                        <div style={{ marginTop: '8px' }}>
+                          <input 
+                            type="text" 
+                            required
+                            placeholder="Escribe el nombre de la categoría (Ej: Guantes de Nitrilo)"
+                            value={formData.category} 
+                            onChange={e => setFormData({ ...formData, category: e.target.value })} 
+                            className={styles.input} 
+                            autoFocus
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className={styles.formGroup}>
-                      <label>Etiqueta / Badge Promocional</label>
+                      <label>Etiqueta / Badge Promocional (Opcional)</label>
                       <input 
                         type="text" 
                         placeholder="Ej: NUEVO, OFERTA, EXCLUSIVO"
