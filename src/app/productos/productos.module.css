@@ -1084,6 +1084,7 @@
 .formField textarea {
   padding: 10px 14px;
   background: rgba(255, 255, 255, 0.04);
+  background-color: #14141c;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   color: #fff;
@@ -1092,12 +1093,92 @@
   transition: all 0.2s ease;
 }
 
+.formField select {
+  cursor: pointer;
+}
+
+.formField select option {
+  background-color: #14141c !important;
+  color: #ffffff !important;
+  padding: 10px;
+}
+
 .formField input:focus,
 .formField select:focus,
 .formField textarea:focus {
   border-color: #ff2a3d;
-  background: rgba(255, 255, 255, 0.08);
+  background-color: #1a1a24;
   box-shadow: 0 0 0 3px rgba(255, 42, 61, 0.2);
+}
+
+/* Shipping Cards Selector */
+.shippingCardsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+@media (max-width: 550px) {
+  .shippingCardsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.shippingCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  position: relative;
+  text-align: left;
+}
+
+.shippingCard:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.shippingCardActive {
+  background: rgba(255, 42, 61, 0.1);
+  border-color: #ff2a3d;
+  box-shadow: 0 0 12px rgba(255, 42, 61, 0.25);
+}
+
+.shippingCardIcon {
+  font-size: 1.3rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.shippingCardText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.shippingCardText strong {
+  font-size: 0.84rem;
+  color: #ffffff;
+}
+
+.shippingCardText small {
+  font-size: 0.72rem;
+  color: #a1a1aa;
+  line-height: 1.3;
+}
+
+.shippingCheck {
+  color: #4ade80;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
 /* Payment Methods Selector */

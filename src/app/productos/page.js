@@ -921,13 +921,31 @@ export default function ProductosPage() {
 
                         <div className={`${styles.formField} ${styles.fullCol}`}>
                           <label>Modalidad de Envío *</label>
-                          <select 
-                            value={customerInfo.deliveryType} 
-                            onChange={(e) => setCustomerInfo({ ...customerInfo, deliveryType: e.target.value })}
-                          >
-                            <option value="santiago">🛵 Envío Express Región Metropolitana</option>
-                            <option value="starken">📦 Envío por Pagar a Todo Chile (Starken / Chilexpress)</option>
-                          </select>
+                          <div className={styles.shippingCardsGrid}>
+                            <div 
+                              className={`${styles.shippingCard} ${customerInfo.deliveryType === 'santiago' ? styles.shippingCardActive : ''}`}
+                              onClick={() => setCustomerInfo({ ...customerInfo, deliveryType: 'santiago' })}
+                            >
+                              <div className={styles.shippingCardIcon}>🛵</div>
+                              <div className={styles.shippingCardText}>
+                                <strong>Envío Express RM</strong>
+                                <small>Santiago y comunas aledañas</small>
+                              </div>
+                              {customerInfo.deliveryType === 'santiago' && <span className={styles.shippingCheck}>✓</span>}
+                            </div>
+
+                            <div 
+                              className={`${styles.shippingCard} ${customerInfo.deliveryType === 'starken' ? styles.shippingCardActive : ''}`}
+                              onClick={() => setCustomerInfo({ ...customerInfo, deliveryType: 'starken' })}
+                            >
+                              <div className={styles.shippingCardIcon}>📦</div>
+                              <div className={styles.shippingCardText}>
+                                <strong>Por Pagar Regiones</strong>
+                                <small>Starken / Chilexpress a todo Chile</small>
+                              </div>
+                              {customerInfo.deliveryType === 'starken' && <span className={styles.shippingCheck}>✓</span>}
+                            </div>
+                          </div>
                         </div>
 
                         {/* Banner Plazo de Entrega */}
