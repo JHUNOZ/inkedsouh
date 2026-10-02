@@ -461,3 +461,887 @@
     width: 100%;
   }
 }
+
+/* =========================================================
+   ESTILOS PARA DETALLE DE PRODUCTO Y VARIANTES (STOREFRONT)
+   ========================================================= */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(10px);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.25s ease;
+}
+
+.modalCard {
+  background: #111116;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  max-width: 920px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 28px;
+  padding: 28px;
+}
+
+@media (max-width: 768px) {
+  .modalCard {
+    grid-template-columns: 1fr;
+    padding: 20px 16px;
+    max-height: 94vh;
+    gap: 20px;
+  }
+}
+
+.modalCloseBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #c7c7cc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.modalCloseBtn:hover {
+  background: #ff2a3d;
+  color: #fff;
+  transform: rotate(90deg);
+}
+
+.modalGalleryCol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modalMainImageWrap {
+  position: relative;
+  width: 100%;
+  height: 340px;
+  background: #000;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .modalMainImageWrap {
+    height: 250px;
+  }
+}
+
+.modalMainImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.modalThumbnails {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.modalThumb {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #000;
+  transition: all 0.15s ease;
+}
+
+.modalThumbActive {
+  border-color: #ff2a3d;
+  box-shadow: 0 0 8px rgba(255, 42, 61, 0.6);
+}
+
+/* Right Information Panel */
+.modalInfoCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.categoryTopBadge {
+  color: #ff8591;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.modalTitle {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.25;
+  margin-top: 2px;
+}
+
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #facc15;
+}
+
+.ratingReviews {
+  color: #60a5fa;
+  font-size: 0.82rem;
+  margin-left: 4px;
+}
+
+/* SKU & Stock Box (Exact Match to Reference Photo 1) */
+.skuStockBox {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  text-align: center;
+  overflow: hidden;
+}
+
+.skuCell {
+  padding: 10px 12px;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #e5e5e7;
+}
+
+.stockCell {
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #e5e5e7;
+}
+
+/* Variant Selector Section (Chips / Grid) */
+.variantSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.variantLabel {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #e5e5e7;
+}
+
+.variantButtonsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.variantBtn {
+  min-width: 64px;
+  height: 42px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f5f5f7;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  position: relative;
+  user-select: none;
+}
+
+.variantBtn:hover:not(.variantBtnDisabled) {
+  border-color: #ff2a3d;
+  background: rgba(255, 42, 61, 0.12);
+  color: #fff;
+}
+
+/* Selected button style matching Photo 1 */
+.variantBtnSelected {
+  background: #e11d48 !important;
+  border-color: #e11d48 !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.4);
+}
+
+/* Disabled / Out of stock with diagonal slash matching Photo 1 (1219, 1027) */
+.variantBtnDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #71717a;
+  background: rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+}
+
+.variantBtnDisabled::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -20%;
+  width: 140%;
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.35);
+  transform: rotate(-25deg);
+  pointer-events: none;
+}
+
+/* Dropdown style selector matching Photo 2 */
+.variantDropdownWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.variantSelectInput {
+  width: 100%;
+  background: #181820;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+}
+
+.variantSelectInput:focus {
+  border-color: #ff2a3d;
+}
+
+/* Price Section */
+.priceSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.priceLabel {
+  font-size: 0.75rem;
+  color: #8e8e9f;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.priceDisplay {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #ff2a3d;
+  font-family: var(--font-display, sans-serif);
+  letter-spacing: 0.5px;
+}
+
+.priceOldDisplay {
+  font-size: 0.95rem;
+  color: #71717a;
+  text-decoration: line-through;
+  margin-left: 8px;
+}
+
+/* Quantity Controls */
+.qtySection {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.qtySectionLabel {
+  font-size: 0.85rem;
+  color: #8e8e9f;
+  font-weight: 500;
+}
+
+.qtyBox {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.qtyButton {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #e5e5e7;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.qtyButton:hover:not(:disabled) {
+  color: #ff2a3d;
+}
+
+.qtyButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.qtyValue {
+  width: 34px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* WhatsApp Banner Prompt (Matching Photo 1) */
+.whatsappBanner {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.whatsappBanner:hover {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.5);
+  transform: translateY(-1px);
+}
+
+.whatsappBannerText {
+  font-size: 0.85rem;
+  color: #e5e5e7;
+  font-weight: 500;
+}
+
+.whatsappBubbleIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #25d366;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4);
+}
+
+/* Big Action Button "AGREGAR AL CARRO" (Matching Photo 1 & 2) */
+.btnAddToCartLarge {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #ff2a3d 0%, #b80c1d 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 20px rgba(255, 42, 61, 0.35);
+}
+
+.btnAddToCartLarge:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 42, 61, 0.5);
+}
+
+.btnAddToCartLarge:disabled {
+  background: #27272a;
+  color: #71717a;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+/* Card Variant Badge on Store Grid */
+.cardVariantPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 42, 61, 0.12);
+  border: 1px solid rgba(255, 42, 61, 0.3);
+  color: #ff8591;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+/* Cart item variant tag */
+.cartVariantInfo {
+  font-size: 0.75rem;
+  color: #ff8591;
+  background: rgba(255, 42, 61, 0.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+  width: fit-content;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+
+/* =========================================================
+   CHECKOUT & PAYMENT METHODS STYLES
+   ========================================================= */
+.checkoutOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.checkoutCard {
+  background: #121216;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 850px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 42, 61, 0.15);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.checkoutHeader {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.checkoutTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkoutSteps {
+  display: flex;
+  gap: 8px;
+  padding: 14px 24px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.checkoutStep {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #71717a;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+}
+
+.checkoutStepActive {
+  color: #fff;
+  background: rgba(255, 42, 61, 0.12);
+  border-color: rgba(255, 42, 61, 0.4);
+}
+
+.checkoutStepDone {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+  border-color: rgba(74, 222, 128, 0.25);
+}
+
+.checkoutBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.checkoutGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .checkoutGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.checkoutSectionTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.fullCol {
+  grid-column: span 2;
+}
+
+@media (max-width: 550px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+  .fullCol {
+    grid-column: span 1;
+  }
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.formField label {
+  font-size: 0.78rem;
+  color: #a1a1aa;
+  font-weight: 500;
+}
+
+.formField input,
+.formField select,
+.formField textarea {
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.88rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.formField input:focus,
+.formField select:focus,
+.formField textarea:focus {
+  border-color: #ff2a3d;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(255, 42, 61, 0.2);
+}
+
+/* Payment Methods Selector */
+.paymentMethodsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .paymentMethodsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.paymentMethodCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.paymentMethodCard:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.paymentMethodCardActive {
+  background: rgba(255, 42, 61, 0.08);
+  border-color: #ff2a3d;
+  box-shadow: 0 0 15px rgba(255, 42, 61, 0.25);
+}
+
+.paymentMethodTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paymentIconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.paymentBadgePill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.paymentMethodName {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.paymentMethodDesc {
+  font-size: 0.78rem;
+  color: #a1a1aa;
+  line-height: 1.35;
+  margin: 0;
+}
+
+/* BNPL Specific Info Box */
+.bnplDetailsBox {
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.1) 0%, rgba(255, 42, 61, 0.1) 100%);
+  border: 1px solid rgba(234, 88, 12, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bnplInstallmentsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.bnplInstallmentPill {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.bnplInstallmentCount {
+  font-size: 0.75rem;
+  color: #fdba74;
+  font-weight: 600;
+  display: block;
+}
+
+.bnplInstallmentValue {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+/* Bank Details Box */
+.bankDetailsBox {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bankDetailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.bankDetailRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.bankDetailLabel {
+  color: #a1a1aa;
+}
+
+.bankDetailValue {
+  color: #fff;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.copyBankBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: all 0.2s ease;
+}
+
+.copyBankBtn:hover {
+  background: #ff2a3d;
+  border-color: #ff2a3d;
+}
+
+/* Order Summary Mini Box in Checkout */
+.checkoutOrderSummary {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: fit-content;
+}
+
+.summaryItemRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.84rem;
+  gap: 10px;
+}
+
+.summaryItemName {
+  color: #e4e4e7;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+}
+
+.summaryTotalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Success Card */
+.orderSuccessBox {
+  padding: 40px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 550px;
+  margin: 0 auto;
+}
+
+.successIconWrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orderNumberBadge {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ff8591;
+}
+

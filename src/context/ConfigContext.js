@@ -36,7 +36,11 @@ const DEFAULT_TEXTS = {
   contactWhatsapp: '+56930254425',
   contact_whatsapp: '+56930254425',
   contactAddress: 'Rancagua, Región de O\'Higgins, Chile',
-  contact_address: 'Rancagua, Región de O\'Higgins, Chile'
+  contact_address: 'Rancagua, Región de O\'Higgins, Chile',
+  deliveryTimeframe: '24 a 48 horas hábiles en RM / 2 a 4 días hábiles a Regiones',
+  delivery_timeframe: '24 a 48 horas hábiles en RM / 2 a 4 días hábiles a Regiones',
+  termsUrl: '',
+  terms_url: ''
 }
 
 export function ConfigProvider({ children }) {
@@ -92,6 +96,8 @@ export function ConfigProvider({ children }) {
             if (item.key_name === 'footer_copyright') mapped.footerCopyright = item.value
             if (item.key_name === 'contact_whatsapp') mapped.contactWhatsapp = item.value
             if (item.key_name === 'contact_address') mapped.contactAddress = item.value
+            if (item.key_name === 'delivery_timeframe') mapped.deliveryTimeframe = item.value
+            if (item.key_name === 'terms_url' || item.key_name === 'terms_and_conditions') mapped.termsUrl = item.value
           }
         })
         

@@ -6,6 +6,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import SectionTitle from '@/components/ui/SectionTitle'
 import { createClient } from '@/lib/supabase/client'
+import { isVideoUrl } from '@/lib/productUtils'
 import Link from 'next/link'
 import styles from './galeria.module.css'
 
@@ -167,7 +168,7 @@ export default function GaleriaPage() {
                 className={styles.gridItem}
                 onClick={() => setLightboxIndex(idx)}
               >
-                {post.media_type === 'VIDEO' ? (
+                {(post.media_type === 'VIDEO' || isVideoUrl(post.media_url)) ? (
                   <video src={post.media_url} autoPlay loop muted playsInline className={styles.mediaImg} />
                 ) : (
                   <img 
@@ -224,8 +225,8 @@ export default function GaleriaPage() {
 
             <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
               <div className={styles.lightboxMediaContainer}>
-                {activeItem.media_type === 'VIDEO' ? (
-                  <video src={activeItem.media_url} controls autoPlay className={styles.lightboxMedia} />
+                {(activeItem.media_type === 'VIDEO' || isVideoUrl(activeItem.media_url)) ? (
+                  <video src={activeItem.media_url} controls autoPlay muted loop playsInline className={styles.lightboxMedia} />
                 ) : (
                   <img src={activeItem.media_url} alt={activeItem.caption} className={styles.lightboxMedia} />
                 )}

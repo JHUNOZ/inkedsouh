@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, X, ExternalLink, Eye, ChevronLeft, ChevronRight,
 import { motion, AnimatePresence } from 'framer-motion'
 import SectionTitle from '@/components/ui/SectionTitle'
 import { createClient } from '@/lib/supabase/client'
+import { isVideoUrl } from '@/lib/productUtils'
 import Link from 'next/link'
 import styles from './GalleryPreview.module.css'
 
@@ -208,7 +209,7 @@ export default function GalleryPreview() {
                   role="button"
                   tabIndex={0}
                 >
-                  {post.mediaType === 'VIDEO' ? (
+                  {(post.mediaType === 'VIDEO' || isVideoUrl(post.mediaUrl)) ? (
                     <video src={post.mediaUrl} autoPlay muted loop playsInline className={styles.igMedia} />
                   ) : (
                     <img 
@@ -293,8 +294,8 @@ export default function GalleryPreview() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className={styles.lightboxMediaWrapper}>
-                {currentItem.mediaType === 'VIDEO' ? (
-                  <video src={currentItem.mediaUrl} controls autoPlay className={styles.lightboxMedia} />
+                {(currentItem.mediaType === 'VIDEO' || isVideoUrl(currentItem.mediaUrl)) ? (
+                  <video src={currentItem.mediaUrl} controls autoPlay muted loop playsInline className={styles.lightboxMedia} />
                 ) : (
                   <img src={currentItem.mediaUrl} alt={currentItem.caption} className={styles.lightboxMedia} />
                 )}

@@ -4,9 +4,13 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { MessageCircle, MapPin, Mail, Phone } from 'lucide-react'
 import { NAV_LINKS, SITE_NAME, SITE_LOCATION } from '@/lib/constants'
+import { useConfig } from '@/context/ConfigContext'
 import styles from './Footer.module.css'
 
 export default function Footer() {
+  const { textos } = useConfig()
+  const termsUrl = textos?.terms_url || textos?.termsUrl || '/terminos'
+
   const containerVars = {
     hidden: { opacity: 0 },
     visible: {
@@ -36,11 +40,11 @@ export default function Footer() {
               INKED<span className={styles.logoAccent}>SOUH</span>
             </div>
             <p className={styles.description}>
-              Arte en tu piel. Cada tatuaje es una historia única, creada con pasión y precisión.
+              {textos?.footer_description || 'Arte en tu piel. Cada tatuaje es una historia única, creada con pasión y precisión.'}
             </p>
             <div className={styles.socials}>
               <a
-                href="https://www.instagram.com/inked.tto/"
+                href={textos?.hero_ig_link || "https://www.instagram.com/inked.tto/"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`${styles.socialLink} interactive magnetic`}
@@ -49,7 +53,7 @@ export default function Footer() {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
               </a>
               <a
-                href="https://wa.me/56930254425"
+                href={`https://wa.me/${(textos?.contact_whatsapp || '+56930254425').replace(/[^0-9]/g, '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`${styles.socialLink} interactive magnetic`}
@@ -75,7 +79,7 @@ export default function Footer() {
                 key={link.href} 
                 href={link.href} 
                 className={`${styles.columnLink} interactive magnetic`}
-                style={{ position: 'relative', zIndex: 10 }} // Ensure clickable
+                style={{ position: 'relative', zIndex: 10 }}
               >
                 {link.label}
               </Link>
@@ -87,11 +91,11 @@ export default function Footer() {
             <h4 className={styles.columnTitle}>CONTACTO</h4>
             <div className={styles.address}>
               <MapPin size={16} className={styles.addressIcon} />
-              <span>{SITE_LOCATION}</span>
+              <span>{textos?.contact_address || SITE_LOCATION}</span>
             </div>
             <div className={styles.address}>
               <Phone size={16} className={styles.addressIcon} />
-              <span>+56930254425</span>
+              <span>{textos?.contact_whatsapp || '+56930254425'}</span>
             </div>
             <div className={styles.address}>
               <Mail size={16} className={styles.addressIcon} />
@@ -116,7 +120,19 @@ export default function Footer() {
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
-          <p className={styles.copyright}>© {SITE_NAME}. Todos los derechos reservados.</p>
+          <p className={styles.copyright}>
+            {textos?.footer_copyright || `© ${SITE_NAME}. Todos los derechos reservados.`}
+          </p>
+          <div className={styles.bottomLinks}>
+            <a 
+              href={termsUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className={`${styles.bottomLink} interactive`}
+            >
+              Términos y Condiciones
+            </a>
+          </div>
         </motion.div>
       </div>
     </footer>

@@ -5,6 +5,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import SectionTitle from '@/components/ui/SectionTitle'
 import { createClient } from '@/lib/supabase/client'
+import { isVideoUrl } from '@/lib/productUtils'
 import Link from 'next/link'
 import styles from './cursos.module.css'
 
@@ -53,7 +54,18 @@ export default function CursosPage() {
                   <div key={course.id} className={styles.card}>
                     <div className={styles.cardImage}>
                       {course.image_url ? (
-                        <img src={course.image_url} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        isVideoUrl(course.image_url) ? (
+                          <video 
+                            src={course.image_url} 
+                            autoPlay 
+                            muted 
+                            loop 
+                            playsInline 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <img src={course.image_url} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        )
                       ) : (
                         <BookOpen size={44} />
                       )}

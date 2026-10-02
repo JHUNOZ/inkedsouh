@@ -5,7 +5,7 @@ import {
   Save, RefreshCw, Plus, Search, Check, AlertCircle, 
   Trash2, RotateCcw, Sliders, Globe, Sparkles, Layout, 
   MessageSquare, Share2, UploadCloud, Layers,
-  CheckCheck, User, Calendar
+  CheckCheck, User, Calendar, FileText, ExternalLink, Truck
 } from 'lucide-react'
 import styles from './configuracion.module.css'
 
@@ -22,6 +22,12 @@ const ESSENTIAL_CONFIGS = [
     key_name: 'artist_photo', 
     value: '',
     friendly_label: 'Fotografía Oficial del Artista (URL o subida)'
+  },
+  { 
+    section: 'Tienda & Envíos', 
+    key_name: 'delivery_timeframe', 
+    value: '24 a 48 horas hábiles en Santiago / 2 a 4 días hábiles a Regiones',
+    friendly_label: 'Plazo Estimado de Entrega y Envíos'
   },
   { 
     section: 'Agendar Cita', 
@@ -85,6 +91,12 @@ const ESSENTIAL_CONFIGS = [
   },
   { 
     section: 'Footer & Legal', 
+    key_name: 'terms_url', 
+    value: '',
+    friendly_label: 'Documento de Términos y Condiciones (PDF o Enlace)'
+  },
+  { 
+    section: 'Footer & Legal', 
     key_name: 'footer_description', 
     value: 'Estudio profesional de tatuajes y academia de formación artística en Rancagua. Calidad premium y bioseguridad certificada.',
     friendly_label: 'Descripción del Pie de Página (Footer)'
@@ -111,6 +123,7 @@ export default function ConfiguracionPage() {
   const [savingId, setSavingId] = useState(null)
   const [savingAll, setSavingAll] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [uploadingTerms, setUploadingTerms] = useState(false)
   
   // Search & Filter
   const [search, setSearch] = useState('')
@@ -126,6 +139,7 @@ export default function ConfiguracionPage() {
   const [toast, setToast] = useState(null)
   const searchInputRef = useRef(null)
   const photoInputRef = useRef(null)
+  const termsInputRef = useRef(null)
   const supabase = createClient()
 
   const showToast = (message, type = 'success') => {
@@ -242,6 +256,38 @@ export default function ConfiguracionPage() {
       showToast('Error al subir foto: ' + err.message, 'error')
     } finally {
       setUploadingPhoto(false)
+    }
+  }
+
+  // Upload Terms and Conditions document directly
+  const handleUploadTerms = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingTerms(true)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `terminos_y_condiciones_${Date.now()}.${fileExt}`
+      const filePath = `legal/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('admin_uploads')
+        .upload(filePath, file, { cacheControl: '3600', upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('admin_uploads')
+        .getPublicUrl(filePath)
+
+      handleChange('terms_url', publicUrl)
+      await handleUpdate('terms_url', publicUrl)
+      showToast('¡Documento de Términos y Condiciones subido y sincronizado!')
+    } catch (err) {
+      showToast('Error al subir documento: ' + err.message, 'error')
+    } finally {
+      setUploadingTerms(false)
+      if (termsInputRef.current) termsInputRef.current.value = ''
     }
   }
 
@@ -601,12 +647,14 @@ export default function ConfiguracionPage() {
             const isBio = config.key_name === 'hero_bio'
             const isCTA = config.key_name.startsWith('cta_')
             const isPhoto = config.key_name === 'artist_photo'
+            const isTerms = config.key_name === 'terms_url'
+            const isDelivery = config.key_name === 'delivery_timeframe'
             const isLongText = (config.value || '').length > 60 || (config.value || '').includes('\n') || isBio || config.key_name === 'cta_subtitle'
 
             return (
               <div 
                 key={config.key_name} 
-                className={`${styles.card} ${isDirty ? styles.cardDirty : ''} ${isBio || isCTA ? styles.cardHighlight : ''}`}
+                className={`${styles.card} ${isDirty ? styles.cardDirty : ''} ${isBio || isCTA || isTerms || isDelivery ? styles.cardHighlight : ''}`}
               >
                 <div className={styles.cardHeader}>
                   <div className={styles.cardTitleWrap}>
@@ -625,7 +673,10 @@ export default function ConfiguracionPage() {
                     <label>
                       {isBio ? 'Texto de la Biografía del Artista:' : 
                        isCTA ? 'Texto para el Banner de Agendamiento:' : 
-                       isPhoto ? 'URL o Imagen del Artista:' : 'Contenido del Texto:'}
+                       isPhoto ? 'URL o Imagen del Artista:' : 
+                       isTerms ? 'Documento PDF de Términos y Condiciones (se abre en nueva pestaña en el footer):' :
+                       isDelivery ? 'Plazo de Entrega y Envíos (se muestra en tienda y checkout):' :
+                       'Contenido del Texto:'}
                     </label>
                     <span className={styles.charCount}>{(config.value || '').length} caracteres</span>
                   </div>
@@ -661,6 +712,43 @@ export default function ConfiguracionPage() {
                         </div>
                       )}
                     </div>
+                  ) : isTerms ? (
+                    <div className={styles.photoControlGroup}>
+                      <input 
+                        type="text" 
+                        className={styles.input} 
+                        value={config.value || ''}
+                        onChange={(e) => handleChange(config.key_name, e.target.value)}
+                        placeholder="URL del PDF o sube el archivo PDF desde tu PC"
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => termsInputRef.current?.click()}
+                        className={styles.btnUploadPhoto}
+                        disabled={uploadingTerms}
+                        style={{ background: '#2563eb', border: '1px solid #3b82f6' }}
+                      >
+                        <FileText size={16} />
+                        <span>{uploadingTerms ? 'Subiendo PDF...' : 'Subir PDF Términos'}</span>
+                      </button>
+                      <input 
+                        type="file" 
+                        ref={termsInputRef}
+                        accept=".pdf,.doc,.docx,application/pdf"
+                        onChange={handleUploadTerms}
+                        style={{ display: 'none' }}
+                      />
+                      {config.value && (
+                        <a 
+                          href={config.value} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(59,130,246,0.4)', color: '#93c5fd', padding: '6px 14px', borderRadius: '8px', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600 }}
+                        >
+                          <ExternalLink size={14} /> Ver PDF Actual ↗
+                        </a>
+                      )}
+                    </div>
                   ) : isLongText ? (
                     <textarea 
                       className={`${styles.input} ${styles.textarea}`} 
@@ -675,7 +763,7 @@ export default function ConfiguracionPage() {
                       className={styles.input} 
                       value={config.value || ''}
                       onChange={(e) => handleChange(config.key_name, e.target.value)}
-                      placeholder="Escribe el texto aquí..."
+                      placeholder={isDelivery ? 'Ej: 24 a 48 horas en RM y 2 a 4 días hábiles a Regiones' : 'Escribe el texto aquí...'}
                     />
                   )}
                 </div>

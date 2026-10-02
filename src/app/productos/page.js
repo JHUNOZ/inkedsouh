@@ -2,7 +2,10 @@
 import { useState, useEffect } from 'react'
 import { 
   ShoppingBag, ShoppingCart, Plus, Minus, X, Search, 
-  Eye, Check, ChevronLeft, ChevronRight, Sparkles, Tag, ShieldCheck 
+  Check, ChevronRight, Sparkles, Tag, ShieldCheck, 
+  Star, MessageCircle, ArrowRight, CreditCard, Building2,
+  Zap, Copy, CheckCircle2, Truck, MapPin, User, Mail, Phone,
+  FileText, ExternalLink, RefreshCw, AlertCircle, ArrowLeft
 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
@@ -10,6 +13,13 @@ import SectionTitle from '@/components/ui/SectionTitle'
 import BubbleButton from '@/components/ui/BubbleButton'
 import { PRODUCT_CATEGORIES } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
+import { 
+  parseProductSpecifications, 
+  calculateTotalVariantStock, 
+  formatCLP,
+  isVideoUrl,
+  calculateInstallmentAmount
+} from '@/lib/productUtils'
 import styles from './productos.module.css'
 
 export default function ProductosPage() {
@@ -19,15 +29,36 @@ export default function ProductosPage() {
   const [cartOpen, setCartOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState('Todos')
   const [search, setSearch] = useState('')
+  const [whatsappNumber, setWhatsappNumber] = useState('+56930254425')
 
   // Product Quickview / Detail Modal
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [selectedVariant, setSelectedVariant] = useState(null)
+  const [selectedQuantity, setSelectedQuantity] = useState(1)
   const [activeImageIdx, setActiveImageIdx] = useState(0)
+
+  // Multi-Step Checkout Modal
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [checkoutStep, setCheckoutStep] = useState('details') // 'details' | 'payment' | 'success'
+  const [paymentMethod, setPaymentMethod] = useState('bancame') // 'bancame' | 'transfer' | 'whatsapp'
+  const [deliveryTimeframe, setDeliveryTimeframe] = useState('24 a 48 horas hábiles en RM y 2 a 4 días hábiles a Regiones')
+  const [customerInfo, setCustomerInfo] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    deliveryType: 'santiago', // 'santiago' | 'starken'
+    address: '',
+    city: 'Santiago',
+    notes: ''
+  })
+  const [orderProcessing, setOrderProcessing] = useState(false)
+  const [submittedOrder, setSubmittedOrder] = useState(null)
+  const [copyFeedback, setCopyFeedback] = useState(false)
 
   const supabase = createClient()
 
   useEffect(() => {
-    async function loadProducts() {
+    async function loadData() {
       try {
         setLoading(true)
         const { data, error } = await supabase
@@ -38,6 +69,22 @@ export default function ProductosPage() {
 
         if (error) throw error
         setProducts(data || [])
+
+        // Load contact WhatsApp
+        const { data: profile } = await supabase.from('admin_profile').select('whatsapp_number').single()
+        if (profile?.whatsapp_number) {
+          setWhatsappNumber(profile.whatsapp_number)
+        }
+
+        // Load estimated delivery timeframe from site_config
+        const { data: configData } = await supabase
+          .from('site_config')
+          .select('value')
+          .eq('key_name', 'delivery_timeframe')
+          .maybeSingle()
+        if (configData?.value) {
+          setDeliveryTimeframe(configData.value)
+        }
       } catch (err) {
         console.error('Error al cargar productos:', err)
         setProducts([])
@@ -45,22 +92,76 @@ export default function ProductosPage() {
         setLoading(false)
       }
     }
-    loadProducts()
+    loadData()
   }, [])
 
-  const formatPrice = (price) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price || 0)
+  const formatPrice = (price) => formatCLP(price || 0)
   const getDiscountedPrice = (price, discount) => Math.round(price * (1 - (discount || 0) / 100))
 
-  const addToCart = (product, e) => {
-    if (e) e.stopPropagation()
-    if (product.stock <= 0) return
-    const existing = cart.find((item) => item.id === product.id)
-    if (existing) {
-      if (existing.quantity >= product.stock) return
-      setCart(cart.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item))
+  // Open Product Modal
+  const openDetailModal = (product) => {
+    setSelectedProduct(product)
+    setActiveImageIdx(0)
+    setSelectedQuantity(1)
+
+    const { variantConfig } = parseProductSpecifications(product.specifications)
+    if (variantConfig.enabled && Array.isArray(variantConfig.variants) && variantConfig.variants.length > 0) {
+      // Pick first in-stock variant, or the first variant in list
+      const inStock = variantConfig.variants.find(v => (parseInt(v.stock) || 0) > 0)
+      setSelectedVariant(inStock || variantConfig.variants[0])
     } else {
-      setCart([...cart, { ...product, quantity: 1 }])
+      setSelectedVariant(null)
     }
+  }
+
+  // Add item to Cart
+  const addToCart = (product, variant = null, quantity = 1, e = null) => {
+    if (e) e.stopPropagation()
+
+    const { variantConfig } = parseProductSpecifications(product.specifications)
+    const hasVariants = variantConfig.enabled && variantConfig.variants && variantConfig.variants.length > 0
+    
+    // If product has variants and no variant was specified, open modal so user can pick
+    const targetVariant = variant !== null ? variant : (hasVariants ? selectedVariant : null)
+    if (hasVariants && !targetVariant) {
+      openDetailModal(product)
+      return
+    }
+
+    const itemId = targetVariant 
+      ? `${product.id}_${targetVariant.id || targetVariant.name}` 
+      : product.id
+
+    const itemPrice = targetVariant?.price ? parseFloat(targetVariant.price) : parseFloat(product.price || 0)
+    const itemStock = targetVariant ? (parseInt(targetVariant.stock) || 0) : (parseInt(product.stock) || 0)
+    const itemSku = targetVariant?.sku || product.sku || 'N/A'
+
+    if (itemStock <= 0) return
+
+    const existing = cart.find(item => item.id === itemId)
+    if (existing) {
+      const newQty = existing.quantity + quantity
+      if (newQty > itemStock) return
+      setCart(cart.map(item => item.id === itemId ? { ...item, quantity: newQty } : item))
+    } else {
+      const mainImg = product.image_url || (product.images && product.images[0]) || null
+      const newItem = {
+        id: itemId,
+        productId: product.id,
+        name: product.name,
+        category: product.category,
+        variantName: targetVariant?.name || null,
+        variantSku: itemSku,
+        variantAttribute: variantConfig.name || 'Medida / Calibre',
+        price: itemPrice,
+        discount: product.discount || 0,
+        stock: itemStock,
+        image_url: mainImg,
+        quantity: Math.min(quantity, itemStock)
+      }
+      setCart([...cart, newItem])
+    }
+
     setCartOpen(true)
   }
 
@@ -89,18 +190,16 @@ export default function ProductosPage() {
 
   // Filter products
   const filtered = products.filter((p) => {
+    const { variantConfig: pVarConf } = parseProductSpecifications(p.specifications)
+    const variantNames = (pVarConf.variants || []).map(v => `${v.name} ${v.sku}`).join(' ')
+
     const matchCategory = activeCategory === 'Todos' || p.category === activeCategory
     const matchSearch = (p.name || '').toLowerCase().includes(search.toLowerCase()) ||
                         (p.category || '').toLowerCase().includes(search.toLowerCase()) ||
-                        (p.description || '').toLowerCase().includes(search.toLowerCase())
+                        (p.description || '').toLowerCase().includes(search.toLowerCase()) ||
+                        variantNames.toLowerCase().includes(search.toLowerCase())
     return matchCategory && matchSearch
   })
-
-  // Open Product Modal
-  const openDetailModal = (product) => {
-    setSelectedProduct(product)
-    setActiveImageIdx(0)
-  }
 
   // Parse product images
   const getProductImages = (product) => {
@@ -116,20 +215,105 @@ export default function ProductosPage() {
     return imgs.length > 0 ? imgs : (product.image_url ? [product.image_url] : [])
   }
 
-  // Parse specifications
-  const getProductSpecs = (product) => {
-    if (!product?.specifications) return []
+  // Handle Copy Bank Details
+  const handleCopyBankDetails = () => {
+    const bankText = `DATOS PARA TRANSFERENCIA BANCARIA - INKEDSOUH\n` +
+      `Banco: Banco Estado\n` +
+      `Tipo de Cuenta: Cuenta Vista / RUT\n` +
+      `N° de Cuenta: 19.823.419-5\n` +
+      `Titular: InkedSouh Tattoo Studio\n` +
+      `RUT: 19.823.419-5\n` +
+      `Correo: pagos@inkedsouh.com\n` +
+      `Monto a Transferir: ${formatPrice(cartTotal)} CLP`
+    
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(bankText)
+      setCopyFeedback(true)
+      setTimeout(() => setCopyFeedback(false), 3000)
+    }
+  }
+
+  // Handle Multi-Method Order Submission
+  const handleProcessCheckout = async (e) => {
+    if (e) e.preventDefault()
+    if (cart.length === 0) return
+
+    setOrderProcessing(true)
+    const orderNumber = `INK-${Math.floor(100000 + Math.random() * 900000)}`
+
     try {
-      if (product.specifications.startsWith('{') || product.specifications.startsWith('[')) {
-        const obj = JSON.parse(product.specifications)
-        if (Array.isArray(obj)) return obj
-        return Object.entries(obj).map(([k, v]) => ({ key: k, value: v }))
+      // Try saving order to Supabase orders table (optional)
+      const orderPayload = {
+        order_number: orderNumber,
+        customer_name: customerInfo.name || 'Cliente Web',
+        customer_email: customerInfo.email || null,
+        customer_phone: customerInfo.phone || null,
+        delivery_type: customerInfo.deliveryType,
+        delivery_address: customerInfo.address || null,
+        total_amount: cartTotal,
+        payment_method: paymentMethod,
+        items: cart,
+        status: paymentMethod === 'whatsapp' ? 'solicitud_whatsapp' : 'pendiente_pago',
+        created_at: new Date().toISOString()
       }
-    } catch {}
-    return product.specifications.split('\n').map(l => {
-      const [k, ...v] = l.split(':')
-      return { key: k?.trim() || '', value: v.join(':')?.trim() || '' }
-    }).filter(s => s.key || s.value)
+
+      await supabase.from('orders').insert([orderPayload]).catch(() => {})
+
+      setSubmittedOrder({
+        orderNumber,
+        date: new Date().toLocaleDateString('es-CL'),
+        total: cartTotal,
+        items: [...cart],
+        paymentMethod,
+        deliveryType: customerInfo.deliveryType
+      })
+
+      // If WhatsApp method, trigger chat immediately
+      if (paymentMethod === 'whatsapp') {
+        let msg = `¡Hola INKEDSOUH! 👋 Acabo de generar la orden *#${orderNumber}* desde la tienda web:\n\n`
+        msg += `👤 *DATOS DEL CLIENTE:*\n`
+        msg += `• Nombre: ${customerInfo.name || 'Cliente'}\n`
+        msg += `• Teléfono: ${customerInfo.phone || 'No especificado'}\n`
+        msg += `• Modalidad de Envío: ${customerInfo.deliveryType === 'santiago' ? `Envío Express RM (${customerInfo.address}, ${customerInfo.city})` : `Envío por Pagar Starken/Chilexpress (${customerInfo.address}, ${customerInfo.city})`}\n`
+        msg += `• Plazo Estimado: ${deliveryTimeframe}\n\n`
+        msg += `🛒 *PRODUCTOS SOLICITADOS:*\n`
+        cart.forEach((item, idx) => {
+          const unitPrice = item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price
+          msg += `${idx + 1}. *${item.name}* ${item.variantName ? `(${item.variantAttribute || 'Medida'}: ${item.variantName})` : ''} - ${item.quantity} un. x ${formatPrice(unitPrice)}\n`
+        })
+        msg += `\n💰 *TOTAL A PAGAR: ${formatPrice(cartTotal)} CLP*\n\n`
+        msg += `¿Me podrían confirmar para coordinar el pago y despacho? ¡Muchas gracias!`
+
+        const cleanPhone = (whatsappNumber || '+56930254425').replace(/[^0-9]/g, '')
+        const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`
+        window.open(url, '_blank')
+      }
+
+      setCheckoutStep('success')
+    } catch (err) {
+      console.error('Error placing order:', err)
+      setCheckoutStep('success')
+    } finally {
+      setOrderProcessing(false)
+    }
+  }
+
+  // Handle WhatsApp Direct Message from Cart
+  const handleWhatsAppCheckout = () => {
+    setCartOpen(false)
+    setCheckoutOpen(true)
+    setCheckoutStep('details')
+  }
+
+  // Direct WhatsApp query from product modal
+  const handleDirectWhatsAppQuery = (product, variant) => {
+    const cleanPhone = (whatsappNumber || '+56930254425').replace(/[^0-9]/g, '')
+    let msg = `¡Hola INKEDSOUH! 👋 Tengo una consulta sobre el producto *${product.name}*`
+    if (variant) {
+      msg += ` en la medida/calibre *${variant.name}* (SKU: ${variant.sku})`
+    }
+    msg += `. ¿Tienen stock disponible para entrega inmediata o envío?`
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank')
   }
 
   return (
@@ -137,7 +321,7 @@ export default function ProductosPage() {
       <Navbar />
       <main className={styles.page}>
         <div className={styles.container}>
-          <SectionTitle subtitle="Cuida y protege tu arte con productos profesionales">
+          <SectionTitle subtitle="Insumos profesionales para tatuadores: agujas, tintas y cuidado">
             CATÁLOGO & PRODUCTOS
           </SectionTitle>
 
@@ -147,13 +331,13 @@ export default function ProductosPage() {
               <Search size={18} />
               <input
                 type="text"
-                placeholder="Buscar productos por nombre o tipo..."
+                placeholder="Buscar por calibre (1207, 1007MC), aguja, tinta..."
                 className={styles.searchInput}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
               {search && (
-                <button onClick={() => setSearch('')} style={{ color: '#888', background: 'none', border: 'none' }}>
+                <button onClick={() => setSearch('')} style={{ color: '#888', background: 'none', border: 'none', cursor: 'pointer' }}>
                   <X size={16} />
                 </button>
               )}
@@ -190,12 +374,26 @@ export default function ProductosPage() {
               {filtered.map((product) => {
                 const productImages = getProductImages(product)
                 const mainImage = productImages[0] || product.image_url
+                const { variantConfig } = parseProductSpecifications(product.specifications)
+                const hasVariants = variantConfig.enabled && variantConfig.variants && variantConfig.variants.length > 0
+                const totalStock = hasVariants ? calculateTotalVariantStock(variantConfig.variants) : product.stock
 
                 return (
                   <div key={product.id} className={styles.card} onClick={() => openDetailModal(product)} style={{ cursor: 'pointer' }}>
                     <div className={styles.cardImage}>
                       {mainImage ? (
-                        <img src={mainImage} alt={product.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        isVideoUrl(mainImage) ? (
+                          <video 
+                            src={mainImage} 
+                            autoPlay 
+                            muted 
+                            loop 
+                            playsInline 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          />
+                        ) : (
+                          <img src={mainImage} alt={product.name} loading="lazy" />
+                        )
                       ) : (
                         <ShoppingBag size={36} />
                       )}
@@ -211,7 +409,7 @@ export default function ProductosPage() {
                         <span className={styles.discountBadge}>-{product.discount}%</span>
                       )}
                       
-                      {product.stock <= 0 && (
+                      {totalStock <= 0 && (
                         <div className={styles.outOfStock}>AGOTADO</div>
                       )}
 
@@ -225,7 +423,17 @@ export default function ProductosPage() {
                     <div className={styles.cardBody}>
                       <span className={styles.cardCategory}>{product.category}</span>
                       <h3 className={styles.cardName}>{product.name}</h3>
-                      <p className={styles.cardDesc}>{product.description || 'Sin descripción detallada.'}</p>
+
+                      {/* Pill indicating variety of sizes/measures */}
+                      {hasVariants && (
+                        <div style={{ marginTop: '2px', marginBottom: '2px' }}>
+                          <span className={styles.cardVariantPill}>
+                            ⚡ {variantConfig.variants.length} {variantConfig.name || 'Medidas'}
+                          </span>
+                        </div>
+                      )}
+
+                      <p className={styles.cardDesc}>{product.description || 'Insumo profesional testeado por tatuadores.'}</p>
                       
                       <div className={styles.cardFooter}>
                         <div className={styles.priceWrap}>
@@ -242,16 +450,23 @@ export default function ProductosPage() {
                         </div>
                         <button
                           className={styles.addBtn}
-                          onClick={(e) => addToCart(product, e)}
-                          disabled={product.stock <= 0}
-                          title="Añadir al Carrito"
+                          onClick={(e) => {
+                            if (hasVariants) {
+                              e.stopPropagation()
+                              openDetailModal(product)
+                            } else {
+                              addToCart(product, null, 1, e)
+                            }
+                          }}
+                          disabled={totalStock <= 0}
+                          title={hasVariants ? "Elegir Medida / Calibre" : "Añadir al Carrito"}
                         >
                           <Plus size={18} />
                         </button>
                       </div>
 
-                      <span className={product.stock > 0 ? styles.stockLabel : styles.stockOut}>
-                        {product.stock > 0 ? `${product.stock} disponibles` : 'Sin stock disponible'}
+                      <span className={totalStock > 0 ? styles.stockLabel : styles.stockOut}>
+                        {totalStock > 0 ? `${totalStock} disponibles` : 'Sin stock disponible'}
                       </span>
                     </div>
                   </div>
@@ -261,186 +476,273 @@ export default function ProductosPage() {
           )}
         </div>
 
-        {/* Product Quickview / Lightbox Modal */}
-        {selectedProduct && (
-          <div 
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.85)',
-              backdropFilter: 'blur(8px)',
-              zIndex: 1100,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px'
-            }}
-            onClick={() => setSelectedProduct(null)}
-          >
-            <div 
-              style={{
-                background: '#0e0e13',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '20px',
-                maxWidth: '850px',
-                width: '100%',
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-                gap: '24px',
-                padding: '28px',
-                position: 'relative'
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button 
-                onClick={() => setSelectedProduct(null)} 
-                style={{ position: 'absolute', top: '16px', right: '16px', color: '#888', background: 'none', border: 'none', cursor: 'pointer' }}
-              >
-                <X size={24} />
-              </button>
+        {/* Product Quickview / Lightbox Modal (Exact Match to Reference Photos 1 & 2) */}
+        {selectedProduct && (() => {
+          const { attributes: modalSpecs, variantConfig: modalVarConfig } = parseProductSpecifications(selectedProduct.specifications)
+          const hasVariants = modalVarConfig.enabled && modalVarConfig.variants && modalVarConfig.variants.length > 0
+          const modalImgs = getProductImages(selectedProduct)
+          const currentImg = modalImgs[activeImageIdx] || selectedProduct.image_url
 
-              {/* Left Gallery Lightbox */}
-              <div>
-                {(() => {
-                  const modalImgs = getProductImages(selectedProduct)
-                  const currentImg = modalImgs[activeImageIdx] || selectedProduct.image_url
-                  return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div style={{ position: 'relative', width: '100%', height: '320px', borderRadius: '14px', overflow: 'hidden', background: '#000', border: '1px solid rgba(255,255,255,0.08)' }}>
-                        {currentImg ? (
-                          <img src={currentImg} alt={selectedProduct.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          // Active variant or base product attributes
+          const activeSku = selectedVariant ? (selectedVariant.sku || selectedProduct.sku) : selectedProduct.sku
+          const activeStock = selectedVariant ? (parseInt(selectedVariant.stock) || 0) : (parseInt(selectedProduct.stock) || 0)
+          const activeBasePrice = selectedVariant?.price ? parseFloat(selectedVariant.price) : parseFloat(selectedProduct.price || 0)
+          const activeDiscountedPrice = selectedProduct.discount > 0 ? getDiscountedPrice(activeBasePrice, selectedProduct.discount) : activeBasePrice
+
+          return (
+            <div className={styles.modalOverlay} onClick={() => setSelectedProduct(null)}>
+              <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+                <button 
+                  onClick={() => setSelectedProduct(null)} 
+                  className={styles.modalCloseBtn}
+                  title="Cerrar ventana"
+                >
+                  <X size={20} />
+                </button>
+
+                {/* Left Column: Gallery Lightbox */}
+                <div className={styles.modalGalleryCol}>
+                  <div className={styles.modalMainImageWrap}>
+                    {currentImg ? (
+                      isVideoUrl(currentImg) ? (
+                        <video 
+                          src={currentImg} 
+                          autoPlay 
+                          muted 
+                          loop 
+                          playsInline 
+                          controls 
+                          className={styles.modalMainImage} 
+                        />
+                      ) : (
+                        <img src={currentImg} alt={selectedProduct.name} className={styles.modalMainImage} />
+                      )
+                    ) : (
+                      <ShoppingBag size={56} style={{ color: '#444' }} />
+                    )}
+                    {selectedProduct.badge && (
+                      <span style={{ position: 'absolute', top: '12px', left: '12px', background: '#ff2a3d', color: '#fff', fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: '6px' }}>
+                        {selectedProduct.badge}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Gallery Thumbnails */}
+                  {modalImgs.length > 1 && (
+                    <div className={styles.modalThumbnails}>
+                      {modalImgs.map((imgUrl, idx) => (
+                        isVideoUrl(imgUrl) ? (
+                          <video 
+                            key={idx} 
+                            src={imgUrl} 
+                            muted 
+                            playsInline 
+                            onClick={() => setActiveImageIdx(idx)}
+                            className={`${styles.modalThumb} ${activeImageIdx === idx ? styles.modalThumbActive : ''}`}
+                          />
                         ) : (
-                          <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}><ShoppingBag size={48} /></div>
-                        )}
-                        {selectedProduct.badge && (
-                          <span style={{ position: 'absolute', top: '12px', left: '12px', background: '#ff2a3d', color: '#fff', fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: '6px' }}>
-                            {selectedProduct.badge}
+                          <img 
+                            key={idx} 
+                            src={imgUrl} 
+                            alt="thumb" 
+                            onClick={() => setActiveImageIdx(idx)}
+                            className={`${styles.modalThumb} ${activeImageIdx === idx ? styles.modalThumbActive : ''}`}
+                          />
+                        )
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Column: Product Info & Variant Selector */}
+                <div className={styles.modalInfoCol}>
+                  <div>
+                    <span className={styles.categoryTopBadge}>{selectedProduct.category}</span>
+                    <h2 className={styles.modalTitle}>{selectedProduct.name}</h2>
+                    
+                    {/* Star ratings */}
+                    <div className={styles.ratingRow} style={{ marginTop: '4px', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', gap: '2px' }}>
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} size={15} fill="#facc15" color="#facc15" />
+                        ))}
+                      </div>
+                      <span className={styles.ratingReviews}>(1 Reseña)</span>
+                    </div>
+
+                    {/* SKU & Stock Box (Exact Match to Photo 1) */}
+                    <div className={styles.skuStockBox}>
+                      <div className={styles.skuCell}>
+                        SKU: <span style={{ color: '#fff', fontFamily: 'monospace' }}>{activeSku || 'N/A'}</span>
+                      </div>
+                      <div className={styles.stockCell}>
+                        STOCK: <span style={{ color: activeStock > 0 ? '#4ade80' : '#f87171' }}>{activeStock}</span>
+                      </div>
+                    </div>
+
+                    {/* VARIANT SELECTOR (Exact Match to Photo 1 & 2) */}
+                    {hasVariants && (
+                      <div className={styles.variantSection}>
+                        <label className={styles.variantLabel}>
+                          {modalVarConfig.name || 'Calibre de las agujas'}
+                        </label>
+
+                        {/* Interactive Buttons / Chips Grid (Photo 1) */}
+                        <div className={styles.variantButtonsGrid}>
+                          {modalVarConfig.variants.map((v, vIdx) => {
+                            const isSelected = selectedVariant?.id ? selectedVariant.id === v.id : selectedVariant?.name === v.name
+                            const vStock = parseInt(v.stock) || 0
+                            const isOut = vStock <= 0
+
+                            return (
+                              <button
+                                key={v.id || vIdx}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedVariant(v)
+                                  setSelectedQuantity(1)
+                                }}
+                                disabled={isOut}
+                                className={`
+                                  ${styles.variantBtn}
+                                  ${isSelected ? styles.variantBtnSelected : ''}
+                                  ${isOut ? styles.variantBtnDisabled : ''}
+                                `}
+                                title={isOut ? `${v.name} (Agotado)` : `${v.name} - SKU: ${v.sku || 'N/A'} (${vStock} disponibles)`}
+                              >
+                                {v.name}
+                              </button>
+                            )
+                          })}
+                        </div>
+
+                        {/* Optional Dropdown Select Menu (Photo 2) */}
+                        <div className={styles.variantDropdownWrap} style={{ marginTop: '8px' }}>
+                          <select 
+                            className={styles.variantSelectInput}
+                            value={selectedVariant?.id || selectedVariant?.name || ''}
+                            onChange={(e) => {
+                              const chosen = modalVarConfig.variants.find(v => (v.id || v.name) === e.target.value)
+                              if (chosen) {
+                                setSelectedVariant(chosen)
+                                setSelectedQuantity(1)
+                              }
+                            }}
+                          >
+                            <option value="" disabled>Elige una opción...</option>
+                            {modalVarConfig.variants.map((v, vIdx) => (
+                              <option key={v.id || vIdx} value={v.id || v.name} disabled={(parseInt(v.stock) || 0) <= 0}>
+                                {v.name} {(parseInt(v.stock) || 0) <= 0 ? '— (Agotado)' : `(Stock: ${v.stock})`}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Price Section */}
+                    <div className={styles.priceSection}>
+                      <span className={styles.priceLabel}>PRECIO</span>
+                      <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                        <span className={styles.priceDisplay}>
+                          {formatPrice(activeDiscountedPrice)} CLP
+                        </span>
+                        {selectedProduct.old_price > selectedProduct.price && (
+                          <span className={styles.priceOldDisplay}>
+                            {formatPrice(selectedProduct.old_price)}
                           </span>
                         )}
                       </div>
+                    </div>
 
-                      {/* Thumbnails row */}
-                      {modalImgs.length > 1 && (
-                        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-                          {modalImgs.map((imgUrl, idx) => (
-                            <img 
-                              key={idx} 
-                              src={imgUrl} 
-                              alt="thumb" 
-                              onClick={() => setActiveImageIdx(idx)}
-                              style={{
-                                width: '60px',
-                                height: '60px',
-                                borderRadius: '8px',
-                                objectFit: 'cover',
-                                cursor: 'pointer',
-                                border: activeImageIdx === idx ? '2px solid #ff2a3d' : '1px solid rgba(255,255,255,0.1)'
-                              }}
-                            />
-                          ))}
-                        </div>
+                    {/* Quantity Section */}
+                    <div className={styles.qtySection}>
+                      <span className={styles.qtySectionLabel}>Cantidad:</span>
+                      <div className={styles.qtyBox}>
+                        <button 
+                          type="button" 
+                          onClick={() => setSelectedQuantity(Math.max(1, selectedQuantity - 1))}
+                          disabled={selectedQuantity <= 1 || activeStock <= 0}
+                          className={styles.qtyButton}
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className={styles.qtyValue}>{activeStock <= 0 ? 0 : selectedQuantity}</span>
+                        <button 
+                          type="button" 
+                          onClick={() => setSelectedQuantity(Math.min(activeStock, selectedQuantity + 1))}
+                          disabled={selectedQuantity >= activeStock || activeStock <= 0}
+                          className={styles.qtyButton}
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                      {activeStock > 0 && (
+                        <span style={{ fontSize: '0.8rem', color: '#8e8e9f' }}>
+                          ({activeStock} unidades disponibles)
+                        </span>
                       )}
                     </div>
-                  )
-                })()}
-              </div>
 
-              {/* Right Product Info */}
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <span style={{ color: '#ff2a3d', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '1px' }}>
-                      {selectedProduct.category}
-                    </span>
-                    {selectedProduct.sku && (
-                      <span style={{ color: '#888', fontSize: '0.75rem' }}>• SKU: {selectedProduct.sku}</span>
-                    )}
-                  </div>
-
-                  <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>
-                    {selectedProduct.name}
-                  </h2>
-
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '16px' }}>
-                    <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff' }}>
-                      {formatPrice(selectedProduct.discount > 0 ? getDiscountedPrice(selectedProduct.price, selectedProduct.discount) : selectedProduct.price)}
-                    </span>
-                    {selectedProduct.old_price > selectedProduct.price && (
-                      <span style={{ fontSize: '1rem', color: '#888', textDecoration: 'line-through' }}>
-                        {formatPrice(selectedProduct.old_price)}
-                      </span>
-                    )}
-                    {selectedProduct.discount > 0 && (
-                      <span style={{ background: 'rgba(255,42,61,0.2)', color: '#ff8591', fontSize: '0.75rem', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>
-                        {selectedProduct.discount}% OFF
-                      </span>
-                    )}
-                  </div>
-
-                  <p style={{ color: '#c7c7cc', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '20px' }}>
-                    {selectedProduct.description || 'Producto premium seleccionado y testeado por tatuadores profesionales.'}
-                  </p>
-
-                  {/* Dynamic Specifications */}
-                  {(() => {
-                    const specs = getProductSpecs(selectedProduct)
-                    if (specs.length === 0) return null
-                    return (
-                      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px', marginBottom: '20px' }}>
-                        <strong style={{ fontSize: '0.82rem', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>
-                          Especificaciones Técnicas
-                        </strong>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.82rem' }}>
-                          {specs.map((s, idx) => (
-                            <div key={idx} style={{ display: 'flex', flexDirection: 'column' }}>
-                              <span style={{ color: '#888' }}>{s.key}:</span>
-                              <span style={{ color: '#e5e5e7', fontWeight: 500 }}>{s.value}</span>
-                            </div>
-                          ))}
-                        </div>
+                    {/* WhatsApp Banner Prompt (Photo 1) */}
+                    <div 
+                      className={styles.whatsappBanner} 
+                      onClick={() => handleDirectWhatsAppQuery(selectedProduct, selectedVariant)}
+                      title="Preguntar directamente por WhatsApp"
+                    >
+                      <div className={styles.whatsappBannerText}>
+                        ¿Tienes dudas sobre las medidas? <strong>Envíanos un mensaje de WhatsApp</strong>
                       </div>
-                    )
-                  })()}
-                </div>
+                      <div className={styles.whatsappBubbleIcon}>
+                        <MessageCircle size={18} fill="#fff" color="#25d366" />
+                      </div>
+                    </div>
 
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
-                  <div>
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: '#888' }}>Disponibilidad:</span>
-                    <strong style={{ color: selectedProduct.stock > 0 ? '#4ade80' : '#f87171', fontSize: '0.88rem' }}>
-                      {selectedProduct.stock > 0 ? `${selectedProduct.stock} en stock` : 'Agotado temporalmente'}
-                    </strong>
+                    {/* Delivery Timeframe Notice */}
+                    <div style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: '10px', padding: '9px 12px', display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                      <Truck size={18} style={{ color: '#60a5fa', flexShrink: 0 }} />
+                      <div style={{ fontSize: '0.78rem', color: '#bfdbfe', lineHeight: 1.35 }}>
+                        <strong>Envíos a todo Chile</strong> • Plazo estimado: <span style={{ color: '#fff', fontWeight: 600 }}>{deliveryTimeframe}</span>
+                      </div>
+                    </div>
+
+                    {/* Main CTA Button "AGREGAR AL CARRO" */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        addToCart(selectedProduct, selectedVariant, selectedQuantity)
+                        setSelectedProduct(null)
+                      }}
+                      disabled={activeStock <= 0}
+                      className={styles.btnAddToCartLarge}
+                      style={{ marginTop: '12px' }}
+                    >
+                      <ShoppingCart size={20} />
+                      <span>{activeStock > 0 ? 'AGREGAR AL CARRO' : 'AGOTADO'}</span>
+                    </button>
                   </div>
 
-                  <button
-                    onClick={() => {
-                      addToCart(selectedProduct)
-                      setSelectedProduct(null)
-                    }}
-                    disabled={selectedProduct.stock <= 0}
-                    style={{
-                      background: 'linear-gradient(135deg, #ff2a3d 0%, #b80c1d 100%)',
-                      color: '#fff',
-                      padding: '12px 24px',
-                      borderRadius: '10px',
-                      fontWeight: 600,
-                      fontSize: '0.9rem',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      cursor: selectedProduct.stock > 0 ? 'pointer' : 'not-allowed',
-                      opacity: selectedProduct.stock > 0 ? 1 : 0.4
-                    }}
-                  >
-                    <ShoppingCart size={18} />
-                    <span>Añadir al Carrito</span>
-                  </button>
+                  {/* Technical Specifications Accordion / Table */}
+                  {modalSpecs.length > 0 && (
+                    <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px', marginTop: '10px' }}>
+                      <strong style={{ fontSize: '0.8rem', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>
+                        Especificaciones Técnicas
+                      </strong>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.82rem' }}>
+                        {modalSpecs.map((s, idx) => (
+                          <div key={idx} style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ color: '#8e8e9f' }}>{s.key}:</span>
+                            <span style={{ color: '#f5f5f7', fontWeight: 500 }}>{s.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* Botón flotante del carrito */}
         {cartCount > 0 && (
@@ -475,6 +777,15 @@ export default function ProductosPage() {
                       <div key={item.id} className={styles.cartItem}>
                         <div className={styles.cartItemInfo}>
                           <h4>{item.name}</h4>
+
+                          {/* Selected variant badge in cart */}
+                          {item.variantName && (
+                            <span className={styles.cartVariantInfo}>
+                              {item.variantAttribute || 'Medida'}: <strong>{item.variantName}</strong>
+                              {item.variantSku && item.variantSku !== 'N/A' ? ` (${item.variantSku})` : ''}
+                            </span>
+                          )}
+
                           <span className={styles.cartItemPrice}>
                             {formatPrice(item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price)}
                           </span>
@@ -484,7 +795,7 @@ export default function ProductosPage() {
                             <Minus size={14} />
                           </button>
                           <span className={styles.qtyNum}>{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.id, 1)} className={styles.qtyBtn}>
+                          <button onClick={() => updateQuantity(item.id, 1)} className={styles.qtyBtn} disabled={item.quantity >= item.stock}>
                             <Plus size={14} />
                           </button>
                           <button onClick={() => removeFromCart(item.id)} className={styles.removeBtn}>
@@ -499,12 +810,465 @@ export default function ProductosPage() {
                       <span>Total Estimado</span>
                       <strong>{formatPrice(cartTotal)}</strong>
                     </div>
-                    <BubbleButton fullWidth>
-                      Continuar con el Pedido
-                    </BubbleButton>
+
+                    {/* BNPL Teaser in Cart */}
+                    <div style={{ background: 'rgba(234, 88, 12, 0.08)', border: '1px solid rgba(234, 88, 12, 0.25)', borderRadius: '8px', padding: '8px 12px', fontSize: '0.78rem', color: '#fed7aa', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
+                      <span>⚡ O paga en <strong>3 cuotas de {formatPrice(calculateInstallmentAmount(cartTotal, 3))}</strong></span>
+                      <span style={{ background: '#ea580c', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>BNPL</span>
+                    </div>
+
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setCartOpen(false)
+                        setCheckoutOpen(true)
+                        setCheckoutStep('details')
+                      }}
+                      className={styles.btnAddToCartLarge}
+                      style={{ fontSize: '0.95rem', marginTop: '10px' }}
+                    >
+                      <span>Iniciar Checkout</span>
+                      <ArrowRight size={18} />
+                    </button>
                   </div>
                 </>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* MODAL DE CHECKOUT & MÉTODOS DE PAGO MULTI-PASO */}
+        {checkoutOpen && (
+          <div className={styles.checkoutOverlay} onClick={() => !orderProcessing && setCheckoutOpen(false)}>
+            <div className={styles.checkoutCard} onClick={(e) => e.stopPropagation()}>
+              
+              {/* Header */}
+              <div className={styles.checkoutHeader}>
+                <div className={styles.checkoutTitle}>
+                  <CreditCard size={22} style={{ color: '#ff2a3d' }} />
+                  <span>Proceso de Pago & Checkout</span>
+                </div>
+                {!orderProcessing && (
+                  <button 
+                    className={styles.modalCloseBtn} 
+                    onClick={() => setCheckoutOpen(false)}
+                    title="Cerrar checkout"
+                  >
+                    <X size={20} />
+                  </button>
+                )}
+              </div>
+
+              {/* Step indicator */}
+              <div className={styles.checkoutSteps}>
+                <div className={`${styles.checkoutStep} ${checkoutStep === 'details' ? styles.checkoutStepActive : ''} ${(checkoutStep === 'payment' || checkoutStep === 'success') ? styles.checkoutStepDone : ''}`}>
+                  {(checkoutStep === 'payment' || checkoutStep === 'success') ? <Check size={14} /> : <span>1</span>}
+                  <span>Datos & Entrega</span>
+                </div>
+                <div className={`${styles.checkoutStep} ${checkoutStep === 'payment' ? styles.checkoutStepActive : ''} ${checkoutStep === 'success' ? styles.checkoutStepDone : ''}`}>
+                  {checkoutStep === 'success' ? <Check size={14} /> : <span>2</span>}
+                  <span>Método de Pago</span>
+                </div>
+                <div className={`${styles.checkoutStep} ${checkoutStep === 'success' ? styles.checkoutStepActive : ''}`}>
+                  <span>3</span>
+                  <span>Confirmación</span>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className={styles.checkoutBody}>
+
+                {/* PASO 1: DATOS DEL CLIENTE Y ENTREGA */}
+                {checkoutStep === 'details' && (
+                  <div className={styles.checkoutGrid}>
+                    <div>
+                      <h4 className={styles.checkoutSectionTitle}>
+                        <User size={18} style={{ color: '#ff2a3d' }} /> Datos de Contacto
+                      </h4>
+
+                      <div className={styles.formGrid}>
+                        <div className={`${styles.formField} ${styles.fullCol}`}>
+                          <label>Nombre y Apellido *</label>
+                          <input 
+                            type="text" 
+                            placeholder="Ej: Camilo Henríquez" 
+                            value={customerInfo.name}
+                            onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                            required
+                          />
+                        </div>
+
+                        <div className={styles.formField}>
+                          <label>WhatsApp / Teléfono *</label>
+                          <input 
+                            type="tel" 
+                            placeholder="+56 9 1234 5678" 
+                            value={customerInfo.phone}
+                            onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                            required
+                          />
+                        </div>
+
+                        <div className={styles.formField}>
+                          <label>Correo Electrónico</label>
+                          <input 
+                            type="email" 
+                            placeholder="correo@ejemplo.com" 
+                            value={customerInfo.email}
+                            onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
+                          />
+                        </div>
+
+                        <div className={`${styles.formField} ${styles.fullCol}`}>
+                          <label>Modalidad de Envío *</label>
+                          <select 
+                            value={customerInfo.deliveryType} 
+                            onChange={(e) => setCustomerInfo({ ...customerInfo, deliveryType: e.target.value })}
+                          >
+                            <option value="santiago">🛵 Envío Express Región Metropolitana</option>
+                            <option value="starken">📦 Envío por Pagar a Todo Chile (Starken / Chilexpress)</option>
+                          </select>
+                        </div>
+
+                        {/* Banner Plazo de Entrega */}
+                        <div className={styles.fullCol} style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <Truck size={20} style={{ color: '#60a5fa', flexShrink: 0 }} />
+                          <div style={{ fontSize: '0.8rem', color: '#bfdbfe', lineHeight: 1.4 }}>
+                            <strong>Plazo de Entrega Estimado:</strong> <span style={{ color: '#fff', fontWeight: 600 }}>{deliveryTimeframe}</span>. Todos los pedidos cuentan con código de seguimiento.
+                          </div>
+                        </div>
+
+                        <div className={`${styles.formField} ${styles.fullCol}`}>
+                          <label>Dirección de Envío (Calle, número, depto / sucursal) *</label>
+                          <input 
+                            type="text" 
+                            placeholder="Ej: Av. Providencia 1234, Depto 402" 
+                            value={customerInfo.address}
+                            onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })}
+                            required
+                          />
+                        </div>
+
+                        <div className={`${styles.formField} ${styles.fullCol}`}>
+                          <label>Comuna / Ciudad *</label>
+                          <input 
+                            type="text" 
+                            placeholder="Ej: Providencia, Viña del Mar, Concepción..." 
+                            value={customerInfo.city}
+                            onChange={(e) => setCustomerInfo({ ...customerInfo, city: e.target.value })}
+                            required
+                          />
+                        </div>
+
+                        <div className={`${styles.formField} ${styles.fullCol}`}>
+                          <label>Notas adicionales de despacho (opcional)</label>
+                          <textarea 
+                            rows={2} 
+                            placeholder="Instrucciones para el repartidor, horarios de preferencia..." 
+                            value={customerInfo.notes}
+                            onChange={(e) => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
+                          />
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            if (!customerInfo.name.trim()) {
+                              alert('Por favor ingresa tu nombre completo')
+                              return
+                            }
+                            if (!customerInfo.phone.trim()) {
+                              alert('Por favor ingresa tu WhatsApp de contacto')
+                              return
+                            }
+                            if (!customerInfo.address.trim()) {
+                              alert('Por favor ingresa tu dirección de envío')
+                              return
+                            }
+                            setCheckoutStep('payment')
+                          }}
+                          className={styles.btnAddToCartLarge}
+                          style={{ width: 'auto', padding: '12px 28px', fontSize: '0.95rem' }}
+                        >
+                          <span>Continuar al Pago</span>
+                          <ChevronRight size={18} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Summary Col */}
+                    <div className={styles.checkoutOrderSummary}>
+                      <h4 className={styles.checkoutSectionTitle}>
+                        <ShoppingBag size={18} style={{ color: '#ff2a3d' }} /> Resumen ({cartCount})
+                      </h4>
+                      {cart.map((item) => (
+                        <div key={item.id} className={styles.summaryItemRow}>
+                          <div className={styles.summaryItemName}>
+                            <span>{item.name} {item.variantName ? `(${item.variantName})` : ''}</span>
+                            <small style={{ color: '#71717a' }}>{item.quantity} un. x {formatPrice(item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price)}</small>
+                          </div>
+                          <span style={{ color: '#fff', fontWeight: 600 }}>
+                            {formatPrice((item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price) * item.quantity)}
+                          </span>
+                        </div>
+                      ))}
+                      <div className={styles.summaryTotalRow}>
+                        <span>Total</span>
+                        <span style={{ color: '#ff2a3d' }}>{formatPrice(cartTotal)} CLP</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* PASO 2: SELECCIÓN DE MÉTODO DE PAGO */}
+                {checkoutStep === 'payment' && (
+                  <div className={styles.checkoutGrid}>
+                    <div>
+                      <h4 className={styles.checkoutSectionTitle}>
+                        <CreditCard size={18} style={{ color: '#ff2a3d' }} /> Selecciona tu Método de Pago
+                      </h4>
+
+                      <div className={styles.paymentMethodsGrid} style={{ gridTemplateColumns: '1fr' }}>
+
+                        {/* 1. BANCA.ME BNPL */}
+                        <div 
+                          className={`${styles.paymentMethodCard} ${paymentMethod === 'bancame' ? styles.paymentMethodCardActive : ''}`}
+                          onClick={() => setPaymentMethod('bancame')}
+                        >
+                          <div className={styles.paymentMethodTop}>
+                            <div className={styles.paymentIconWrap} style={{ background: 'rgba(234, 88, 12, 0.15)', color: '#ea580c' }}>
+                              ⚡
+                            </div>
+                            <span className={styles.paymentBadgePill} style={{ background: 'rgba(234, 88, 12, 0.2)', color: '#fdba74' }}>
+                              3 a 12 Cuotas con RUT
+                            </span>
+                          </div>
+                          <h5 className={styles.paymentMethodName}>Banca.me BNPL (Compra Ahora, Paga en Cuotas)</h5>
+                          <p className={styles.paymentMethodDesc}>
+                            Paga en 3, 6 o 12 cuotas mensuales con tu RUT y tarjeta de débito/transferencia. Sin tarjeta de crédito.
+                          </p>
+                        </div>
+
+                        {/* 2. TRANSFERENCIA BANCARIA */}
+                        <div 
+                          className={`${styles.paymentMethodCard} ${paymentMethod === 'transfer' ? styles.paymentMethodCardActive : ''}`}
+                          onClick={() => setPaymentMethod('transfer')}
+                        >
+                          <div className={styles.paymentMethodTop}>
+                            <div className={styles.paymentIconWrap} style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6' }}>
+                              <Building2 size={18} />
+                            </div>
+                            <span className={styles.paymentBadgePill} style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#93c5fd' }}>
+                              Transferencia Directa
+                            </span>
+                          </div>
+                          <h5 className={styles.paymentMethodName}>Transferencia Bancaria</h5>
+                          <p className={styles.paymentMethodDesc}>
+                            Transfiere directamente a nuestra Cuenta BancoEstado o Santander y envía tu comprobante por WhatsApp.
+                          </p>
+                        </div>
+
+                        {/* 3. WHATSAPP DIRECTO */}
+                        <div 
+                          className={`${styles.paymentMethodCard} ${paymentMethod === 'whatsapp' ? styles.paymentMethodCardActive : ''}`}
+                          onClick={() => setPaymentMethod('whatsapp')}
+                        >
+                          <div className={styles.paymentMethodTop}>
+                            <div className={styles.paymentIconWrap} style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e' }}>
+                              <MessageCircle size={18} />
+                            </div>
+                            <span className={styles.paymentBadgePill} style={{ background: 'rgba(34, 197, 94, 0.2)', color: '#86efac' }}>
+                              Atención Directa
+                            </span>
+                          </div>
+                          <h5 className={styles.paymentMethodName}>Pedido Asistido por WhatsApp</h5>
+                          <p className={styles.paymentMethodDesc}>
+                            Coordina y confirma directamente con el artista tu pedido, datos de despacho y consultas técnicas.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* PAYMENT DETAILS BLOCK ACCORDING TO SELECTION */}
+
+                      {/* BANCA.ME BNPL DETAILS */}
+                      {paymentMethod === 'bancame' && (
+                        <div className={styles.bnplDetailsBox} style={{ marginTop: '16px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <strong style={{ color: '#fff', fontSize: '0.9rem' }}>⚡ Simulador de Cuotas Banca.me</strong>
+                            <span style={{ fontSize: '0.75rem', color: '#fdba74' }}>Aprobación con RUT en 1 min</span>
+                          </div>
+                          <p style={{ fontSize: '0.8rem', color: '#e5e7eb', margin: 0 }}>
+                            Paga tu primera cuota hoy y el resto en cuotas fijas mensuales con débito o transferencia:
+                          </p>
+                          <div className={styles.bnplInstallmentsRow}>
+                            <div className={styles.bnplInstallmentPill}>
+                              <span className={styles.bnplInstallmentCount}>3 cuotas de</span>
+                              <span className={styles.bnplInstallmentValue}>{formatPrice(calculateInstallmentAmount(cartTotal, 3))}</span>
+                            </div>
+                            <div className={styles.bnplInstallmentPill}>
+                              <span className={styles.bnplInstallmentCount}>6 cuotas de</span>
+                              <span className={styles.bnplInstallmentValue}>{formatPrice(calculateInstallmentAmount(cartTotal, 6))}</span>
+                            </div>
+                            <div className={styles.bnplInstallmentPill}>
+                              <span className={styles.bnplInstallmentCount}>12 cuotas de</span>
+                              <span className={styles.bnplInstallmentValue}>{formatPrice(calculateInstallmentAmount(cartTotal, 12))}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* TRANSFERENCIA BANCARIA DETAILS */}
+                      {paymentMethod === 'transfer' && (
+                        <div className={styles.bankDetailsBox} style={{ marginTop: '16px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <strong style={{ color: '#fff', fontSize: '0.9rem' }}>🏦 Datos para Transferir</strong>
+                            <button type="button" onClick={handleCopyBankDetails} className={styles.copyBankBtn}>
+                              {copyFeedback ? <Check size={14} color="#4ade80" /> : <Copy size={14} />}
+                              <span>{copyFeedback ? '¡Copiado!' : 'Copiar Datos'}</span>
+                            </button>
+                          </div>
+                          <div className={styles.bankDetailRow}>
+                            <span className={styles.bankDetailLabel}>Banco:</span>
+                            <span className={styles.bankDetailValue}>Banco Estado</span>
+                          </div>
+                          <div className={styles.bankDetailRow}>
+                            <span className={styles.bankDetailLabel}>Tipo de Cuenta:</span>
+                            <span className={styles.bankDetailValue}>Cuenta Vista / RUT</span>
+                          </div>
+                          <div className={styles.bankDetailRow}>
+                            <span className={styles.bankDetailLabel}>N° de Cuenta:</span>
+                            <span className={styles.bankDetailValue}>19.823.419-5</span>
+                          </div>
+                          <div className={styles.bankDetailRow}>
+                            <span className={styles.bankDetailLabel}>Titular:</span>
+                            <span className={styles.bankDetailValue}>InkedSouh Tattoo Studio</span>
+                          </div>
+                          <div className={styles.bankDetailRow}>
+                            <span className={styles.bankDetailLabel}>RUT:</span>
+                            <span className={styles.bankDetailValue}>19.823.419-5</span>
+                          </div>
+                          <div className={styles.bankDetailRow}>
+                            <span className={styles.bankDetailLabel}>Correo comprobante:</span>
+                            <span className={styles.bankDetailValue}>pagos@inkedsouh.com</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* BOTONES DE NAVEGACIÓN */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px' }}>
+                        <button 
+                          type="button" 
+                          onClick={() => setCheckoutStep('details')}
+                          className={styles.btnSecondary}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 18px' }}
+                          disabled={orderProcessing}
+                        >
+                          <ArrowLeft size={16} />
+                          <span>Volver a Datos</span>
+                        </button>
+
+                        <button 
+                          type="button" 
+                          onClick={handleProcessCheckout}
+                          disabled={orderProcessing}
+                          className={styles.btnAddToCartLarge}
+                          style={{ width: 'auto', padding: '12px 28px', fontSize: '0.95rem' }}
+                        >
+                          {orderProcessing ? (
+                            <>
+                              <RefreshCw size={16} className={styles.spin} />
+                              <span>Procesando...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>{paymentMethod === 'whatsapp' ? 'Finalizar por WhatsApp' : 'Confirmar Pedido'}</span>
+                              <Check size={18} />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Summary Col */}
+                    <div className={styles.checkoutOrderSummary}>
+                      <h4 className={styles.checkoutSectionTitle}>
+                        <ShoppingBag size={18} style={{ color: '#ff2a3d' }} /> Resumen del Pedido
+                      </h4>
+                      <div style={{ fontSize: '0.8rem', color: '#a1a1aa', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px' }}>
+                        <div><strong>Cliente:</strong> {customerInfo.name}</div>
+                        <div><strong>Teléfono:</strong> {customerInfo.phone}</div>
+                        <div><strong>Dirección:</strong> {customerInfo.address}, {customerInfo.city}</div>
+                        <div style={{ marginTop: '4px', color: '#60a5fa' }}><strong>Plazo estimado:</strong> {deliveryTimeframe}</div>
+                      </div>
+                      {cart.map((item) => (
+                        <div key={item.id} className={styles.summaryItemRow}>
+                          <div className={styles.summaryItemName}>
+                            <span>{item.name} {item.variantName ? `(${item.variantName})` : ''}</span>
+                            <small style={{ color: '#71717a' }}>{item.quantity} un.</small>
+                          </div>
+                          <span style={{ color: '#fff', fontWeight: 600 }}>
+                            {formatPrice((item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price) * item.quantity)}
+                          </span>
+                        </div>
+                      ))}
+                      <div className={styles.summaryTotalRow}>
+                        <span>Total Final</span>
+                        <span style={{ color: '#ff2a3d' }}>{formatPrice(cartTotal)} CLP</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* PASO 3: CONFIRMACIÓN EXITOSA */}
+                {checkoutStep === 'success' && submittedOrder && (
+                  <div className={styles.orderSuccessBox}>
+                    <div className={styles.successIconWrap}>
+                      <CheckCircle2 size={36} />
+                    </div>
+
+                    <h3 style={{ color: '#fff', fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>
+                      ¡Pedido Registrado con Éxito!
+                    </h3>
+
+                    <div className={styles.orderNumberBadge}>
+                      Orden #{submittedOrder.orderNumber}
+                    </div>
+
+                    <p style={{ color: '#a1a1aa', fontSize: '0.9rem', lineHeight: 1.5, margin: 0 }}>
+                      {submittedOrder.paymentMethod === 'whatsapp' && (
+                        'Se ha abierto tu chat de WhatsApp con el resumen completo y los datos de tu despacho.'
+                      )}
+                      {submittedOrder.paymentMethod === 'transfer' && (
+                        'Tu pedido está registrado y a la espera de la validación de la transferencia bancaria. Envíanos el comprobante por WhatsApp para proceder con el despacho.'
+                      )}
+                      {submittedOrder.paymentMethod === 'bancame' && (
+                        'Tu solicitud de cuotas con Banca.me BNPL ha sido iniciada. Te notificaremos una vez aprobada la primera cuota.'
+                      )}
+                    </p>
+
+                    <div style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: '10px', padding: '10px 16px', fontSize: '0.82rem', color: '#bfdbfe', maxWidth: '480px' }}>
+                      🚚 <strong>Plazo estimado de entrega:</strong> {deliveryTimeframe}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                      <button 
+                        type="button" 
+                        className={styles.checkoutBtnNext} 
+                        style={{ background: '#27272a', color: '#fff' }}
+                        onClick={() => {
+                          setCheckoutOpen(false)
+                          setCheckoutStep('details')
+                        }}
+                      >
+                        Cerrar y seguir comprando
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+              </div>
             </div>
           </div>
         )}
@@ -513,3 +1277,4 @@ export default function ProductosPage() {
     </>
   )
 }
+

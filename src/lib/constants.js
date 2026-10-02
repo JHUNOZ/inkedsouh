@@ -45,7 +45,7 @@ export const APPOINTMENT_STATUS = {
 }
 
 // Categorías de productos
-export const PRODUCT_CATEGORIES = ['Cuidado', 'Kits', 'Diseños', 'Accesorios', 'Otro']
+export const PRODUCT_CATEGORIES = ['Agujas', 'Tintas', 'Cuidado', 'Máquinas', 'Kits', 'Diseños', 'Accesorios', 'Otro']
 
 // Niveles de cursos
 export const COURSE_LEVELS = {

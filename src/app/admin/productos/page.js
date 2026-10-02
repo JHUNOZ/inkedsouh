@@ -7,8 +7,16 @@ import {
   Eye, RefreshCw, Sliders, CheckSquare, 
   Square, Copy, Sparkles, Zap, Package, ArrowUpDown, Filter,
   Dice5, FileSpreadsheet, PlusCircle, MinusCircle, Clipboard,
-  CheckCheck, HelpCircle, FileText
+  CheckCheck, HelpCircle, FileText, Tag, Ruler, Palette, Box,
+  Wand2, ListPlus, SlidersHorizontal, CheckCircle2
 } from 'lucide-react'
+import { 
+  parseProductSpecifications, 
+  serializeProductSpecifications, 
+  calculateTotalVariantStock, 
+  formatCLP,
+  isVideoUrl 
+} from '@/lib/productUtils'
 import styles from './productos.module.css'
 
 export default function HoneCatalogPage() {
@@ -40,7 +48,7 @@ export default function HoneCatalogPage() {
   // Modals & Editors
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const [activeTabModal, setActiveTabModal] = useState('general') // 'general' | 'pricing' | 'gallery' | 'specs'
+  const [activeTabModal, setActiveTabModal] = useState('general') // 'general' | 'pricing' | 'gallery' | 'variants' | 'specs'
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [copiedSku, setCopiedSku] = useState(null)
@@ -59,7 +67,7 @@ export default function HoneCatalogPage() {
     old_price: '',
     discount: 0,
     stock: 0,
-    category: 'Cuidado',
+    category: 'Agujas',
     image_url: '',
     images: [],
     badge: '',
@@ -69,6 +77,14 @@ export default function HoneCatalogPage() {
 
   // Specs Key-Value Builder
   const [specList, setSpecList] = useState([{ key: '', value: '' }])
+
+  // Variants & Subcategories Builder
+  const [variantConfig, setVariantConfig] = useState({
+    enabled: false,
+    name: 'Calibre de las agujas',
+    variants: []
+  })
+  const [bulkVariantsText, setBulkVariantsText] = useState('')
 
   // Bulk Upload state
   const [bulkFiles, setBulkFiles] = useState([])
@@ -147,8 +163,9 @@ export default function HoneCatalogPage() {
     }
   }
 
-  // Categories extraction
-  const categories = ['all', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))]
+  // Categories extraction (including tattoo defaults)
+  const defaultCategories = ['Agujas', 'Tintas', 'Cuidado', 'Máquinas', 'Kits', 'Diseños', 'Accesorios']
+  const categories = ['all', ...Array.from(new Set([...defaultCategories, ...products.map(p => p.category).filter(Boolean)]))]
 
   // Calculate Metrics
   const totalProducts = products.length
@@ -156,8 +173,6 @@ export default function HoneCatalogPage() {
   const outOfStockCount = products.filter(p => (p.stock || 0) <= 0).length
   const lowStockCount = products.filter(p => (p.stock || 0) > 0 && (p.stock || 0) <= 5).length
   const totalInventoryValue = products.reduce((acc, p) => acc + (parseFloat(p.price || 0) * parseInt(p.stock || 0)), 0)
-
-  const formatCLP = (val) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(val || 0)
 
   // Copy SKU with confirmation
   const handleCopySku = (sku, e) => {
@@ -169,11 +184,15 @@ export default function HoneCatalogPage() {
     setTimeout(() => setCopiedSku(null), 2000)
   }
 
-  // Filtered & Sorted list
+  // Filtered & Sorted list (Matches title, SKU, category, and variant names/measures)
   const filteredProducts = products.filter(p => {
+    const { variantConfig: pVarConf } = parseProductSpecifications(p.specifications)
+    const variantNamesStr = (pVarConf.variants || []).map(v => `${v.name} ${v.sku}`).join(' ')
+
     const matchSearch = (p.name || '').toLowerCase().includes(search.toLowerCase()) || 
                         (p.sku || '').toLowerCase().includes(search.toLowerCase()) ||
-                        (p.category || '').toLowerCase().includes(search.toLowerCase())
+                        (p.category || '').toLowerCase().includes(search.toLowerCase()) ||
+                        variantNamesStr.toLowerCase().includes(search.toLowerCase())
     
     const matchCategory = selectedCategory === 'all' || p.category === selectedCategory
     
@@ -186,6 +205,7 @@ export default function HoneCatalogPage() {
     if (statusFilter === 'published') matchStatus = !!p.is_active
     if (statusFilter === 'draft') matchStatus = !p.is_active
     if (statusFilter === 'discount') matchStatus = (p.discount || 0) > 0 || ((p.old_price || 0) > (p.price || 0))
+    if (statusFilter === 'variants') matchStatus = pVarConf.enabled && pVarConf.variants?.length > 0
 
     return matchSearch && matchCategory && matchStock && matchStatus
   }).sort((a, b) => {
@@ -198,31 +218,16 @@ export default function HoneCatalogPage() {
     return 0
   })
 
-  // Open Modal
+  // Open Modal with full variant parsing
   const handleOpenModal = (product = null) => {
     setActiveTabModal('general')
+    setBulkVariantsText('')
     if (product) {
       setEditingId(product.id)
       
-      let parsedSpecs = [{ key: '', value: '' }]
-      if (product.specifications) {
-        try {
-          if (product.specifications.startsWith('{') || product.specifications.startsWith('[')) {
-            const obj = JSON.parse(product.specifications)
-            if (Array.isArray(obj)) parsedSpecs = obj
-            else parsedSpecs = Object.entries(obj).map(([k, v]) => ({ key: k, value: v }))
-          } else {
-            parsedSpecs = product.specifications.split('\n').map(line => {
-              const [k, ...v] = line.split(':')
-              return { key: k?.trim() || '', value: v.join(':')?.trim() || '' }
-            }).filter(s => s.key || s.value)
-          }
-        } catch {
-          parsedSpecs = [{ key: 'Detalles', value: product.specifications }]
-        }
-      }
-      if (parsedSpecs.length === 0) parsedSpecs = [{ key: '', value: '' }]
-      setSpecList(parsedSpecs)
+      const { attributes, variantConfig: vConf } = parseProductSpecifications(product.specifications)
+      setSpecList(attributes.length > 0 ? attributes : [{ key: '', value: '' }])
+      setVariantConfig(vConf)
 
       let galleryImages = []
       if (Array.isArray(product.images)) galleryImages = product.images
@@ -242,7 +247,7 @@ export default function HoneCatalogPage() {
         old_price: product.old_price || '',
         discount: product.discount || 0,
         stock: product.stock !== undefined ? product.stock : 0,
-        category: product.category || 'Cuidado',
+        category: product.category || 'Agujas',
         image_url: product.image_url || '',
         images: galleryImages,
         badge: product.badge || '',
@@ -252,16 +257,21 @@ export default function HoneCatalogPage() {
     } else {
       setEditingId(null)
       setSpecList([{ key: '', value: '' }])
+      setVariantConfig({
+        enabled: false,
+        name: 'Calibre de las agujas',
+        variants: []
+      })
       setFormData({
         name: '',
-        sku: generateUniqueSKU('Cuidado'),
+        sku: generateUniqueSKU('Agujas'),
         description: '',
         specifications: '',
         price: '',
         old_price: '',
         discount: 0,
         stock: 10,
-        category: 'Cuidado',
+        category: 'Agujas',
         image_url: '',
         images: [],
         badge: 'NUEVO',
@@ -277,6 +287,134 @@ export default function HoneCatalogPage() {
     const newSku = generateUniqueSKU(formData.category)
     setFormData(prev => ({ ...prev, sku: newSku }))
     showToast(`SKU generado: ${newSku}`)
+  }
+
+  // VARIANT HANDLERS (HONE PRO)
+  const handleToggleVariantFeature = (checked) => {
+    setVariantConfig(prev => ({
+      ...prev,
+      enabled: checked,
+      name: prev.name || 'Calibre de las agujas',
+      variants: checked && (!prev.variants || prev.variants.length === 0) ? [
+        { id: `v-${Date.now()}-1`, name: '1207', sku: '1207RM', stock: 25, price: '' },
+        { id: `v-${Date.now()}-2`, name: '1205', sku: '1205RM', stock: 20, price: '' },
+        { id: `v-${Date.now()}-3`, name: '1209', sku: '1209RM', stock: 15, price: '' }
+      ] : prev.variants
+    }))
+  }
+
+  const handleAddVariant = () => {
+    const nextIdx = (variantConfig.variants?.length || 0) + 1
+    const newVariant = {
+      id: `v-${Date.now()}-${nextIdx}`,
+      name: '',
+      sku: `${formData.sku ? formData.sku + '-V' + nextIdx : generateUniqueSKU(formData.category)}`,
+      stock: 10,
+      price: ''
+    }
+    setVariantConfig(prev => ({
+      ...prev,
+      enabled: true,
+      variants: [...(prev.variants || []), newVariant]
+    }))
+  }
+
+  const handleUpdateVariant = (index, field, value) => {
+    const updated = [...(variantConfig.variants || [])]
+    updated[index] = { ...updated[index], [field]: value }
+    setVariantConfig(prev => ({
+      ...prev,
+      variants: updated
+    }))
+  }
+
+  const handleRegenerateVariantSku = (index) => {
+    const v = variantConfig.variants[index]
+    const varName = v.name ? v.name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : `V${index + 1}`
+    const baseCode = formData.sku ? formData.sku.split('-')[0] : 'INK'
+    const newSku = `${varName}`
+    handleUpdateVariant(index, 'sku', newSku)
+    showToast(`SKU asignado: ${newSku}`)
+  }
+
+  const handleRemoveVariant = (index) => {
+    const updated = (variantConfig.variants || []).filter((_, i) => i !== index)
+    setVariantConfig(prev => ({
+      ...prev,
+      variants: updated
+    }))
+  }
+
+  const handleGenerateBulkVariants = (customText = null) => {
+    const textToProcess = customText !== null ? customText : bulkVariantsText
+    if (!textToProcess || !textToProcess.trim()) {
+      showToast('Ingresa los calibres o medidas separados por comas', 'error')
+      return
+    }
+
+    const items = textToProcess
+      .split(/[,;\n]+/)
+      .map(s => s.trim())
+      .filter(Boolean)
+
+    if (items.length === 0) return
+
+    const existingNames = new Set((variantConfig.variants || []).map(v => v.name.trim().toLowerCase()))
+
+    const newVariants = items
+      .filter(item => !existingNames.has(item.toLowerCase()))
+      .map((item, idx) => {
+        const cleanItemCode = item.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+        return {
+          id: `v-${Date.now()}-${idx}`,
+          name: item,
+          sku: cleanItemCode || `VAR-${idx + 1}`,
+          stock: 20,
+          price: ''
+        }
+      })
+
+    if (newVariants.length === 0) {
+      showToast('Las opciones ya estaban en la lista', 'error')
+      return
+    }
+
+    const merged = [...(variantConfig.variants || []), ...newVariants]
+    setVariantConfig(prev => ({
+      ...prev,
+      enabled: true,
+      variants: merged
+    }))
+    setBulkVariantsText('')
+    showToast(`¡${newVariants.length} opciones agregadas con éxito!`)
+  }
+
+  const applyNeedlePreset = (presetType) => {
+    if (presetType === 'RM') {
+      setVariantConfig(prev => ({ ...prev, enabled: true, name: 'Calibre de las agujas' }))
+      handleGenerateBulkVariants('1207, 1205, 1209, 1215, 1211, 1213, 1243, 1219, 1027')
+    } else if (presetType === 'MC') {
+      setVariantConfig(prev => ({ ...prev, enabled: true, name: 'Medida Magnum Curva (MC)' }))
+      handleGenerateBulkVariants('1007MC, 1009MC, 1011MC, 1013MC, 1015MC')
+    } else if (presetType === 'RL') {
+      setVariantConfig(prev => ({ ...prev, enabled: true, name: 'Calibre Round Liner (RL)' }))
+      handleGenerateBulkVariants('1003RL, 1005RL, 1007RL, 1009RL, 1203RL, 1205RL, 1207RL, 1209RL')
+    } else if (presetType === 'RS') {
+      setVariantConfig(prev => ({ ...prev, enabled: true, name: 'Calibre Round Shader (RS)' }))
+      handleGenerateBulkVariants('1205RS, 1207RS, 1209RS, 1211RS, 1214RS')
+    } else if (presetType === 'TALLAS') {
+      setVariantConfig(prev => ({ ...prev, enabled: true, name: 'Talla' }))
+      handleGenerateBulkVariants('S, M, L, XL, XXL')
+    } else if (presetType === 'COLORES') {
+      setVariantConfig(prev => ({ ...prev, enabled: true, name: 'Color / Tono' }))
+      handleGenerateBulkVariants('Negro Triple Black, Dynamic Black, Blanco Nieve, Rojo Fuego, Azul Tribal')
+    }
+  }
+
+  const handleSyncStockFromVariants = () => {
+    const total = calculateTotalVariantStock(variantConfig.variants)
+    setFormData(prev => ({ ...prev, stock: total }))
+    showToast(`Stock total sincronizado a ${total} unidades`)
   }
 
   // Quick Inline Stock Adjust (+1 / -1)
@@ -397,25 +535,31 @@ export default function HoneCatalogPage() {
     }))
   }
 
-  // Save Detailed Product
+  // Save Detailed Product (with Variants & Specifications)
   const handleSubmitProduct = async (e) => {
     e.preventDefault()
 
-    const cleanSpecs = specList.filter(s => s.key.trim() && s.value.trim())
-    const specsString = cleanSpecs.length > 0 
-      ? JSON.stringify(cleanSpecs.reduce((acc, curr) => ({ ...acc, [curr.key.trim()]: curr.value.trim() }), {}))
-      : (formData.specifications || '')
+    const specsString = serializeProductSpecifications(specList, variantConfig)
+
+    // Calculate final stock
+    let finalStock = parseInt(formData.stock) || 0
+    if (variantConfig.enabled && variantConfig.variants && variantConfig.variants.length > 0) {
+      const variantTotal = calculateTotalVariantStock(variantConfig.variants)
+      if (variantTotal > 0) {
+        finalStock = variantTotal
+      }
+    }
 
     const payload = {
       name: formData.name.trim(),
       sku: formData.sku?.trim() || generateUniqueSKU(formData.category),
       description: formData.description?.trim() || null,
-      specifications: specsString || null,
+      specifications: specsString,
       price: parseFloat(formData.price) || 0,
       old_price: formData.old_price ? parseFloat(formData.old_price) : null,
       discount: parseInt(formData.discount) || 0,
-      stock: parseInt(formData.stock) || 0,
-      category: formData.category || 'General',
+      stock: finalStock,
+      category: formData.category || 'Agujas',
       image_url: formData.image_url || (formData.images && formData.images[0]) || null,
       images: formData.images || [],
       badge: formData.badge?.trim() || null,
@@ -431,14 +575,14 @@ export default function HoneCatalogPage() {
           .eq('id', editingId)
         
         if (error) throw error
-        showToast('Producto actualizado exitosamente')
+        showToast('Producto actualizado exitosamente con variantes')
       } else {
         const { error } = await supabase
           .from('products')
           .insert([payload])
         
         if (error) throw error
-        showToast('Producto creado y sincronizado en web')
+        showToast('Producto creado y sincronizado en la tienda')
       }
 
       setModalOpen(false)
@@ -1352,7 +1496,11 @@ export default function HoneCatalogPage() {
                     <td>
                       <div className={styles.thumbWrapper}>
                         {product.image_url ? (
-                          <img src={product.image_url} alt={product.name} className={styles.productThumb} />
+                          isVideoUrl(product.image_url) ? (
+                            <video src={product.image_url} autoPlay muted loop playsInline className={styles.productThumb} />
+                          ) : (
+                            <img src={product.image_url} alt={product.name} className={styles.productThumb} />
+                          )
                         ) : (
                           <div className={styles.thumbPlaceholder}><ImageIcon size={18} /></div>
                         )}
@@ -1363,8 +1511,27 @@ export default function HoneCatalogPage() {
                     </td>
                     <td>
                       <div className={styles.productTitleCol}>
-                        <span className={styles.productName}>{product.name}</span>
-                        {product.badge && <span className={styles.badgePill}>{product.badge}</span>}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                          <span className={styles.productName}>{product.name}</span>
+                          {product.badge && <span className={styles.badgePill}>{product.badge}</span>}
+                        </div>
+                        {(() => {
+                          const { variantConfig: itemVars } = parseProductSpecifications(product.specifications)
+                          if (itemVars.enabled && itemVars.variants && itemVars.variants.length > 0) {
+                            return (
+                              <div className={styles.variantBadgeRow}>
+                                <span className={styles.variantBadge}>
+                                  ⚡ {itemVars.variants.length} {itemVars.name || 'Variantes'}:
+                                </span>
+                                <span className={styles.variantListText} title={itemVars.variants.map(v => v.name).join(', ')}>
+                                  {itemVars.variants.slice(0, 5).map(v => v.name).join(', ')}
+                                  {itemVars.variants.length > 5 ? ` +${itemVars.variants.length - 5}` : ''}
+                                </span>
+                              </div>
+                            )
+                          }
+                          return null
+                        })()}
                       </div>
                     </td>
                     <td>
@@ -1453,51 +1620,67 @@ export default function HoneCatalogPage() {
       ) : (
         /* GRID VIEW (VISOR POR FOTOS / TARJETAS) */
         <div className={styles.grid}>
-          {filteredProducts.map((product) => (
-            <div key={product.id} className={styles.gridCard}>
-              <div className={styles.gridCardMedia}>
-                {product.image_url ? (
-                  <img src={product.image_url} alt={product.name} className={styles.gridCardImg} />
-                ) : (
-                  <div className={styles.noImagePlaceholder}><ImageIcon size={32} /></div>
-                )}
-                
-                {product.badge && <span className={styles.gridBadge}>{product.badge}</span>}
-                {product.stock <= 0 && <span className={styles.gridAgotado}>AGOTADO</span>}
+          {filteredProducts.map((product) => {
+            const { variantConfig: itemVars } = parseProductSpecifications(product.specifications)
+            return (
+              <div key={product.id} className={styles.gridCard}>
+                <div className={styles.gridCardMedia}>
+                  {product.image_url ? (
+                    isVideoUrl(product.image_url) ? (
+                      <video src={product.image_url} autoPlay muted loop playsInline className={styles.gridCardImg} />
+                    ) : (
+                      <img src={product.image_url} alt={product.name} className={styles.gridCardImg} />
+                    )
+                  ) : (
+                    <div className={styles.noImagePlaceholder}><ImageIcon size={32} /></div>
+                  )}
+                  
+                  {product.badge && <span className={styles.gridBadge}>{product.badge}</span>}
+                  {product.stock <= 0 && <span className={styles.gridAgotado}>AGOTADO</span>}
 
-                <div className={styles.gridCardOverlay}>
-                  <button onClick={() => handleOpenModal(product)} className={styles.gridOverlayBtn} title="Editar">
-                    <Edit2 size={16} />
-                  </button>
-                  <button onClick={() => handleDuplicate(product)} className={styles.gridOverlayBtn} title="Duplicar">
-                    <Copy size={16} />
-                  </button>
-                  <button onClick={() => handleDelete(product.id)} className={`${styles.gridOverlayBtn} ${styles.btnDeleteIcon}`} title="Eliminar">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-
-              <div className={styles.gridCardBody}>
-                <div className={styles.gridCardCategoryRow}>
-                  <span className={styles.categoryBadge}>{product.category}</span>
-                  <span className={product.stock <= 0 ? styles.stockRed : styles.stockGreen}>
-                    {product.stock} en stock
-                  </span>
-                </div>
-                <h3 className={styles.gridCardTitle}>{product.name}</h3>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div className={styles.gridCardPriceRow}>
-                    <span className={styles.priceMain}>{formatCLP(product.price)}</span>
-                    {product.old_price > product.price && (
-                      <span className={styles.priceOld}>{formatCLP(product.old_price)}</span>
-                    )}
+                  <div className={styles.gridCardOverlay}>
+                    <button onClick={() => handleOpenModal(product)} className={styles.gridOverlayBtn} title="Editar">
+                      <Edit2 size={16} />
+                    </button>
+                    <button onClick={() => handleDuplicate(product)} className={styles.gridOverlayBtn} title="Duplicar">
+                      <Copy size={16} />
+                    </button>
+                    <button onClick={() => handleDelete(product.id)} className={`${styles.gridOverlayBtn} ${styles.btnDeleteIcon}`} title="Eliminar">
+                      <Trash2 size={16} />
+                    </button>
                   </div>
-                  <span className={styles.skuTagInline}>{product.sku || 'N/A'}</span>
+                </div>
+
+                <div className={styles.gridCardBody}>
+                  <div className={styles.gridCardCategoryRow}>
+                    <span className={styles.categoryBadge}>{product.category}</span>
+                    <span className={product.stock <= 0 ? styles.stockRed : styles.stockGreen}>
+                      {product.stock} en stock
+                    </span>
+                  </div>
+                  <h3 className={styles.gridCardTitle}>{product.name}</h3>
+
+                  {itemVars.enabled && itemVars.variants?.length > 0 && (
+                    <div style={{ marginTop: '2px', marginBottom: '4px' }}>
+                      <span className={styles.variantBadge}>
+                        ⚡ {itemVars.variants.length} Medidas ({itemVars.name})
+                      </span>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                    <div className={styles.gridCardPriceRow}>
+                      <span className={styles.priceMain}>{formatCLP(product.price)}</span>
+                      {product.old_price > product.price && (
+                        <span className={styles.priceOld}>{formatCLP(product.old_price)}</span>
+                      )}
+                    </div>
+                    <span className={styles.skuTagInline}>{product.sku || 'N/A'}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
@@ -1571,28 +1754,43 @@ export default function HoneCatalogPage() {
             {/* Modal Navigation Tabs */}
             <div className={styles.modalTabs}>
               <button 
+                type="button"
                 className={`${styles.modalTab} ${activeTabModal === 'general' ? styles.modalTabActive : ''}`}
                 onClick={() => setActiveTabModal('general')}
               >
                 1. Datos Básicos & SKU
               </button>
               <button 
+                type="button"
                 className={`${styles.modalTab} ${activeTabModal === 'pricing' ? styles.modalTabActive : ''}`}
                 onClick={() => setActiveTabModal('pricing')}
               >
                 2. Precio e Inventario
               </button>
               <button 
+                type="button"
                 className={`${styles.modalTab} ${activeTabModal === 'gallery' ? styles.modalTabActive : ''}`}
                 onClick={() => setActiveTabModal('gallery')}
               >
                 3. Galería de Fotos ({formData.images?.length || 0})
               </button>
               <button 
+                type="button"
+                className={`${styles.modalTab} ${activeTabModal === 'variants' ? styles.modalTabActive : ''}`}
+                onClick={() => setActiveTabModal('variants')}
+                style={{ position: 'relative' }}
+              >
+                4. Variantes & Medidas {variantConfig.enabled && variantConfig.variants?.length > 0 ? `(${variantConfig.variants.length})` : '(Opcional)'}
+                {variantConfig.enabled && variantConfig.variants?.length > 0 && (
+                  <span style={{ width: '7px', height: '7px', background: '#ff2a3d', borderRadius: '50%', display: 'inline-block', marginLeft: '6px' }}></span>
+                )}
+              </button>
+              <button 
+                type="button"
                 className={`${styles.modalTab} ${activeTabModal === 'specs' ? styles.modalTabActive : ''}`}
                 onClick={() => setActiveTabModal('specs')}
               >
-                4. Especificaciones Técnicas
+                5. Ficha Técnica
               </button>
             </div>
 
@@ -1606,7 +1804,7 @@ export default function HoneCatalogPage() {
                       <input 
                         type="text" 
                         required 
-                        placeholder="Ej: Crema Cicatrizante Premium 100ml"
+                        placeholder="Ej: Cartuchos RM Cartridge Por Unidad Variedad Medidas RM Tatuajes"
                         value={formData.name} 
                         onChange={e => setFormData({ ...formData, name: e.target.value })} 
                         className={styles.input} 
@@ -1631,7 +1829,7 @@ export default function HoneCatalogPage() {
                         <input 
                           type="text" 
                           required
-                          placeholder="INK-CUI-4910A"
+                          placeholder="INK-AGU-4910A"
                           value={formData.sku} 
                           onChange={e => setFormData({ ...formData, sku: e.target.value })} 
                           className={styles.input} 
@@ -1654,7 +1852,7 @@ export default function HoneCatalogPage() {
                       <input 
                         type="text" 
                         list="categoriesList"
-                        placeholder="Cuidado, Ropa, Arte, Tintas..."
+                        placeholder="Agujas, Tintas, Cuidado, Máquinas..."
                         value={formData.category} 
                         onChange={e => setFormData({ ...formData, category: e.target.value })} 
                         className={styles.input} 
@@ -1682,7 +1880,7 @@ export default function HoneCatalogPage() {
                     <label>Descripción Completa del Producto</label>
                     <textarea 
                       rows="4" 
-                      placeholder="Describe los beneficios, ingredientes, modo de uso o detalles artísticos..."
+                      placeholder="Describe los beneficios, características técnicas, medidas o recomendaciones para tatuadores..."
                       value={formData.description} 
                       onChange={e => setFormData({ ...formData, description: e.target.value })} 
                       className={styles.textarea} 
@@ -1722,7 +1920,7 @@ export default function HoneCatalogPage() {
                       <input 
                         type="number" 
                         required 
-                        placeholder="18000"
+                        placeholder="1290"
                         value={formData.price} 
                         onChange={e => handlePriceChange(e.target.value, formData.old_price)} 
                         className={styles.input} 
@@ -1733,7 +1931,7 @@ export default function HoneCatalogPage() {
                       <label>Precio Anterior / Tachado (Opcional)</label>
                       <input 
                         type="number" 
-                        placeholder="22000"
+                        placeholder="1890"
                         value={formData.old_price} 
                         onChange={e => handlePriceChange(formData.price, e.target.value)} 
                         className={styles.input} 
@@ -1750,12 +1948,18 @@ export default function HoneCatalogPage() {
 
                   <div className={styles.formRow}>
                     <div className={styles.formGroup}>
-                      {/* Changed label from "Stock Disponible en Bodega" to "Stock disponible" */}
-                      <label>Stock disponible</label>
+                      <label>
+                        Stock disponible
+                        {variantConfig.enabled && variantConfig.variants?.length > 0 && (
+                          <span style={{ color: '#4ade80', fontSize: '0.8rem', marginLeft: '6px' }}>
+                            (Suma de variantes: {calculateTotalVariantStock(variantConfig.variants)} un.)
+                          </span>
+                        )}
+                      </label>
                       <input 
                         type="number" 
                         required 
-                        placeholder="15"
+                        placeholder="51"
                         value={formData.stock} 
                         onChange={e => setFormData({ ...formData, stock: e.target.value })} 
                         className={styles.input} 
@@ -1771,8 +1975,8 @@ export default function HoneCatalogPage() {
                   <div className={styles.galleryUploadArea}>
                     <div className={styles.galleryUploadHeader}>
                       <div>
-                        <h4>Galería de Imágenes del Producto</h4>
-                        <p>Sube múltiples fotos. La foto con borde rojo es la miniatura principal en la tienda.</p>
+                        <h4>Galería Multimedia del Producto (Fotos & Videos)</h4>
+                        <p>Sube fotos o videos MP4/WEBM. Los videos se reproducirán automáticamente en bucle silenciado.</p>
                       </div>
                       <button 
                         type="button" 
@@ -1781,13 +1985,13 @@ export default function HoneCatalogPage() {
                         disabled={uploading}
                       >
                         <UploadCloud size={16} />
-                        <span>{uploading ? 'Subiendo...' : 'Añadir Fotos'}</span>
+                        <span>{uploading ? 'Subiendo...' : 'Añadir Fotos / Videos'}</span>
                       </button>
                       <input 
                         type="file" 
                         ref={fileInputRef} 
                         multiple 
-                        accept="image/*" 
+                        accept="image/*,video/*" 
                         onChange={handleMultipleImageUpload} 
                         style={{ display: 'none' }} 
                       />
@@ -1808,10 +2012,20 @@ export default function HoneCatalogPage() {
                       ) : (
                         formData.images.map((url, idx) => {
                           const isPrimary = formData.image_url === url || (!formData.image_url && idx === 0)
+                          const isVideo = isVideoUrl(url)
                           return (
                             <div key={idx} className={`${styles.galleryItem} ${isPrimary ? styles.galleryItemPrimary : ''}`}>
-                              <img src={url} alt="gallery" className={styles.galleryImg} />
+                              {isVideo ? (
+                                <video src={url} autoPlay muted loop playsInline className={styles.galleryImg} />
+                              ) : (
+                                <img src={url} alt="gallery" className={styles.galleryImg} />
+                              )}
                               {isPrimary && <span className={styles.primaryBadge}>Principal</span>}
+                              {isVideo && (
+                                <span style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.75)', color: '#fff', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', zIndex: 3 }}>
+                                  VIDEO
+                                </span>
+                              )}
                               
                               <div className={styles.galleryActions}>
                                 {!isPrimary && (
@@ -1842,13 +2056,335 @@ export default function HoneCatalogPage() {
                 </div>
               )}
 
-              {/* TAB 4: SPECIFICATIONS */}
+              {/* TAB 4: VARIANTES & SUBCATEGORÍAS (HONE PRO) */}
+              {activeTabModal === 'variants' && (
+                <div className={styles.tabContent}>
+                  <div className={styles.variantSection}>
+                    
+                    {/* Switch principal para activar variantes */}
+                    <div className={styles.variantToggleCard}>
+                      <div className={styles.variantToggleInfo}>
+                        <div className={styles.variantToggleIcon}>
+                          <SlidersHorizontal size={22} />
+                        </div>
+                        <div>
+                          <h4 className={styles.variantToggleTitle}>Habilitar Variantes / Subcategorías de Producto</h4>
+                          <p className={styles.variantToggleDesc}>
+                            Permite a los clientes seleccionar calibre de agujas, medidas, tallas o colores antes de agregar al carrito.
+                          </p>
+                        </div>
+                      </div>
+                      <label className={styles.switchToggle}>
+                        <input 
+                          type="checkbox" 
+                          checked={variantConfig.enabled}
+                          onChange={(e) => handleToggleVariantFeature(e.target.checked)}
+                        />
+                        <span className={styles.switchSlider}></span>
+                      </label>
+                    </div>
+
+                    {variantConfig.enabled && (
+                      <div className={styles.variantPanel}>
+                        {/* Card 1: Nombre de la Variedad / Subcategoría */}
+                        <div className={styles.variantCard}>
+                          <div className={styles.variantCardHeader}>
+                            <span className={styles.variantCardTitle}>
+                              <Tag size={16} color="#ff2a3d" />
+                              1. ¿De qué se trata la variedad o subcategoría? *
+                            </span>
+                            <span style={{ fontSize: '0.78rem', color: '#8e8e9f' }}>
+                              Aparecerá en la tienda como título sobre los botones de selección
+                            </span>
+                          </div>
+
+                          <input 
+                            type="text"
+                            required
+                            placeholder="Ej: Calibre de las agujas, Medidas, Talla, Color..."
+                            value={variantConfig.name}
+                            onChange={(e) => setVariantConfig({ ...variantConfig, name: e.target.value })}
+                            className={styles.input}
+                          />
+
+                          {/* Sugerencias rápidas con 1 clic */}
+                          <div className={styles.variantChipsRow}>
+                            <span style={{ fontSize: '0.75rem', color: '#8e8e9f', marginRight: '4px' }}>Sugerencias rápidas:</span>
+                            <button 
+                              type="button" 
+                              onClick={() => setVariantConfig({ ...variantConfig, name: 'Calibre de las agujas' })}
+                              className={styles.variantChipBtn}
+                            >
+                              💉 Calibre de las agujas
+                            </button>
+                            <button 
+                              type="button" 
+                              onClick={() => setVariantConfig({ ...variantConfig, name: 'Medidas de Cartuchos' })}
+                              className={styles.variantChipBtn}
+                            >
+                              📐 Medidas de Cartuchos
+                            </button>
+                            <button 
+                              type="button" 
+                              onClick={() => setVariantConfig({ ...variantConfig, name: 'Talla' })}
+                              className={styles.variantChipBtn}
+                            >
+                              👕 Talla
+                            </button>
+                            <button 
+                              type="button" 
+                              onClick={() => setVariantConfig({ ...variantConfig, name: 'Color / Tono' })}
+                              className={styles.variantChipBtn}
+                            >
+                              🎨 Color
+                            </button>
+                            <button 
+                              type="button" 
+                              onClick={() => setVariantConfig({ ...variantConfig, name: 'Presentación / ml' })}
+                              className={styles.variantChipBtn}
+                            >
+                              🧪 Presentación
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Card 2: Generador Rápido en Lote (Fast Bulk Creator) */}
+                        <div className={styles.variantCard}>
+                          <div className={styles.variantCardHeader}>
+                            <span className={styles.variantCardTitle}>
+                              <Wand2 size={16} color="#ff8591" />
+                              2. Creador Rápido en Lote (Medidas & Variedades)
+                            </span>
+                            <span style={{ fontSize: '0.78rem', color: '#4ade80' }}>
+                              ¡Añade múltiples calibres al instante!
+                            </span>
+                          </div>
+
+                          <div className={styles.variantBulkBox}>
+                            <div className={styles.variantBulkRow}>
+                              <input 
+                                type="text"
+                                placeholder="Escribe o pega medidas separadas por coma: 1207, 1205, 1209, 1215, 1211..."
+                                value={bulkVariantsText}
+                                onChange={(e) => setBulkVariantsText(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault()
+                                    handleGenerateBulkVariants()
+                                  }
+                                }}
+                                className={styles.input}
+                              />
+                              <button 
+                                type="button" 
+                                onClick={() => handleGenerateBulkVariants()}
+                                className={styles.btnAdd}
+                                style={{ whiteSpace: 'nowrap' }}
+                              >
+                                <Zap size={14} />
+                                <span>Generar</span>
+                              </button>
+                            </div>
+
+                            <div className={styles.variantPresetsRow}>
+                              <span>Plantillas de agujas rápidas:</span>
+                              <button 
+                                type="button" 
+                                onClick={() => applyNeedlePreset('RM')}
+                                className={styles.variantPresetBtn}
+                                title="Cargar calibres RM (1207, 1205, 1209, 1215, 1211, 1213, 1243, 1219, 1027)"
+                              >
+                                + Agujas RM
+                              </button>
+                              <button 
+                                type="button" 
+                                onClick={() => applyNeedlePreset('MC')}
+                                className={styles.variantPresetBtn}
+                                title="Cargar medidas Magnum Curva MC (1007MC, 1009MC, 1011MC, 1013MC, 1015MC)"
+                              >
+                                + Agujas MC
+                              </button>
+                              <button 
+                                type="button" 
+                                onClick={() => applyNeedlePreset('RL')}
+                                className={styles.variantPresetBtn}
+                                title="Cargar calibres Round Liner (1003RL, 1005RL, 1007RL, 1009RL, 1203RL...)"
+                              >
+                                + Agujas RL
+                              </button>
+                              <button 
+                                type="button" 
+                                onClick={() => applyNeedlePreset('RS')}
+                                className={styles.variantPresetBtn}
+                                title="Cargar calibres Round Shader (1205RS, 1207RS, 1209RS, 1211RS...)"
+                              >
+                                + Agujas RS
+                              </button>
+                              <button 
+                                type="button" 
+                                onClick={() => applyNeedlePreset('TALLAS')}
+                                className={styles.variantPresetBtn}
+                                title="Cargar tallas S, M, L, XL, XXL"
+                              >
+                                + Tallas Ropa
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Card 3: Tabla de Variantes Configuradas */}
+                        <div className={styles.variantCard}>
+                          <div className={styles.variantCardHeader}>
+                            <span className={styles.variantCardTitle}>
+                              <ListPlus size={16} color="#ff2a3d" />
+                              3. Lista de Medidas / Variantes ({variantConfig.variants?.length || 0})
+                            </span>
+                            <button 
+                              type="button" 
+                              onClick={handleAddVariant} 
+                              className={styles.btnSecondary}
+                              style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                            >
+                              <Plus size={14} /> Añadir Manual
+                            </button>
+                          </div>
+
+                          {/* Summary & Sync Bar */}
+                          {variantConfig.variants?.length > 0 && (
+                            <div className={styles.variantSummaryBar}>
+                              <span>
+                                <strong>{variantConfig.variants.length}</strong> medidas registradas • Stock acumulado:{' '}
+                                <strong>{calculateTotalVariantStock(variantConfig.variants)}</strong> unidades
+                              </span>
+                              <button 
+                                type="button" 
+                                onClick={handleSyncStockFromVariants}
+                                className={styles.btnVariantSync}
+                                title="Copiar la suma de stock de las variantes al stock principal del producto"
+                              >
+                                <RefreshCw size={12} /> Sincronizar Stock Base
+                              </button>
+                            </div>
+                          )}
+
+                          {(!variantConfig.variants || variantConfig.variants.length === 0) ? (
+                            <div style={{ textAlign: 'center', padding: '30px 10px', color: '#8e8e9f' }}>
+                              <Package size={32} style={{ opacity: 0.4, margin: '0 auto 8px' }} />
+                              <p>Aún no has agregado medidas o variantes para este producto.</p>
+                              <p style={{ fontSize: '0.8rem', color: '#636366' }}>
+                                Usa el creador rápido de arriba o haz clic en &quot;Añadir Manual&quot;.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className={styles.tableResponsive} style={{ background: 'rgba(0,0,0,0.3)' }}>
+                              <table className={styles.variantItemsTable}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ width: '130px' }}>Medida / Opción *</th>
+                                    <th style={{ width: '160px' }}>SKU de Variante</th>
+                                    <th style={{ width: '100px' }}>Stock</th>
+                                    <th style={{ width: '130px' }}>Precio (CLP)</th>
+                                    <th style={{ width: '90px' }}>Estado</th>
+                                    <th style={{ width: '50px', textAlign: 'center' }}>Quitar</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {variantConfig.variants.map((v, idx) => {
+                                    const vStock = parseInt(v.stock) || 0
+                                    return (
+                                      <tr key={v.id || idx}>
+                                        <td>
+                                          <input 
+                                            type="text" 
+                                            required
+                                            placeholder="Ej: 1207 o 1007MC"
+                                            value={v.name}
+                                            onChange={(e) => handleUpdateVariant(idx, 'name', e.target.value)}
+                                            className={styles.inlineInput}
+                                            style={{ fontWeight: 600, color: '#ff8591' }}
+                                          />
+                                        </td>
+                                        <td>
+                                          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                            <input 
+                                              type="text" 
+                                              placeholder="1207RM"
+                                              value={v.sku}
+                                              onChange={(e) => handleUpdateVariant(idx, 'sku', e.target.value)}
+                                              className={styles.inlineInput}
+                                              style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                                            />
+                                            <button 
+                                              type="button" 
+                                              onClick={() => handleRegenerateVariantSku(idx)}
+                                              className={styles.btnGenIcon}
+                                              style={{ width: '28px', height: '28px' }}
+                                              title="Generar código de SKU para esta medida"
+                                            >
+                                              <Dice5 size={13} />
+                                            </button>
+                                          </div>
+                                        </td>
+                                        <td>
+                                          <input 
+                                            type="number" 
+                                            min="0"
+                                            value={v.stock !== undefined ? v.stock : 0}
+                                            onChange={(e) => handleUpdateVariant(idx, 'stock', parseInt(e.target.value) || 0)}
+                                            className={styles.inlineInput}
+                                          />
+                                        </td>
+                                        <td>
+                                          <input 
+                                            type="number" 
+                                            placeholder={`Hereda ($${formData.price || 0})`}
+                                            value={v.price || ''}
+                                            onChange={(e) => handleUpdateVariant(idx, 'price', e.target.value)}
+                                            className={styles.inlineInput}
+                                          />
+                                        </td>
+                                        <td>
+                                          {vStock > 0 ? (
+                                            <span style={{ color: '#4ade80', fontSize: '0.75rem', fontWeight: 600 }}>
+                                              ● {vStock} un.
+                                            </span>
+                                          ) : (
+                                            <span style={{ color: '#f87171', fontSize: '0.75rem', fontWeight: 600 }}>
+                                              ✕ Agotado
+                                            </span>
+                                          )}
+                                        </td>
+                                        <td style={{ textAlign: 'center' }}>
+                                          <button 
+                                            type="button" 
+                                            onClick={() => handleRemoveVariant(idx)}
+                                            className={styles.btnActionIcon}
+                                            title="Eliminar esta medida"
+                                          >
+                                            <Trash2 size={14} />
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    )
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 5: SPECIFICATIONS */}
               {activeTabModal === 'specs' && (
                 <div className={styles.tabContent}>
                   <div className={styles.specsHeader}>
                     <div>
                       <h4>Ficha Técnica / Atributos Dinámicos</h4>
-                      <p>Añade especificaciones como Dimensiones, Ingredientes, Tallas, Materiales, etc.</p>
+                      <p>Añade especificaciones como Dimensiones, Ingredientes, Materiales, Esterilización, etc.</p>
                     </div>
                     <button type="button" onClick={addSpecRow} className={styles.btnSecondary}>
                       <Plus size={14} /> Añadir Atributo
@@ -1860,7 +2396,7 @@ export default function HoneCatalogPage() {
                       <div key={index} className={styles.specRow}>
                         <input 
                           type="text" 
-                          placeholder="Propiedad (ej: Material, Talla, Contenido)"
+                          placeholder="Propiedad (ej: Material, Esterilización, Contenido)"
                           value={spec.key} 
                           onChange={(e) => handleSpecChange(index, 'key', e.target.value)} 
                           className={styles.input} 
@@ -1868,7 +2404,7 @@ export default function HoneCatalogPage() {
                         />
                         <input 
                           type="text" 
-                          placeholder="Valor (ej: 100% Orgánico, M, 250ml)"
+                          placeholder="Valor (ej: Acero Quirúrgico 316L, Gas EO, 10 un.)"
                           value={spec.value} 
                           onChange={(e) => handleSpecChange(index, 'value', e.target.value)} 
                           className={styles.input} 

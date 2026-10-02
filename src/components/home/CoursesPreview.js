@@ -4,6 +4,7 @@ import { Clock, BookOpen, Play, Award, ArrowRight } from 'lucide-react'
 import SectionTitle from '@/components/ui/SectionTitle'
 import BubbleButton from '@/components/ui/BubbleButton'
 import { createClient } from '@/lib/supabase/client'
+import { isVideoUrl } from '@/lib/productUtils'
 import Link from 'next/link'
 import styles from './CoursesPreview.module.css'
 
@@ -63,11 +64,22 @@ export default function CoursesPreview() {
             {courses.map((course) => (
               <div key={course.id} className={`${styles.courseCard} reveal-scale`}>
                 <div className={styles.courseCardImage}>
-                  <img 
-                    src={course.image_url || 'https://images.unsplash.com/photo-1598371839696-5e8bb81c2018?q=80&w=800&auto=format&fit=crop'} 
-                    alt={course.title} 
-                    loading="lazy"
-                  />
+                  {course.image_url && isVideoUrl(course.image_url) ? (
+                    <video 
+                      src={course.image_url} 
+                      autoPlay 
+                      muted 
+                      loop 
+                      playsInline 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <img 
+                      src={course.image_url || 'https://images.unsplash.com/photo-1598371839696-5e8bb81c2018?q=80&w=800&auto=format&fit=crop'} 
+                      alt={course.title} 
+                      loading="lazy"
+                    />
+                  )}
                   <div className={styles.playBadge}>
                     <Play size={18} fill="#fff" />
                   </div>

@@ -1474,3 +1474,300 @@
   .modal { max-height: 95vh; }
   .tabContent { padding: 16px; }
 }
+
+/* =========================================================
+   ESTILOS PARA VARIANTES, SUBCATEGORÍAS & MEDIDAS (HONE PRO)
+   ========================================================= */
+
+.variantSection {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.variantToggleCard {
+  background: rgba(255, 42, 61, 0.05);
+  border: 1px solid rgba(255, 42, 61, 0.25);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.variantToggleInfo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.variantToggleIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(255, 42, 61, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff2a3d;
+  flex-shrink: 0;
+}
+
+.variantToggleTitle {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 3px;
+}
+
+.variantToggleDesc {
+  font-size: 0.82rem;
+  color: #8e8e9f;
+  margin: 0;
+}
+
+.switchToggle {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.switchToggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switchSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.15);
+  transition: .3s;
+  border-radius: 26px;
+}
+
+.switchSlider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+.switchToggle input:checked + .switchSlider {
+  background-color: #ff2a3d;
+}
+
+.switchToggle input:checked + .switchSlider:before {
+  transform: translateX(22px);
+}
+
+.variantPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+.variantCard {
+  background: rgba(20, 20, 26, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.variantCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.variantCardTitle {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.variantChipsRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.variantChipBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #c7c7cc;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.variantChipBtn:hover {
+  background: rgba(255, 42, 61, 0.15);
+  border-color: rgba(255, 42, 61, 0.3);
+  color: #ff8591;
+}
+
+.variantBulkBox {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.variantBulkRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.variantPresetsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: #8e8e9f;
+}
+
+.variantPresetBtn {
+  background: rgba(255, 42, 61, 0.1);
+  border: 1px solid rgba(255, 42, 61, 0.25);
+  color: #ff8591;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.variantPresetBtn:hover {
+  background: #ff2a3d;
+  color: #fff;
+}
+
+.variantSummaryBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 10px;
+  padding: 10px 16px;
+  color: #4ade80;
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.btnVariantSync {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnVariantSync:hover {
+  background: #22c55e;
+  color: #000;
+}
+
+/* Table of variants inside modal */
+.variantItemsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.variantItemsTable th {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #8e8e9f;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-align: left;
+}
+
+.variantItemsTable td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  vertical-align: middle;
+}
+
+.variantTagBadge {
+  font-weight: 700;
+  color: #ff8591;
+  background: rgba(255, 42, 61, 0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+/* Badges for Admin Products Table */
+.variantBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.variantBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 42, 61, 0.12);
+  border: 1px solid rgba(255, 42, 61, 0.25);
+  color: #ff8591;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.variantListText {
+  font-size: 0.72rem;
+  color: #8e8e9f;
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
