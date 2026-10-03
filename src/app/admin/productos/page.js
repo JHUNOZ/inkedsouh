@@ -527,7 +527,7 @@ export default function HoneCatalogPage() {
     }
 
     const itemsList = selectedComboItems.map(i => `• ${i.quantity}x ${i.name} (Ref: ${formatCLP(i.price)} c/u)`).join('\n')
-    const desc = `🔥 ¡PROMOCIÓN EXCLUSIVA - PACK COMBO INKEDSOUH!\n\nEste combo especial incluye:\n${itemsList}\n\n💰 Valor individual total: ${formatCLP(comboTotalOrig)}\n⚡ Precio Especial Combo: ${formatCLP(finalComboPrice)}\n✨ ¡Te ahorras ${formatCLP(comboSavings)} comprando el pack completo!`
+    const desc = `PROMOCIÓN EXCLUSIVA — PACK COMBO INKEDSOUH\n\nEste combo especial incluye:\n${itemsList}\n\n• Valor individual referencial: ${formatCLP(comboTotalOrig)}\n• Precio Especial Pack: ${formatCLP(finalComboPrice)}\n• Ahorro total del pack: ${formatCLP(comboSavings)}`
 
     setComboFormData(prev => ({ ...prev, description: desc }))
     showToast('Descripción automática generada')
@@ -1866,7 +1866,11 @@ export default function HoneCatalogPage() {
                       <div className={styles.productTitleCol}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                           <span className={styles.productName}>{product.name}</span>
-                          {isProductBundle(product) && <span className={styles.comboBadgePill}>🎁 COMBO PACK</span>}
+                          {isProductBundle(product) && (
+                            <span className={styles.comboBadgePill}>
+                              <Package size={11} /> COMBO PACK
+                            </span>
+                          )}
                           {product.badge && !isProductBundle(product) && <span className={styles.badgePill}>{product.badge}</span>}
                         </div>
                         {(() => {
@@ -1875,7 +1879,7 @@ export default function HoneCatalogPage() {
                             return (
                               <div className={styles.variantBadgeRow}>
                                 <span className={styles.variantBadge}>
-                                  ⚡ {itemVars.variants.length} {itemVars.name || 'Variantes'}:
+                                  {itemVars.variants.length} {itemVars.name || 'Variantes'}:
                                 </span>
                                 <span className={styles.variantListText} title={itemVars.variants.map(v => v.name).join(', ')}>
                                   {itemVars.variants.slice(0, 5).map(v => v.name).join(', ')}
@@ -1995,8 +1999,8 @@ export default function HoneCatalogPage() {
                   )}
                   
                   {isBundle ? (
-                    <span className={styles.comboBadgePill} style={{ position: 'absolute', top: 10, left: 10, zIndex: 4 }}>
-                      🎁 COMBO PACK
+                    <span className={styles.comboBadgePill} style={{ position: 'absolute', top: 10, left: 10, zIndex: 4, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <Package size={11} /> COMBO PACK
                     </span>
                   ) : product.badge ? (
                     <span className={styles.gridBadge}>{product.badge}</span>
@@ -2032,7 +2036,7 @@ export default function HoneCatalogPage() {
                   {itemVars.enabled && itemVars.variants?.length > 0 && (
                     <div style={{ marginTop: '2px', marginBottom: '4px' }}>
                       <span className={styles.variantBadge}>
-                        ⚡ {itemVars.variants.length} Medidas ({itemVars.name})
+                        {itemVars.variants.length} Medidas ({itemVars.name})
                       </span>
                     </div>
                   )}
@@ -2335,7 +2339,7 @@ export default function HoneCatalogPage() {
                         {formCategories.map(c => (
                           <option key={c} value={c}>{c}</option>
                         ))}
-                        <option value="__custom__">➕ Otra Categoría (Escribir personalizada)...</option>
+                        <option value="__custom__">+ Otra Categoría (Personalizada)...</option>
                       </select>
 
                       {isCustomCategory && (
@@ -2663,41 +2667,41 @@ export default function HoneCatalogPage() {
 
                           {/* Sugerencias rápidas con 1 clic */}
                           <div className={styles.variantChipsRow}>
-                            <span style={{ fontSize: '0.75rem', color: '#8e8e9f', marginRight: '4px' }}>Sugerencias rápidas:</span>
+                            <span style={{ fontSize: '0.75rem', color: '#8e8e9f', marginRight: '4px' }}>Sugerencias:</span>
                             <button 
                               type="button" 
                               onClick={() => setVariantConfig({ ...variantConfig, name: 'Calibre de las agujas' })}
                               className={styles.variantChipBtn}
                             >
-                              💉 Calibre de las agujas
+                              Calibre de las agujas
                             </button>
                             <button 
                               type="button" 
                               onClick={() => setVariantConfig({ ...variantConfig, name: 'Medidas de Cartuchos' })}
                               className={styles.variantChipBtn}
                             >
-                              📐 Medidas de Cartuchos
+                              Medidas de Cartuchos
                             </button>
                             <button 
                               type="button" 
                               onClick={() => setVariantConfig({ ...variantConfig, name: 'Talla' })}
                               className={styles.variantChipBtn}
                             >
-                              👕 Talla
+                              Talla
                             </button>
                             <button 
                               type="button" 
                               onClick={() => setVariantConfig({ ...variantConfig, name: 'Color / Tono' })}
                               className={styles.variantChipBtn}
                             >
-                              🎨 Color
+                              Color
                             </button>
                             <button 
                               type="button" 
                               onClick={() => setVariantConfig({ ...variantConfig, name: 'Presentación / ml' })}
                               className={styles.variantChipBtn}
                             >
-                              🧪 Presentación
+                              Presentación
                             </button>
                           </div>
                         </div>
@@ -2939,8 +2943,9 @@ export default function HoneCatalogPage() {
                   <div className={styles.specsHeader}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FileText size={16} style={{ color: '#ff2a3d' }} />
                         <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#fff', fontWeight: 600 }}>
-                          📋 Ficha Técnica & Atributos
+                          Ficha Técnica & Especificaciones
                         </h4>
                         {specList.filter(s => s.key?.trim()).length > 0 && (
                           <span className={styles.tabBadgeActive}>
@@ -2977,7 +2982,7 @@ export default function HoneCatalogPage() {
                   <div className={styles.specsQuickCard}>
                     <div className={styles.specsQuickHeader}>
                       <span className={styles.specsQuickTitle}>
-                        <Zap size={13} color="#f59e0b" /> Atributos Rápidos (1 Clic para añadir):
+                        <Zap size={13} color="#f59e0b" /> Atributos Sugeridos:
                       </span>
                     </div>
                     <div className={styles.specsChipsGrid}>
@@ -3020,7 +3025,7 @@ export default function HoneCatalogPage() {
                       ])}
                       className={styles.specPresetBtn}
                     >
-                      📦 Agujas/Cartuchos
+                      Agujas y Cartuchos
                     </button>
                     <button
                       type="button"
@@ -3033,7 +3038,7 @@ export default function HoneCatalogPage() {
                       ])}
                       className={styles.specPresetBtn}
                     >
-                      ⚡ Máquinas
+                      Máquinas y Fuentes
                     </button>
                     <button
                       type="button"
@@ -3045,7 +3050,7 @@ export default function HoneCatalogPage() {
                       ])}
                       className={styles.specPresetBtn}
                     >
-                      🧴 Cuidados / Insumos
+                      Cuidados e Insumos
                     </button>
                   </div>
 
@@ -3353,7 +3358,7 @@ export default function HoneCatalogPage() {
                       </div>
                       {comboSavings > 0 && (
                         <div className={styles.comboSavingsHighlight}>
-                          <span>💰 ¡Ahorro total para el cliente!</span>
+                          <span>Ahorro total del cliente</span>
                           <span>{formatCLP(comboSavings)} ({finalComboDiscount}% OFF)</span>
                         </div>
                       )}

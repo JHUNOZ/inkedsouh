@@ -275,19 +275,19 @@ export default function ProductosPage() {
 
       // If WhatsApp method, trigger chat immediately
       if (paymentMethod === 'whatsapp') {
-        let msg = `¡Hola INKEDSOUH! 👋 Acabo de generar la orden *#${orderNumber}* desde la tienda web:\n\n`
-        msg += `👤 *DATOS DEL CLIENTE:*\n`
+        let msg = `Estimado equipo InkedSouh,\nAcabo de generar la orden *#${orderNumber}* desde la tienda web:\n\n`
+        msg += `*DATOS DEL CLIENTE:*\n`
         msg += `• Nombre: ${customerInfo.name || 'Cliente'}\n`
         msg += `• Teléfono: ${customerInfo.phone || 'No especificado'}\n`
         msg += `• Modalidad de Envío: ${customerInfo.deliveryType === 'santiago' ? `Envío Express RM (${customerInfo.address}, ${customerInfo.city})` : `Envío por Pagar Starken/Chilexpress (${customerInfo.address}, ${customerInfo.city})`}\n`
         msg += `• Plazo Estimado: ${deliveryTimeframe}\n\n`
-        msg += `🛒 *PRODUCTOS SOLICITADOS:*\n`
+        msg += `*DETALLE DE PRODUCTOS:*\n`
         cart.forEach((item, idx) => {
           const unitPrice = item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price
           msg += `${idx + 1}. *${item.name}* ${item.variantName ? `(${item.variantAttribute || 'Medida'}: ${item.variantName})` : ''} - ${item.quantity} un. x ${formatPrice(unitPrice)}\n`
         })
-        msg += `\n💰 *TOTAL A PAGAR: ${formatPrice(cartTotal)} CLP*\n\n`
-        msg += `¿Me podrían confirmar para coordinar el pago y despacho? ¡Muchas gracias!`
+        msg += `\n*TOTAL A PAGAR: ${formatPrice(cartTotal)} CLP*\n\n`
+        msg += `Solicito confirmación para coordinar el pago y despacho. Muchas gracias.`
 
         const cleanPhone = (whatsappNumber || '+56930254425').replace(/[^0-9]/g, '')
         const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`
@@ -313,11 +313,11 @@ export default function ProductosPage() {
   // Direct WhatsApp query from product modal
   const handleDirectWhatsAppQuery = (product, variant) => {
     const cleanPhone = (whatsappNumber || '+56930254425').replace(/[^0-9]/g, '')
-    let msg = `¡Hola INKEDSOUH! 👋 Tengo una consulta sobre el producto *${product.name}*`
+    let msg = `Hola, deseo consultar sobre la disponibilidad del producto *${product.name}*`
     if (variant) {
       msg += ` en la medida/calibre *${variant.name}* (SKU: ${variant.sku})`
     }
-    msg += `. ¿Tienen stock disponible para entrega inmediata o envío?`
+    msg += `. ¿Tienen stock disponible para entrega o despacho?`
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank')
   }
 
@@ -407,7 +407,8 @@ export default function ProductosPage() {
                       {/* Badges */}
                       {isBundle ? (
                         <span className={styles.comboBadgeStore}>
-                          🎁 COMBO PACK
+                          <Package size={11} style={{ display: 'inline', verticalAlign: '-1px', marginRight: '4px' }} />
+                          PACK COMBO
                         </span>
                       ) : product.badge ? (
                         <span className={styles.discountBadge} style={{ background: '#ff2a3d', left: '12px', right: 'auto' }}>
@@ -438,7 +439,7 @@ export default function ProductosPage() {
                       {isBundle && bundleConfig.items?.length > 0 && (
                         <div style={{ marginTop: '2px', marginBottom: '2px' }}>
                           <span className={styles.comboCardPill}>
-                            <Gift size={12} />
+                            <Package size={11} />
                             Pack Promocional ({bundleConfig.items.length} productos)
                           </span>
                         </div>
@@ -448,7 +449,7 @@ export default function ProductosPage() {
                       {hasVariants && (
                         <div style={{ marginTop: '2px', marginBottom: '2px' }}>
                           <span className={styles.cardVariantPill}>
-                            ⚡ {variantConfig.variants.length} {variantConfig.name || 'Medidas'}
+                            {variantConfig.variants.length} {variantConfig.name || 'Medidas'}
                           </span>
                         </div>
                       )}
@@ -543,7 +544,8 @@ export default function ProductosPage() {
                     )}
                     {isBundle ? (
                       <span className={styles.comboBadgeStore}>
-                        🎁 COMBO PACK
+                        <Package size={12} style={{ display: 'inline', verticalAlign: '-1px', marginRight: '4px' }} />
+                        PACK PROMOCIONAL
                       </span>
                     ) : selectedProduct.badge ? (
                       <span style={{ position: 'absolute', top: '12px', left: '12px', background: '#ff2a3d', color: '#fff', fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: '6px' }}>
@@ -609,7 +611,7 @@ export default function ProductosPage() {
                     {isBundle && modalBundleConfig.enabled && modalBundleConfig.items?.length > 0 && (
                       <div className={styles.comboModalSection}>
                         <div className={styles.comboModalTitle}>
-                          <Gift size={16} color="#f59e0b" />
+                          <Package size={16} color="#f59e0b" />
                           <span>Contenido de este Pack ({modalBundleConfig.items.length} productos)</span>
                         </div>
 
@@ -645,8 +647,8 @@ export default function ProductosPage() {
                             const { savingsAmount, discountPercentage } = calculateDiscountSavings(totalOriginalPrice, currentPrice)
                             return (
                               <div className={styles.comboSavingsBox}>
-                                <span>⚡ Valor individual: <span style={{ textDecoration: 'line-through', opacity: 0.8 }}>{formatPrice(totalOriginalPrice)}</span></span>
-                                <span>¡Ahorras {formatPrice(savingsAmount)} ({discountPercentage}% OFF)!</span>
+                                <span>Valor individual referencial: <span style={{ textDecoration: 'line-through', opacity: 0.8 }}>{formatPrice(totalOriginalPrice)}</span></span>
+                                <span>Ahorras {formatPrice(savingsAmount)} ({discountPercentage}% OFF)</span>
                               </div>
                             )
                           }
@@ -900,7 +902,7 @@ export default function ProductosPage() {
 
                     {/* BNPL Teaser in Cart */}
                     <div style={{ background: 'rgba(234, 88, 12, 0.08)', border: '1px solid rgba(234, 88, 12, 0.25)', borderRadius: '8px', padding: '8px 12px', fontSize: '0.78rem', color: '#fed7aa', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
-                      <span>⚡ O paga en <strong>3 cuotas de {formatPrice(calculateInstallmentAmount(cartTotal, 3))}</strong></span>
+                      <span>Hasta <strong>3 cuotas sin interés de {formatPrice(calculateInstallmentAmount(cartTotal, 3))}</strong></span>
                       <span style={{ background: '#ea580c', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>BNPL</span>
                     </div>
 
@@ -1013,7 +1015,7 @@ export default function ProductosPage() {
                               className={`${styles.shippingCard} ${customerInfo.deliveryType === 'santiago' ? styles.shippingCardActive : ''}`}
                               onClick={() => setCustomerInfo({ ...customerInfo, deliveryType: 'santiago' })}
                             >
-                              <div className={styles.shippingCardIcon}>🛵</div>
+                              <div className={styles.shippingCardIcon}><Truck size={20} style={{ color: '#ff2a3d' }} /></div>
                               <div className={styles.shippingCardText}>
                                 <strong>Envío Express RM</strong>
                                 <small>Santiago y comunas aledañas</small>
@@ -1025,7 +1027,7 @@ export default function ProductosPage() {
                               className={`${styles.shippingCard} ${customerInfo.deliveryType === 'starken' ? styles.shippingCardActive : ''}`}
                               onClick={() => setCustomerInfo({ ...customerInfo, deliveryType: 'starken' })}
                             >
-                              <div className={styles.shippingCardIcon}>📦</div>
+                              <div className={styles.shippingCardIcon}><Package size={20} style={{ color: '#ff2a3d' }} /></div>
                               <div className={styles.shippingCardText}>
                                 <strong>Por Pagar Regiones</strong>
                                 <small>Starken / Chilexpress a todo Chile</small>
@@ -1144,7 +1146,7 @@ export default function ProductosPage() {
                         >
                           <div className={styles.paymentMethodTop}>
                             <div className={styles.paymentIconWrap} style={{ background: 'rgba(234, 88, 12, 0.15)', color: '#ea580c' }}>
-                              ⚡
+                              <CreditCard size={18} />
                             </div>
                             <span className={styles.paymentBadgePill} style={{ background: 'rgba(234, 88, 12, 0.2)', color: '#fdba74' }}>
                               3 a 12 Cuotas con RUT
@@ -1201,7 +1203,7 @@ export default function ProductosPage() {
                       {paymentMethod === 'bancame' && (
                         <div className={styles.bnplDetailsBox} style={{ marginTop: '16px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <strong style={{ color: '#fff', fontSize: '0.9rem' }}>⚡ Simulador de Cuotas Banca.me</strong>
+                            <strong style={{ color: '#fff', fontSize: '0.9rem' }}>Simulador de Cuotas Banca.me</strong>
                             <span style={{ fontSize: '0.75rem', color: '#fdba74' }}>Aprobación con RUT en 1 min</span>
                           </div>
                           <p style={{ fontSize: '0.8rem', color: '#e5e7eb', margin: 0 }}>
@@ -1228,7 +1230,7 @@ export default function ProductosPage() {
                       {paymentMethod === 'transfer' && (
                         <div className={styles.bankDetailsBox} style={{ marginTop: '16px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <strong style={{ color: '#fff', fontSize: '0.9rem' }}>🏦 Datos para Transferir</strong>
+                            <strong style={{ color: '#fff', fontSize: '0.9rem' }}>Datos para Transferencia</strong>
                             <button type="button" onClick={handleCopyBankDetails} className={styles.copyBankBtn}>
                               {copyFeedback ? <Check size={14} color="#4ade80" /> : <Copy size={14} />}
                               <span>{copyFeedback ? '¡Copiado!' : 'Copiar Datos'}</span>
@@ -1354,7 +1356,8 @@ export default function ProductosPage() {
                     </p>
 
                     <div style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: '10px', padding: '10px 16px', fontSize: '0.82rem', color: '#bfdbfe', maxWidth: '480px' }}>
-                      🚚 <strong>Plazo estimado de entrega:</strong> {deliveryTimeframe}
+                      <Truck size={15} style={{ display: 'inline', verticalAlign: '-2px', marginRight: '6px', color: '#60a5fa' }} />
+                      <strong>Plazo estimado de entrega:</strong> {deliveryTimeframe}
                     </div>
 
                     <div style={{ display: 'flex', gap: '12px', marginTop: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
