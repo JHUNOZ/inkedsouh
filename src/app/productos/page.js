@@ -797,17 +797,22 @@ export default function ProductosPage() {
                     </button>
                   </div>
 
-                  {/* Technical Specifications Accordion / Table */}
+                  {/* Ficha Técnica / Especificaciones Técnicas */}
                   {modalSpecs.length > 0 && (
-                    <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px', marginTop: '10px' }}>
-                      <strong style={{ fontSize: '0.8rem', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>
-                        Especificaciones Técnicas
-                      </strong>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.82rem' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '16px', marginTop: '14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: 'rgba(255,42,61,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ff2a3d' }}>
+                          <FileText size={13} />
+                        </div>
+                        <span style={{ fontSize: '0.82rem', color: '#fff', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+                          Ficha Técnica & Especificaciones
+                        </span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' }}>
                         {modalSpecs.map((s, idx) => (
-                          <div key={idx} style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ color: '#8e8e9f' }}>{s.key}:</span>
-                            <span style={{ color: '#f5f5f7', fontWeight: 500 }}>{s.value}</span>
+                          <div key={idx} style={{ background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '9px', padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ color: '#8e8e9f', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600 }}>{s.key}</span>
+                            <span style={{ color: '#f5f5f7', fontSize: '0.85rem', fontWeight: 600 }}>{s.value}</span>
                           </div>
                         ))}
                       </div>

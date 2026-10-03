@@ -749,7 +749,7 @@ export default function HoneCatalogPage() {
     }
   }
 
-  // Handle Spec Changes
+  // Handle Spec Changes & Ficha Técnica Engine
   const handleSpecChange = (index, field, value) => {
     const updated = [...specList]
     updated[index][field] = value
@@ -763,6 +763,34 @@ export default function HoneCatalogPage() {
   const removeSpecRow = (index) => {
     const updated = specList.filter((_, i) => i !== index)
     setSpecList(updated.length ? updated : [{ key: '', value: '' }])
+  }
+
+  const handleAddQuickSpec = (keyName, defaultValue = '') => {
+    const emptyIndex = specList.findIndex(s => !s.key || !s.key.trim())
+    if (emptyIndex !== -1) {
+      const updated = [...specList]
+      updated[emptyIndex] = { key: keyName, value: defaultValue }
+      setSpecList(updated)
+      showToast(`Atributo "${keyName}" añadido`)
+      return
+    }
+    const existingIdx = specList.findIndex(s => s.key.toLowerCase() === keyName.toLowerCase())
+    if (existingIdx !== -1) {
+      showToast(`El atributo "${keyName}" ya está en la lista`, 'info')
+      return
+    }
+    setSpecList(prev => [...prev, { key: keyName, value: defaultValue }])
+    showToast(`Atributo "${keyName}" añadido`)
+  }
+
+  const handleLoadSpecPreset = (presetArray) => {
+    setSpecList(presetArray)
+    showToast('Plantilla de especificaciones aplicada')
+  }
+
+  const handleClearSpecs = () => {
+    setSpecList([{ key: '', value: '' }])
+    showToast('Ficha técnica vaciada')
   }
 
   // Upload Multiple Images to Product Gallery
@@ -2188,7 +2216,7 @@ export default function HoneCatalogPage() {
                 onClick={() => setActiveTabModal('general')}
               >
                 <FileText size={15} />
-                <span>1. Datos Básicos & SKU</span>
+                <span>General</span>
               </button>
               <button 
                 type="button"
@@ -2196,7 +2224,7 @@ export default function HoneCatalogPage() {
                 onClick={() => setActiveTabModal('pricing')}
               >
                 <Tag size={15} />
-                <span>2. Precio & Inventario</span>
+                <span>Precios & Stock</span>
               </button>
               <button 
                 type="button"
@@ -2204,18 +2232,22 @@ export default function HoneCatalogPage() {
                 onClick={() => setActiveTabModal('gallery')}
               >
                 <ImageIcon size={15} />
-                <span>3. Galería ({formData.images?.length || 0})</span>
+                <span>Galería</span>
+                <span className={styles.tabBadge}>
+                  {formData.images?.length || (formData.image_url ? 1 : 0)}
+                </span>
               </button>
               <button 
                 type="button"
                 className={`${styles.modalTab} ${activeTabModal === 'variants' ? styles.modalTabActive : ''}`}
                 onClick={() => setActiveTabModal('variants')}
-                style={{ position: 'relative' }}
               >
                 <SlidersHorizontal size={15} />
-                <span>4. Variantes & Medidas {variantConfig.enabled && variantConfig.variants?.length > 0 ? `(${variantConfig.variants.length})` : '(Opcional)'}</span>
-                {variantConfig.enabled && variantConfig.variants?.length > 0 && (
-                  <span style={{ width: '7px', height: '7px', background: '#ff2a3d', borderRadius: '50%', display: 'inline-block', marginLeft: '6px' }}></span>
+                <span>Variantes</span>
+                {variantConfig.enabled && variantConfig.variants?.length > 0 ? (
+                  <span className={styles.tabBadgeActive}>{variantConfig.variants.length}</span>
+                ) : (
+                  <span className={styles.tabBadgeMuted}>Opcional</span>
                 )}
               </button>
               <button 
@@ -2224,7 +2256,12 @@ export default function HoneCatalogPage() {
                 onClick={() => setActiveTabModal('specs')}
               >
                 <Box size={15} />
-                <span>5. Ficha Técnica</span>
+                <span>Ficha Técnica</span>
+                {specList.filter(s => s.key?.trim() && s.value?.trim()).length > 0 && (
+                  <span className={styles.tabBadgeActive}>
+                    {specList.filter(s => s.key?.trim() && s.value?.trim()).length}
+                  </span>
+                )}
               </button>
             </div>
 
@@ -2895,44 +2932,173 @@ export default function HoneCatalogPage() {
                 </div>
               )}
 
-              {/* TAB 5: SPECIFICATIONS */}
+              {/* TAB 5: SPECIFICATIONS & FICHA TECNICA */}
               {activeTabModal === 'specs' && (
                 <div className={styles.tabContent}>
+                  {/* Header */}
                   <div className={styles.specsHeader}>
                     <div>
-                      <h4>Ficha Técnica / Atributos Dinámicos</h4>
-                      <p>Añade especificaciones como Dimensiones, Ingredientes, Materiales, Esterilización, etc.</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#fff', fontWeight: 600 }}>
+                          📋 Ficha Técnica & Atributos
+                        </h4>
+                        {specList.filter(s => s.key?.trim()).length > 0 && (
+                          <span className={styles.tabBadgeActive}>
+                            {specList.filter(s => s.key?.trim()).length} activos
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ margin: '3px 0 0 0', fontSize: '0.78rem', color: '#8e8e9f' }}>
+                        Añade especificaciones que se mostrarán de forma destacada y profesional en la tienda online.
+                      </p>
                     </div>
-                    <button type="button" onClick={addSpecRow} className={styles.btnSecondary}>
-                      <Plus size={14} /> Añadir Atributo
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button 
+                        type="button" 
+                        onClick={addSpecRow} 
+                        className={styles.btnAddRowSmall}
+                      >
+                        <Plus size={14} /> Añadir Atributo
+                      </button>
+                      {specList.some(s => s.key?.trim() || s.value?.trim()) && (
+                        <button 
+                          type="button" 
+                          onClick={handleClearSpecs} 
+                          className={styles.btnClearSpecs}
+                          title="Vaciar todos los atributos"
+                        >
+                          <Trash2 size={13} /> Limpiar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 1-Click Quick Suggestion Chips */}
+                  <div className={styles.specsQuickCard}>
+                    <div className={styles.specsQuickHeader}>
+                      <span className={styles.specsQuickTitle}>
+                        <Zap size={13} color="#f59e0b" /> Atributos Rápidos (1 Clic para añadir):
+                      </span>
+                    </div>
+                    <div className={styles.specsChipsGrid}>
+                      {[
+                        { key: 'Material', defaultValue: 'Acero Quirúrgico 316L' },
+                        { key: 'Esterilización', defaultValue: 'Gas E.O. / 100% Esterilizado' },
+                        { key: 'Presentación', defaultValue: 'Caja de 20 unidades' },
+                        { key: 'Compatibilidad', defaultValue: 'Universal (Cartridge Pen & Rotativas)' },
+                        { key: 'Conexión', defaultValue: 'RCA Premium' },
+                        { key: 'Voltaje Óptimo', defaultValue: '5V - 10V' },
+                        { key: 'Stroke / Recorrido', defaultValue: '3.5 mm' },
+                        { key: 'Garantía', defaultValue: '6 meses del fabricante' },
+                        { key: 'Origen', defaultValue: 'USA / Importado' },
+                        { key: 'Certificación', defaultValue: 'CE / ISO 9001' }
+                      ].map((item) => (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() => handleAddQuickSpec(item.key, item.defaultValue)}
+                          className={styles.specChipBtn}
+                        >
+                          <Plus size={11} /> {item.key}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Presets Bar */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
+                    <span style={{ fontSize: '0.72rem', color: '#6e6e82', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      <Wand2 size={12} style={{ display: 'inline', verticalAlign: '-1px', marginRight: '4px' }} /> Plantillas:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleLoadSpecPreset([
+                        { key: 'Material', value: 'Acero Quirúrgico 316L' },
+                        { key: 'Esterilización', value: 'Gas E.O. Individual' },
+                        { key: 'Presentación', value: 'Caja de 20 unidades selladas' },
+                        { key: 'Compatibilidad', value: 'Universal con todas las máquinas tipo Pen' }
+                      ])}
+                      className={styles.specPresetBtn}
+                    >
+                      📦 Agujas/Cartuchos
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleLoadSpecPreset([
+                        { key: 'Tipo de Motor', value: 'Motor Coreless High Torque' },
+                        { key: 'Voltaje de Trabajo', value: '5V - 10V (Recomendado 7.5V)' },
+                        { key: 'Recorrido (Stroke)', value: '3.5 mm' },
+                        { key: 'Conexión', value: 'RCA Blindado' },
+                        { key: 'Garantía', value: '6 meses oficial' }
+                      ])}
+                      className={styles.specPresetBtn}
+                    >
+                      ⚡ Máquinas
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleLoadSpecPreset([
+                        { key: 'Uso Principal', value: 'Cuidado y cicatrización de tatuajes' },
+                        { key: 'Presentación', value: 'Pote de 100 ml sellado' },
+                        { key: 'Fórmula', value: '100% Vegana y libre de parabenos' },
+                        { key: 'Origen', value: 'Fabricación Certificada' }
+                      ])}
+                      className={styles.specPresetBtn}
+                    >
+                      🧴 Cuidados / Insumos
                     </button>
                   </div>
 
-                  <div className={styles.specsList}>
+                  {/* Spec Row List */}
+                  <div className={styles.specsList} style={{ marginTop: '6px' }}>
                     {specList.map((spec, index) => (
-                      <div key={index} className={styles.specRow}>
+                      <div key={index} className={styles.specRowCard}>
+                        <span className={styles.specIndexBadge}>#{index + 1}</span>
                         <input 
                           type="text" 
-                          placeholder="Propiedad (ej: Material, Esterilización, Contenido)"
+                          placeholder="Propiedad (ej: Material, Esterilización, Conexión)"
                           value={spec.key} 
                           onChange={(e) => handleSpecChange(index, 'key', e.target.value)} 
                           className={styles.input} 
-                          style={{ flex: 1 }}
+                          style={{ flex: 1.1, fontSize: '0.85rem' }}
                         />
                         <input 
                           type="text" 
-                          placeholder="Valor (ej: Acero Quirúrgico 316L, Gas EO, 10 un.)"
+                          placeholder="Detalle / Valor (ej: Acero Quirúrgico 316L, 100 ml)"
                           value={spec.value} 
                           onChange={(e) => handleSpecChange(index, 'value', e.target.value)} 
                           className={styles.input} 
-                          style={{ flex: 2 }}
+                          style={{ flex: 2, fontSize: '0.85rem' }}
                         />
-                        <button type="button" onClick={() => removeSpecRow(index)} className={styles.btnActionIcon}>
-                          <Trash2 size={16} />
+                        <button 
+                          type="button" 
+                          onClick={() => removeSpecRow(index)} 
+                          className={styles.btnActionIconDanger}
+                          title="Eliminar este atributo"
+                        >
+                          <Trash2 size={15} />
                         </button>
                       </div>
                     ))}
                   </div>
+
+                  {/* Live Store Preview Card */}
+                  {specList.some(s => s.key?.trim() && s.value?.trim()) && (
+                    <div className={styles.specsLivePreview}>
+                      <div className={styles.specsLivePreviewTitle}>
+                        <Eye size={13} color="#60a5fa" />
+                        <span>Vista Previa en Tienda Web (Así lo verá tu cliente):</span>
+                      </div>
+                      <div className={styles.specsLiveGrid}>
+                        {specList.filter(s => s.key?.trim() && s.value?.trim()).map((s, idx) => (
+                          <div key={idx} className={styles.specsLiveItem}>
+                            <span className={styles.specsLiveKey}>{s.key}</span>
+                            <span className={styles.specsLiveVal}>{s.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -1071,9 +1071,9 @@
   background: #0e0e14;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 20px;
-  width: 100%;
-  max-width: 860px;
-  max-height: calc(100vh - 60px);
+  width: 95%;
+  max-width: 920px;
+  max-height: calc(100vh - 50px);
   display: flex;
   flex-direction: column;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.05);
@@ -1087,14 +1087,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 24px;
+  padding: 16px 22px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: #121219;
   flex-shrink: 0;
 }
 
 .modalSub {
-  font-size: 0.75rem;
+  font-size: 0.73rem;
   font-weight: 600;
   color: var(--color-red, #ff2a3d);
   text-transform: uppercase;
@@ -1102,7 +1102,7 @@
 }
 
 .modalTitle {
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   color: #fff;
   font-weight: 700;
   margin-top: 2px;
@@ -1113,8 +1113,8 @@
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1130,8 +1130,11 @@
 
 .modalTabs {
   display: flex;
-  background: #151520;
+  align-items: center;
+  background: #111118;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 16px;
+  gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
   flex-shrink: 0;
@@ -1142,33 +1145,72 @@
 }
 
 .modalTab {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 13px 18px;
-  color: #8e8e9f;
-  font-size: 0.85rem;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  color: #9494a8;
+  font-size: 0.82rem;
   font-weight: 500;
-  border-bottom: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
-  background: transparent;
-  border-top: none;
-  border-left: none;
-  border-right: none;
 }
 
 .modalTab:hover {
   color: #fff;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
 .modalTabActive {
   color: #fff !important;
-  border-bottom-color: var(--color-red, #ff2a3d) !important;
-  background: rgba(255, 42, 61, 0.08) !important;
+  background: rgba(255, 42, 61, 0.15) !important;
+  border-color: rgba(255, 42, 61, 0.45) !important;
+  box-shadow: 0 2px 10px rgba(255, 42, 61, 0.25);
   font-weight: 600;
+}
+
+.tabBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.09);
+  color: #d1d1db;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 6px;
+  min-width: 18px;
+}
+
+.tabBadgeActive {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-red, #ff2a3d);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 6px;
+  min-width: 18px;
+  box-shadow: 0 0 8px rgba(255, 42, 61, 0.4);
+}
+
+.tabBadgeMuted {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  color: #6b6b7b;
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: 5px;
 }
 
 .modalForm {
@@ -1418,34 +1460,238 @@
   cursor: pointer;
 }
 
-/* Specs Tab */
+/* Specs / Ficha Técnica Tab */
 .specsHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 4px;
 }
 
 .specsHeader h4 {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #fff;
   margin-bottom: 2px;
 }
 
 .specsHeader p {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #8e8e9f;
+}
+
+.btnAddRowSmall {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 42, 61, 0.12);
+  border: 1px solid rgba(255, 42, 61, 0.35);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnAddRowSmall:hover {
+  background: var(--color-red, #ff2a3d);
+  border-color: var(--color-red, #ff2a3d);
+  box-shadow: 0 0 12px rgba(255, 42, 61, 0.4);
+}
+
+.btnClearSpecs {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #8e8e9f;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnClearSpecs:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.25);
+}
+
+.specsQuickCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.specsQuickHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.specsQuickTitle {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #a0a0b2;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.specsChipsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.specChipBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e2ea;
+  font-size: 0.75rem;
+  padding: 5px 9px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.specChipBtn:hover {
+  background: rgba(255, 42, 61, 0.15);
+  border-color: rgba(255, 42, 61, 0.4);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.specPresetBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #9494a8;
+  font-size: 0.72rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.specPresetBtn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
 .specsList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
-.specRow {
+.specRowCard {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 6px 10px;
+  transition: border-color 0.15s ease;
+}
+
+.specRowCard:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.specIndexBadge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #8e8e9f;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 3px 6px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+
+.btnActionIconDanger {
+  color: #8e8e9f;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btnActionIconDanger:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.specsLivePreview {
+  margin-top: 10px;
+  background: rgba(18, 18, 26, 0.7);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.specsLivePreviewTitle {
+  font-size: 0.73rem;
+  color: #8e8e9f;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.specsLiveGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.specsLiveItem {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 7px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.specsLiveKey {
+  font-size: 0.68rem;
+  color: #8e8e9f;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.specsLiveVal {
+  font-size: 0.8rem;
+  color: #fff;
+  font-weight: 600;
 }
 
 .modalFooter {
