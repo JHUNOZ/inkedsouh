@@ -5,7 +5,8 @@ import {
   Check, ChevronRight, Sparkles, Tag, ShieldCheck, 
   Star, MessageCircle, ArrowRight, CreditCard, Building2,
   Zap, Copy, CheckCircle2, Truck, MapPin, User, Mail, Phone,
-  FileText, ExternalLink, RefreshCw, AlertCircle, ArrowLeft
+  FileText, ExternalLink, RefreshCw, AlertCircle, ArrowLeft,
+  Gift, Flame
 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
@@ -16,6 +17,9 @@ import { createClient } from '@/lib/supabase/client'
 import { 
   parseProductSpecifications, 
   calculateTotalVariantStock, 
+  calculateBundleTotals,
+  calculateDiscountSavings,
+  isProductBundle,
   formatCLP,
   isVideoUrl,
   calculateInstallmentAmount
@@ -153,6 +157,7 @@ export default function ProductosPage() {
         variantName: targetVariant?.name || null,
         variantSku: itemSku,
         variantAttribute: variantConfig.name || 'Medida / Calibre',
+        isBundle: isProductBundle(product),
         price: itemPrice,
         discount: product.discount || 0,
         stock: itemStock,
@@ -374,7 +379,8 @@ export default function ProductosPage() {
               {filtered.map((product) => {
                 const productImages = getProductImages(product)
                 const mainImage = productImages[0] || product.image_url
-                const { variantConfig } = parseProductSpecifications(product.specifications)
+                const { variantConfig, bundleConfig } = parseProductSpecifications(product.specifications)
+                const isBundle = isProductBundle(product)
                 const hasVariants = variantConfig.enabled && variantConfig.variants && variantConfig.variants.length > 0
                 const totalStock = hasVariants ? calculateTotalVariantStock(variantConfig.variants) : product.stock
 
@@ -399,11 +405,15 @@ export default function ProductosPage() {
                       )}
 
                       {/* Badges */}
-                      {product.badge && (
+                      {isBundle ? (
+                        <span className={styles.comboBadgeStore}>
+                          🎁 COMBO PACK
+                        </span>
+                      ) : product.badge ? (
                         <span className={styles.discountBadge} style={{ background: '#ff2a3d', left: '12px', right: 'auto' }}>
                           {product.badge}
                         </span>
-                      )}
+                      ) : null}
 
                       {product.discount > 0 && (
                         <span className={styles.discountBadge}>-{product.discount}%</span>
@@ -423,6 +433,16 @@ export default function ProductosPage() {
                     <div className={styles.cardBody}>
                       <span className={styles.cardCategory}>{product.category}</span>
                       <h3 className={styles.cardName}>{product.name}</h3>
+
+                      {/* Pill indicating combo pack */}
+                      {isBundle && bundleConfig.items?.length > 0 && (
+                        <div style={{ marginTop: '2px', marginBottom: '2px' }}>
+                          <span className={styles.comboCardPill}>
+                            <Gift size={12} />
+                            Pack Promocional ({bundleConfig.items.length} productos)
+                          </span>
+                        </div>
+                      )}
 
                       {/* Pill indicating variety of sizes/measures */}
                       {hasVariants && (
@@ -478,7 +498,8 @@ export default function ProductosPage() {
 
         {/* Product Quickview / Lightbox Modal (Exact Match to Reference Photos 1 & 2) */}
         {selectedProduct && (() => {
-          const { attributes: modalSpecs, variantConfig: modalVarConfig } = parseProductSpecifications(selectedProduct.specifications)
+          const { attributes: modalSpecs, variantConfig: modalVarConfig, bundleConfig: modalBundleConfig } = parseProductSpecifications(selectedProduct.specifications)
+          const isBundle = isProductBundle(selectedProduct)
           const hasVariants = modalVarConfig.enabled && modalVarConfig.variants && modalVarConfig.variants.length > 0
           const modalImgs = getProductImages(selectedProduct)
           const currentImg = modalImgs[activeImageIdx] || selectedProduct.image_url
@@ -520,11 +541,15 @@ export default function ProductosPage() {
                     ) : (
                       <ShoppingBag size={56} style={{ color: '#444' }} />
                     )}
-                    {selectedProduct.badge && (
+                    {isBundle ? (
+                      <span className={styles.comboBadgeStore}>
+                        🎁 COMBO PACK
+                      </span>
+                    ) : selectedProduct.badge ? (
                       <span style={{ position: 'absolute', top: '12px', left: '12px', background: '#ff2a3d', color: '#fff', fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: '6px' }}>
                         {selectedProduct.badge}
                       </span>
-                    )}
+                    ) : null}
                   </div>
 
                   {/* Gallery Thumbnails */}
@@ -579,6 +604,56 @@ export default function ProductosPage() {
                         STOCK: <span style={{ color: activeStock > 0 ? '#4ade80' : '#f87171' }}>{activeStock}</span>
                       </div>
                     </div>
+
+                    {/* COMBO PACK CONTENTS SECTION */}
+                    {isBundle && modalBundleConfig.enabled && modalBundleConfig.items?.length > 0 && (
+                      <div className={styles.comboModalSection}>
+                        <div className={styles.comboModalTitle}>
+                          <Gift size={16} color="#f59e0b" />
+                          <span>Contenido de este Pack ({modalBundleConfig.items.length} productos)</span>
+                        </div>
+
+                        <div className={styles.comboModalItemsList}>
+                          {modalBundleConfig.items.map((bItem, bIdx) => (
+                            <div key={bIdx} className={styles.comboModalItemRow}>
+                              <div className={styles.comboModalItemInfo}>
+                                {bItem.image_url ? (
+                                  <img src={bItem.image_url} alt={bItem.name} className={styles.comboModalItemThumb} />
+                                ) : (
+                                  <div className={styles.comboModalItemThumb} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <ShoppingBag size={14} color="#8e8e9f" />
+                                  </div>
+                                )}
+                                <div>
+                                  <div className={styles.comboModalItemName}>{bItem.name}</div>
+                                  <div className={styles.comboModalItemQty}>
+                                    Incluye: <strong style={{ color: '#fff' }}>{bItem.quantity || 1} un.</strong> {bItem.sku ? `• SKU: ${bItem.sku}` : ''}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className={styles.comboModalItemPrice}>
+                                {bItem.price ? formatPrice(bItem.price * (bItem.quantity || 1)) : ''}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {(() => {
+                          const { totalOriginalPrice } = calculateBundleTotals(modalBundleConfig.items)
+                          const currentPrice = selectedProduct.price || 0
+                          if (totalOriginalPrice > currentPrice) {
+                            const { savingsAmount, discountPercentage } = calculateDiscountSavings(totalOriginalPrice, currentPrice)
+                            return (
+                              <div className={styles.comboSavingsBox}>
+                                <span>⚡ Valor individual: <span style={{ textDecoration: 'line-through', opacity: 0.8 }}>{formatPrice(totalOriginalPrice)}</span></span>
+                                <span>¡Ahorras {formatPrice(savingsAmount)} ({discountPercentage}% OFF)!</span>
+                              </div>
+                            )
+                          }
+                          return null
+                        })()}
+                      </div>
+                    )}
 
                     {/* VARIANT SELECTOR (Exact Match to Photo 1 & 2) */}
                     {hasVariants && (
@@ -777,6 +852,13 @@ export default function ProductosPage() {
                       <div key={item.id} className={styles.cartItem}>
                         <div className={styles.cartItemInfo}>
                           <h4>{item.name}</h4>
+
+                          {/* Combo Pack badge in cart */}
+                          {item.isBundle && (
+                            <span className={styles.comboCardPill} style={{ margin: '2px 0', fontSize: '0.68rem', padding: '1px 6px' }}>
+                              <Gift size={11} /> Combo Pack
+                            </span>
+                          )}
 
                           {/* Selected variant badge in cart */}
                           {item.variantName && (

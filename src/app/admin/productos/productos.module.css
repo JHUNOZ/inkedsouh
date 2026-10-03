@@ -1983,3 +1983,428 @@
   text-overflow: ellipsis;
 }
 
+/* =========================================================
+   ESTILOS PARA CREADOR DE COMBOS / PROMOS Y MEJORAS UI
+   ========================================================= */
+
+.btnComboAdd {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #f59e0b 0%, #ff2a3d 100%);
+  color: #fff;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.btnComboAdd:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(245, 158, 11, 0.45);
+  border-color: rgba(245, 158, 11, 0.7);
+}
+
+/* Quick Category & Pricing Chips inside regular Modal */
+.categoryQuickChips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.categoryChipBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #c7c7cc;
+  padding: 4px 10px;
+  border-radius: 7px;
+  font-size: 0.76rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.categoryChipBtn:hover {
+  background: rgba(255, 42, 61, 0.15);
+  border-color: rgba(255, 42, 61, 0.35);
+  color: #fff;
+}
+
+.categoryChipBtnActive {
+  background: rgba(255, 42, 61, 0.2) !important;
+  border-color: #ff2a3d !important;
+  color: #ff8591 !important;
+  font-weight: 600;
+}
+
+.pricingQuickChips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.pricingChipBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #c7c7cc;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pricingChipBtn:hover {
+  background: rgba(74, 222, 128, 0.15);
+  border-color: rgba(74, 222, 128, 0.35);
+  color: #4ade80;
+}
+
+/* Combo Builder Modal */
+.comboModal {
+  background: #0e0e14;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 1080px;
+  max-height: calc(100vh - 50px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.95), 0 0 40px rgba(245, 158, 11, 0.15);
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin: auto 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.comboModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, #121219 100%);
+  flex-shrink: 0;
+}
+
+.comboModalSub {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f59e0b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.comboModalTitle {
+  font-size: 1.3rem;
+  color: #fff;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.comboModalBody {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 24px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 190px);
+}
+
+@media (max-width: 900px) {
+  .comboModalBody {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left Column: Product Selector */
+.comboPickerCol {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.comboColTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.comboPickerSearchWrap {
+  display: flex;
+  gap: 8px;
+}
+
+.comboPickerSearch {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.comboPickerSearch:focus {
+  border-color: #f59e0b;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.comboPickerList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.comboProductItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  gap: 10px;
+}
+
+.comboProductItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.comboProductItemSelected {
+  background: rgba(245, 158, 11, 0.08) !important;
+  border-color: #f59e0b !important;
+}
+
+.comboProductInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.comboProductThumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #000;
+  flex-shrink: 0;
+}
+
+.comboProductText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.comboProductName {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.comboProductMeta {
+  font-size: 0.72rem;
+  color: #8e8e9f;
+  display: flex;
+  gap: 6px;
+}
+
+.comboProductPrice {
+  font-weight: 700;
+  color: #4ade80;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* Selected Items Tray */
+.comboSelectedTray {
+  background: rgba(20, 20, 28, 0.7);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comboSelectedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: #f59e0b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.comboSelectedList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.comboSelectedRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 6px 10px;
+  gap: 10px;
+}
+
+.comboStepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.comboStepBtn {
+  background: none;
+  border: none;
+  color: #c7c7cc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.comboStepBtn:hover {
+  color: #fff;
+}
+
+.comboStepQty {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Right Column: Pricing & Publication */
+.comboFormCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.comboPricingCard {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(255, 42, 61, 0.06) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.comboPricingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.comboModeToggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.comboModeBtn {
+  background: none;
+  border: none;
+  color: #8e8e9f;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.comboModeBtnActive {
+  background: #f59e0b;
+  color: #000;
+}
+
+.comboSavingsBreakdown {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.comboSavingsRow {
+  display: flex;
+  justify-content: space-between;
+  color: #a1a1aa;
+}
+
+.comboSavingsHighlight {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+  color: #4ade80;
+  font-size: 0.88rem;
+}
+
+/* Badges on Admin Catalog Table */
+.comboBadgePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(255, 42, 61, 0.2) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fdba74;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 5px;
+  letter-spacing: 0.3px;
+}
+
+

@@ -9,12 +9,16 @@ import {
   Dice5, FileSpreadsheet, PlusCircle, MinusCircle, Clipboard,
   CheckCheck, HelpCircle, FileText, Tag, Ruler, Palette, Box,
   Wand2, ListPlus, SlidersHorizontal, CheckCircle2,
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
+  Gift, Flame, ShoppingBag, ArrowRight
 } from 'lucide-react'
 import { 
   parseProductSpecifications, 
   serializeProductSpecifications, 
   calculateTotalVariantStock, 
+  calculateBundleTotals,
+  calculateDiscountSavings,
+  isProductBundle,
   formatCLP,
   isVideoUrl 
 } from '@/lib/productUtils'
@@ -50,6 +54,28 @@ export default function HoneCatalogPage() {
 
   // Help Modal for Import
   const [showImportHelp, setShowImportHelp] = useState(false)
+
+  // Combos & Promotions Builder State
+  const [comboModalOpen, setComboModalOpen] = useState(false)
+  const [editingComboId, setEditingComboId] = useState(null)
+  const [comboSearch, setComboSearch] = useState('')
+  const [comboCategoryFilter, setComboCategoryFilter] = useState('all')
+  const [selectedComboItems, setSelectedComboItems] = useState([]) // [{ productId, name, price, originalPrice, sku, image_url, quantity, stock }]
+  const [comboPricingMode, setComboPricingMode] = useState('fixed') // 'fixed' | 'percent'
+  const [comboPrice, setComboPrice] = useState('')
+  const [comboDiscountPercent, setComboDiscountPercent] = useState(20)
+  const [comboStock, setComboStock] = useState('')
+  const [comboFormData, setComboFormData] = useState({
+    name: '',
+    sku: '',
+    category: 'Promociones & Combos',
+    description: '',
+    badge: 'COMBO PACK',
+    image_url: '',
+    images: [],
+    is_active: true,
+    is_featured: true
+  })
 
   // Modals & Editors
   const [modalOpen, setModalOpen] = useState(false)
@@ -338,6 +364,242 @@ export default function HoneCatalogPage() {
     const newSku = generateUniqueSKU(formData.category)
     setFormData(prev => ({ ...prev, sku: newSku }))
     showToast(`SKU generado: ${newSku}`)
+  }
+
+  // =========================================================
+  // COMBO & PROMO PACKS ENGINE (HONE BUNDLE BUILDER)
+  // =========================================================
+  
+  // Total Original combined price of selected items
+  const { totalOriginalPrice: comboTotalOrig, totalItemsCount: comboTotalCount } = calculateBundleTotals(selectedComboItems)
+
+  // Calculated final price and discount
+  let finalComboPrice = 0
+  let finalComboDiscount = 0
+  let comboSavings = 0
+
+  if (comboPricingMode === 'fixed') {
+    finalComboPrice = comboPrice !== '' ? parseFloat(comboPrice) || 0 : (comboTotalOrig > 0 ? Math.round(comboTotalOrig * 0.8) : 0)
+    if (comboTotalOrig > 0 && finalComboPrice < comboTotalOrig) {
+      const { savingsAmount, discountPercentage } = calculateDiscountSavings(comboTotalOrig, finalComboPrice)
+      comboSavings = savingsAmount
+      finalComboDiscount = discountPercentage
+    }
+  } else {
+    finalComboDiscount = parseInt(comboDiscountPercent) || 0
+    finalComboPrice = Math.round(comboTotalOrig * (1 - finalComboDiscount / 100))
+    comboSavings = comboTotalOrig - finalComboPrice
+  }
+
+  // Recommended minimum stock based on included items
+  const recommendedComboStock = selectedComboItems.length > 0
+    ? Math.min(...selectedComboItems.map(i => Math.floor((parseInt(i.stock) || 0) / (parseInt(i.quantity) || 1))))
+    : 0
+
+  // Open Combo Modal
+  const handleOpenComboModal = (product = null) => {
+    setComboSearch('')
+    setComboCategoryFilter('all')
+
+    if (product) {
+      setEditingComboId(product.id)
+      const { bundleConfig } = parseProductSpecifications(product.specifications)
+      const items = (bundleConfig.items || []).map(bItem => {
+        const fullProd = products.find(p => p.id === bItem.productId)
+        return {
+          productId: bItem.productId || fullProd?.id || '',
+          name: bItem.name || fullProd?.name || 'Producto',
+          price: bItem.price !== undefined ? bItem.price : fullProd?.price || 0,
+          originalPrice: bItem.originalPrice || fullProd?.price || 0,
+          sku: bItem.sku || fullProd?.sku || '',
+          image_url: bItem.image_url || fullProd?.image_url || '',
+          quantity: bItem.quantity || 1,
+          stock: fullProd?.stock !== undefined ? fullProd.stock : 10
+        }
+      })
+      setSelectedComboItems(items)
+      setComboPricingMode('fixed')
+      setComboPrice(product.price ? String(product.price) : '')
+      setComboDiscountPercent(product.discount || 20)
+      setComboStock(product.stock !== undefined ? String(product.stock) : String(recommendedComboStock))
+
+      let galleryImages = []
+      if (Array.isArray(product.images)) galleryImages = product.images
+      else if (typeof product.images === 'string') {
+        try { galleryImages = JSON.parse(product.images) } catch { galleryImages = [] }
+      }
+
+      setComboFormData({
+        name: product.name || '',
+        sku: product.sku || generateUniqueSKU('Combos'),
+        category: product.category || 'Promociones & Combos',
+        description: product.description || '',
+        badge: product.badge || 'COMBO PACK',
+        image_url: product.image_url || '',
+        images: galleryImages,
+        is_active: product.is_active !== undefined ? product.is_active : true,
+        is_featured: product.is_featured !== undefined ? product.is_featured : true
+      })
+    } else {
+      setEditingComboId(null)
+      setSelectedComboItems([])
+      setComboPricingMode('fixed')
+      setComboPrice('')
+      setComboDiscountPercent(20)
+      setComboStock('')
+      setComboFormData({
+        name: '',
+        sku: generateUniqueSKU('Combos'),
+        category: 'Promociones & Combos',
+        description: '',
+        badge: 'COMBO PACK',
+        image_url: '',
+        images: [],
+        is_active: true,
+        is_featured: true
+      })
+    }
+    setComboModalOpen(true)
+  }
+
+  // Toggle Item in Combo
+  const handleToggleProductInCombo = (prod) => {
+    const exists = selectedComboItems.some(i => i.productId === prod.id)
+    if (exists) {
+      setSelectedComboItems(prev => prev.filter(i => i.productId !== prod.id))
+    } else {
+      const newItem = {
+        productId: prod.id,
+        name: prod.name,
+        price: parseFloat(prod.price) || 0,
+        originalPrice: parseFloat(prod.price) || 0,
+        sku: prod.sku || '',
+        image_url: prod.image_url || '',
+        quantity: 1,
+        stock: prod.stock !== undefined ? prod.stock : 10
+      }
+      setSelectedComboItems(prev => {
+        const next = [...prev, newItem]
+        if (!comboFormData.image_url && prod.image_url) {
+          setComboFormData(f => ({ ...f, image_url: prod.image_url }))
+        }
+        return next
+      })
+    }
+  }
+
+  // Update Item Quantity in Combo
+  const handleUpdateComboItemQty = (prodId, delta) => {
+    setSelectedComboItems(prev => prev.map(item => {
+      if (item.productId === prodId) {
+        const newQty = Math.max(1, (item.quantity || 1) + delta)
+        return { ...item, quantity: newQty }
+      }
+      return item
+    }))
+  }
+
+  // Remove Item from Combo
+  const handleRemoveComboItem = (prodId) => {
+    setSelectedComboItems(prev => prev.filter(i => i.productId !== prodId))
+  }
+
+  // Auto Generate Combo Name
+  const handleGenerateComboName = () => {
+    if (selectedComboItems.length === 0) {
+      showToast('Selecciona al menos un producto primero', 'error')
+      return
+    }
+    const names = selectedComboItems.map(i => i.name)
+    const suggested = names.length <= 2 
+      ? `Pack Promo: ${names.join(' + ')}`
+      : `Super Combo Pack: ${names.slice(0, 2).join(' + ')} (+${names.length - 2} productos)`
+    
+    setComboFormData(prev => ({ ...prev, name: suggested }))
+    showToast('Nombre sugerido aplicado')
+  }
+
+  // Auto Generate Description for Combo
+  const handleGenerateComboDescription = () => {
+    if (selectedComboItems.length === 0) {
+      showToast('Selecciona al menos un producto primero', 'error')
+      return
+    }
+
+    const itemsList = selectedComboItems.map(i => `• ${i.quantity}x ${i.name} (Ref: ${formatCLP(i.price)} c/u)`).join('\n')
+    const desc = `🔥 ¡PROMOCIÓN EXCLUSIVA - PACK COMBO INKEDSOUH!\n\nEste combo especial incluye:\n${itemsList}\n\n💰 Valor individual total: ${formatCLP(comboTotalOrig)}\n⚡ Precio Especial Combo: ${formatCLP(finalComboPrice)}\n✨ ¡Te ahorras ${formatCLP(comboSavings)} comprando el pack completo!`
+
+    setComboFormData(prev => ({ ...prev, description: desc }))
+    showToast('Descripción automática generada')
+  }
+
+  // Submit Combo Form
+  const handleSubmitCombo = async (e) => {
+    e.preventDefault()
+
+    if (selectedComboItems.length === 0) {
+      showToast('Debes seleccionar al menos un producto para crear el combo', 'error')
+      return
+    }
+
+    if (!comboFormData.name.trim()) {
+      showToast('Ingresa un nombre para la promoción', 'error')
+      return
+    }
+
+    const finalPriceVal = finalComboPrice > 0 ? finalComboPrice : comboTotalOrig
+    const finalOldPriceVal = comboTotalOrig > finalPriceVal ? comboTotalOrig : (parseFloat(comboFormData.old_price) || null)
+    const finalDiscountVal = finalComboDiscount > 0 ? finalComboDiscount : 0
+    const finalStockVal = comboStock !== '' ? parseInt(comboStock) : recommendedComboStock
+
+    // Collect all images from selected products + custom cover
+    const collectedImages = Array.from(new Set([
+      comboFormData.image_url,
+      ...selectedComboItems.map(i => i.image_url).filter(Boolean),
+      ...(comboFormData.images || [])
+    ])).filter(Boolean)
+
+    const bundleSpecObj = {
+      enabled: true,
+      items: selectedComboItems
+    }
+
+    const specsJson = serializeProductSpecifications([], null, bundleSpecObj)
+
+    const payload = {
+      name: comboFormData.name.trim(),
+      sku: comboFormData.sku.trim() || generateUniqueSKU('Combos'),
+      category: comboFormData.category || 'Promociones & Combos',
+      description: comboFormData.description.trim() || `Combo de ${selectedComboItems.length} productos seleccionados con precio especial.`,
+      specifications: specsJson,
+      price: finalPriceVal,
+      old_price: finalOldPriceVal,
+      discount: finalDiscountVal,
+      stock: finalStockVal,
+      badge: comboFormData.badge || 'COMBO PACK',
+      image_url: comboFormData.image_url || collectedImages[0] || null,
+      images: collectedImages,
+      is_active: comboFormData.is_active,
+      is_featured: comboFormData.is_featured
+    }
+
+    try {
+      if (editingComboId) {
+        const { error } = await supabase.from('products').update(payload).eq('id', editingComboId)
+        if (error) throw error
+        showToast(`Combo "${comboFormData.name}" actualizado exitosamente`)
+      } else {
+        const { error } = await supabase.from('products').insert([payload])
+        if (error) throw error
+        showToast(`¡Combo "${comboFormData.name}" creado y publicado!`)
+      }
+
+      setComboModalOpen(false)
+      fetchProducts()
+    } catch (err) {
+      console.error('Error saving combo:', err)
+      showToast('Error al guardar el combo: ' + err.message, 'error')
+    }
   }
 
   // VARIANT HANDLERS (HONE PRO)
@@ -1046,6 +1308,16 @@ export default function HoneCatalogPage() {
             <span>Carga Masiva</span>
           </button>
 
+          <button 
+            type="button"
+            onClick={() => handleOpenComboModal()} 
+            className={styles.btnComboAdd}
+            title="Crear Pack Promocional o Combo con Descuento"
+          >
+            <Gift size={18} />
+            <span>Crear Combo / Promo</span>
+          </button>
+
           <button onClick={() => handleOpenModal()} className={styles.btnAdd}>
             <Plus size={18} />
             <span>Nuevo Producto</span>
@@ -1566,7 +1838,8 @@ export default function HoneCatalogPage() {
                       <div className={styles.productTitleCol}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                           <span className={styles.productName}>{product.name}</span>
-                          {product.badge && <span className={styles.badgePill}>{product.badge}</span>}
+                          {isProductBundle(product) && <span className={styles.comboBadgePill}>🎁 COMBO PACK</span>}
+                          {product.badge && !isProductBundle(product) && <span className={styles.badgePill}>{product.badge}</span>}
                         </div>
                         {(() => {
                           const { variantConfig: itemVars } = parseProductSpecifications(product.specifications)
@@ -1653,7 +1926,11 @@ export default function HoneCatalogPage() {
                         <button onClick={() => startQuickEdit(product)} className={styles.btnActionIcon} title="Edición Rápida">
                           <Sliders size={15} />
                         </button>
-                        <button onClick={() => handleOpenModal(product)} className={styles.btnActionIcon} title="Editor Completo">
+                        <button 
+                          onClick={() => isProductBundle(product) ? handleOpenComboModal(product) : handleOpenModal(product)} 
+                          className={styles.btnActionIcon} 
+                          title={isProductBundle(product) ? "Editar Combo Pack" : "Editor Completo"}
+                        >
                           <Edit2 size={15} />
                         </button>
                         <button onClick={() => handleDuplicate(product)} className={styles.btnActionIcon} title="Duplicar">
@@ -1675,6 +1952,7 @@ export default function HoneCatalogPage() {
         <div className={styles.grid}>
           {paginatedProducts.map((product) => {
             const { variantConfig: itemVars } = parseProductSpecifications(product.specifications)
+            const isBundle = isProductBundle(product)
             return (
               <div key={product.id} className={styles.gridCard}>
                 <div className={styles.gridCardMedia}>
@@ -1688,11 +1966,21 @@ export default function HoneCatalogPage() {
                     <div className={styles.noImagePlaceholder}><ImageIcon size={32} /></div>
                   )}
                   
-                  {product.badge && <span className={styles.gridBadge}>{product.badge}</span>}
+                  {isBundle ? (
+                    <span className={styles.comboBadgePill} style={{ position: 'absolute', top: 10, left: 10, zIndex: 4 }}>
+                      🎁 COMBO PACK
+                    </span>
+                  ) : product.badge ? (
+                    <span className={styles.gridBadge}>{product.badge}</span>
+                  ) : null}
                   {product.stock <= 0 && <span className={styles.gridAgotado}>AGOTADO</span>}
 
                   <div className={styles.gridCardOverlay}>
-                    <button onClick={() => handleOpenModal(product)} className={styles.gridOverlayBtn} title="Editar">
+                    <button 
+                      onClick={() => isBundle ? handleOpenComboModal(product) : handleOpenModal(product)} 
+                      className={styles.gridOverlayBtn} 
+                      title={isBundle ? "Editar Combo Pack" : "Editar"}
+                    >
                       <Edit2 size={16} />
                     </button>
                     <button onClick={() => handleDuplicate(product)} className={styles.gridOverlayBtn} title="Duplicar">
@@ -2026,6 +2314,24 @@ export default function HoneCatalogPage() {
                           />
                         </div>
                       )}
+
+                      {/* Quick Category Chips */}
+                      <div className={styles.categoryQuickChips}>
+                        <span style={{ fontSize: '0.72rem', color: '#8e8e9f', marginRight: '2px' }}>Rápido:</span>
+                        {['Agujas', 'Tintas', 'Cuidado', 'Máquinas', 'Fuentes & Pedales', 'Grips & Punteras', 'Kits', 'Diseños'].map((cat) => (
+                          <button
+                            key={cat}
+                            type="button"
+                            className={`${styles.categoryChipBtn} ${formData.category === cat && !isCustomCategory ? styles.categoryChipBtnActive : ''}`}
+                            onClick={() => {
+                              setIsCustomCategory(false)
+                              setFormData(prev => ({ ...prev, category: cat }))
+                            }}
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     <div className={styles.formGroup}>
@@ -2108,6 +2414,53 @@ export default function HoneCatalogPage() {
                         {formData.discount > 0 ? `${formData.discount}% de Descuento` : 'Sin descuento'}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Pricing Quick Chips for 1-Click Discounts */}
+                  <div className={styles.pricingQuickChips}>
+                    <span style={{ fontSize: '0.74rem', color: '#8e8e9f' }}>Descuento rápido:</span>
+                    {[
+                      { label: '5% OFF', val: 5 },
+                      { label: '10% OFF', val: 10 },
+                      { label: '15% OFF', val: 15 },
+                      { label: '20% OFF', val: 20 },
+                      { label: '30% OFF', val: 30 },
+                      { label: '50% OFF', val: 50 },
+                    ].map((d) => (
+                      <button
+                        key={d.val}
+                        type="button"
+                        className={styles.pricingChipBtn}
+                        onClick={() => {
+                          const baseP = parseFloat(formData.old_price || formData.price) || 0
+                          if (baseP > 0) {
+                            const newP = Math.round(baseP * (1 - d.val / 100))
+                            setFormData(prev => ({
+                              ...prev,
+                              old_price: prev.old_price ? prev.old_price : prev.price,
+                              price: newP,
+                              discount: d.val
+                            }))
+                          }
+                        }}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      className={styles.pricingChipBtn}
+                      onClick={() => {
+                        setFormData(prev => ({
+                          ...prev,
+                          price: prev.old_price || prev.price,
+                          old_price: '',
+                          discount: 0
+                        }))
+                      }}
+                    >
+                      Sin Descuento
+                    </button>
                   </div>
 
                   <div className={styles.formRow}>
@@ -2590,6 +2943,397 @@ export default function HoneCatalogPage() {
                 </button>
                 <button type="submit" className={styles.btnAdd} disabled={uploading}>
                   {editingId ? 'Guardar Cambios en Catálogo' : 'Crear y Publicar en Catálogo'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* COMBO & PROMOTIONS BUILDER MODAL (HONE BUNDLE ENGINE)     */}
+      {/* ========================================================= */}
+      {comboModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setComboModalOpen(false)}>
+          <div className={styles.comboModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.comboModalHeader}>
+              <div>
+                <span className={styles.comboModalSub}>HONE BUNDLE & PROMOTIONS ENGINE</span>
+                <h2 className={styles.comboModalTitle}>
+                  {editingComboId ? 'Editar Pack Promocional / Combo' : 'Crear Nueva Promoción o Pack Combo'}
+                </h2>
+              </div>
+              <button className={styles.closeModal} onClick={() => setComboModalOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitCombo} className={styles.modalForm} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <div className={styles.comboModalBody}>
+                {/* Left Column: Product Selector & Tray */}
+                <div className={styles.comboPickerCol}>
+                  <div className={styles.comboColTitle}>
+                    <ShoppingBag size={18} color="#f59e0b" />
+                    <span>1. Selecciona los productos incluidos en el pack</span>
+                  </div>
+
+                  {/* Search & Category Filter */}
+                  <div className={styles.comboPickerSearchWrap}>
+                    <input 
+                      type="text" 
+                      placeholder="Buscar por nombre o SKU..."
+                      value={comboSearch}
+                      onChange={(e) => setComboSearch(e.target.value)}
+                      className={styles.comboPickerSearch}
+                    />
+                    <select
+                      value={comboCategoryFilter}
+                      onChange={(e) => setComboCategoryFilter(e.target.value)}
+                      className={styles.select}
+                      style={{ maxWidth: '160px' }}
+                    >
+                      <option value="all">Todas las Categorías</option>
+                      {categories.filter(c => c !== 'all' && c !== 'Promociones & Combos').map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Products Picker List */}
+                  <div className={styles.comboPickerList}>
+                    {products
+                      .filter(p => {
+                        // Don't show combos in their own picker list
+                        if (editingComboId && p.id === editingComboId) return false
+                        const matchCat = comboCategoryFilter === 'all' || p.category === comboCategoryFilter
+                        const matchSearch = (p.name || '').toLowerCase().includes(comboSearch.toLowerCase()) || 
+                                            (p.sku || '').toLowerCase().includes(comboSearch.toLowerCase())
+                        return matchCat && matchSearch
+                      })
+                      .map(p => {
+                        const isSelected = selectedComboItems.some(item => item.productId === p.id)
+                        return (
+                          <div 
+                            key={p.id} 
+                            onClick={() => handleToggleProductInCombo(p)}
+                            className={`${styles.comboProductItem} ${isSelected ? styles.comboProductItemSelected : ''}`}
+                          >
+                            <div className={styles.comboProductInfo}>
+                              {p.image_url ? (
+                                <img src={p.image_url} alt={p.name} className={styles.comboProductThumb} />
+                              ) : (
+                                <div className={styles.comboProductThumb} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <ImageIcon size={16} color="#636366" />
+                                </div>
+                              )}
+                              <div className={styles.comboProductText}>
+                                <span className={styles.comboProductName}>{p.name}</span>
+                                <div className={styles.comboProductMeta}>
+                                  <span>{p.category}</span>
+                                  <span>• SKU: {p.sku || 'N/A'}</span>
+                                  <span>• Stock: {p.stock || 0} un.</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span className={styles.comboProductPrice}>{formatCLP(p.price)}</span>
+                              <input 
+                                type="checkbox" 
+                                checked={isSelected} 
+                                onChange={() => {}} 
+                                style={{ accentColor: '#f59e0b', cursor: 'pointer' }}
+                              />
+                            </div>
+                          </div>
+                        )
+                      })}
+                  </div>
+
+                  {/* Tray: Selected Items with Quantity Stepper */}
+                  <div className={styles.comboSelectedTray}>
+                    <div className={styles.comboSelectedHeader}>
+                      <span>Artículos en el pack ({selectedComboItems.length})</span>
+                      <span style={{ color: '#fff' }}>Total Normal: {formatCLP(comboTotalOrig)}</span>
+                    </div>
+
+                    {selectedComboItems.length === 0 ? (
+                      <p style={{ fontSize: '0.8rem', color: '#8e8e9f', textAlign: 'center', margin: '8px 0' }}>
+                        Haz clic en los productos de arriba para agregarlos a este pack promocional.
+                      </p>
+                    ) : (
+                      <div className={styles.comboSelectedList}>
+                        {selectedComboItems.map((item) => (
+                          <div key={item.productId} className={styles.comboSelectedRow}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                              {item.image_url && <img src={item.image_url} alt="" style={{ width: 28, height: 28, borderRadius: 4, objectFit: 'cover' }} />}
+                              <span style={{ fontSize: '0.8rem', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {item.name}
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div className={styles.comboStepper}>
+                                <button 
+                                  type="button" 
+                                  onClick={() => handleUpdateComboItemQty(item.productId, -1)}
+                                  className={styles.comboStepBtn}
+                                  title="Restar cantidad"
+                                >
+                                  -
+                                </button>
+                                <span className={styles.comboStepQty}>{item.quantity || 1}</span>
+                                <button 
+                                  type="button" 
+                                  onClick={() => handleUpdateComboItemQty(item.productId, 1)}
+                                  className={styles.comboStepBtn}
+                                  title="Sumar cantidad"
+                                >
+                                  +
+                                </button>
+                              </div>
+
+                              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#4ade80' }}>
+                                {formatCLP((item.price || 0) * (item.quantity || 1))}
+                              </span>
+
+                              <button 
+                                type="button" 
+                                onClick={() => handleRemoveComboItem(item.productId)}
+                                className={styles.btnActionIcon}
+                                style={{ padding: '2px' }}
+                                title="Quitar del pack"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Column: Pricing, Name & Publish */}
+                <div className={styles.comboFormCol}>
+                  <div className={styles.comboColTitle}>
+                    <Flame size={18} color="#ff2a3d" />
+                    <span>2. Precios Especiales & Publicación</span>
+                  </div>
+
+                  {/* Pricing Card */}
+                  <div className={styles.comboPricingCard}>
+                    <div className={styles.comboPricingHeader}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>Modo de Precio Promocional:</span>
+                      <div className={styles.comboModeToggle}>
+                        <button 
+                          type="button"
+                          className={`${styles.comboModeBtn} ${comboPricingMode === 'fixed' ? styles.comboModeBtnActive : ''}`}
+                          onClick={() => setComboPricingMode('fixed')}
+                        >
+                          Precio Fijo
+                        </button>
+                        <button 
+                          type="button"
+                          className={`${styles.comboModeBtn} ${comboPricingMode === 'percent' ? styles.comboModeBtnActive : ''}`}
+                          onClick={() => setComboPricingMode('percent')}
+                        >
+                          % Descuento
+                        </button>
+                      </div>
+                    </div>
+
+                    {comboPricingMode === 'fixed' ? (
+                      <div className={styles.formGroup}>
+                        <label style={{ color: '#fff', fontSize: '0.82rem' }}>Precio Especial del Combo (CLP) *</label>
+                        <input 
+                          type="number"
+                          required
+                          placeholder={comboTotalOrig > 0 ? String(Math.round(comboTotalOrig * 0.8)) : '19990'}
+                          value={comboPrice}
+                          onChange={(e) => setComboPrice(e.target.value)}
+                          className={styles.input}
+                          style={{ borderColor: '#f59e0b', fontSize: '1.1rem', fontWeight: 700, color: '#4ade80' }}
+                        />
+                      </div>
+                    ) : (
+                      <div className={styles.formGroup}>
+                        <label style={{ color: '#fff', fontSize: '0.82rem' }}>Porcentaje de Descuento (%) *</label>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <input 
+                            type="range"
+                            min="5"
+                            max="90"
+                            step="5"
+                            value={comboDiscountPercent}
+                            onChange={(e) => setComboDiscountPercent(Number(e.target.value))}
+                            style={{ flex: 1, accentColor: '#f59e0b' }}
+                          />
+                          <span style={{ fontSize: '1rem', fontWeight: 700, color: '#f59e0b', minWidth: '48px' }}>
+                            {comboDiscountPercent}% OFF
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Live Savings Calculation */}
+                    <div className={styles.comboSavingsBreakdown}>
+                      <div className={styles.comboSavingsRow}>
+                        <span>Valor normal individual:</span>
+                        <span style={{ textDecoration: comboSavings > 0 ? 'line-through' : 'none' }}>{formatCLP(comboTotalOrig)}</span>
+                      </div>
+                      <div className={styles.comboSavingsRow}>
+                        <span>Precio Final Combo:</span>
+                        <strong style={{ color: '#4ade80', fontSize: '0.95rem' }}>{formatCLP(finalComboPrice)}</strong>
+                      </div>
+                      {comboSavings > 0 && (
+                        <div className={styles.comboSavingsHighlight}>
+                          <span>💰 ¡Ahorro total para el cliente!</span>
+                          <span>{formatCLP(comboSavings)} ({finalComboDiscount}% OFF)</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Combo Form Information */}
+                  <div className={styles.formGroup}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label>Nombre del Pack / Combo *</label>
+                      <button 
+                        type="button" 
+                        onClick={handleGenerateComboName}
+                        className={styles.btnGenSkuAction}
+                        title="Generar nombre a partir de los productos seleccionados"
+                      >
+                        <Sparkles size={13} />
+                        <span>Sugerir Nombre</span>
+                      </button>
+                    </div>
+                    <input 
+                      type="text"
+                      required
+                      placeholder="Ej: Pack Máquina Rotativa + Fuente + 20 Cartuchos RM"
+                      value={comboFormData.name}
+                      onChange={(e) => setComboFormData({ ...comboFormData, name: e.target.value })}
+                      className={styles.input}
+                    />
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup} style={{ flex: 1.2 }}>
+                      <label>Código SKU de Promoción</label>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <input 
+                          type="text"
+                          required
+                          value={comboFormData.sku}
+                          onChange={(e) => setComboFormData({ ...comboFormData, sku: e.target.value })}
+                          className={styles.input}
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => setComboFormData(prev => ({ ...prev, sku: generateUniqueSKU('Combos') }))}
+                          className={styles.btnGenSkuAction}
+                          title="Generar SKU único"
+                        >
+                          <Dice5 size={14} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className={styles.formGroup} style={{ flex: 1 }}>
+                      <label>
+                        Stock Disponible
+                        <span style={{ color: '#f59e0b', fontSize: '0.72rem', display: 'block' }}>
+                          (Mínimo según items: {recommendedComboStock} un.)
+                        </span>
+                      </label>
+                      <input 
+                        type="number"
+                        placeholder={String(recommendedComboStock)}
+                        value={comboStock}
+                        onChange={(e) => setComboStock(e.target.value)}
+                        className={styles.input}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label>Badge o Etiqueta Visual</label>
+                      <input 
+                        type="text"
+                        placeholder="COMBO PACK"
+                        value={comboFormData.badge}
+                        onChange={(e) => setComboFormData({ ...comboFormData, badge: e.target.value })}
+                        className={styles.input}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Foto de Portada (Opcional URL)</label>
+                      <input 
+                        type="text"
+                        placeholder="Hereda automáticamente de los productos"
+                        value={comboFormData.image_url}
+                        onChange={(e) => setComboFormData({ ...comboFormData, image_url: e.target.value })}
+                        className={styles.input}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label>Descripción & Detalle del Pack</label>
+                      <button 
+                        type="button" 
+                        onClick={handleGenerateComboDescription}
+                        className={styles.btnGenSkuAction}
+                        title="Generar resumen con lista de productos y ahorros"
+                      >
+                        <FileText size={13} />
+                        <span>Generar Resumen</span>
+                      </button>
+                    </div>
+                    <textarea 
+                      rows="3"
+                      placeholder="Explica qué incluye la oferta, ahorro y ventajas..."
+                      value={comboFormData.description}
+                      onChange={(e) => setComboFormData({ ...comboFormData, description: e.target.value })}
+                      className={styles.textarea}
+                    />
+                  </div>
+
+                  <div className={styles.formRowCheckboxes}>
+                    <div className={styles.checkboxItem}>
+                      <input 
+                        type="checkbox" 
+                        id="combo-active"
+                        checked={comboFormData.is_active} 
+                        onChange={e => setComboFormData({ ...comboFormData, is_active: e.target.checked })} 
+                      />
+                      <label htmlFor="combo-active">Visible en tienda online</label>
+                    </div>
+
+                    <div className={styles.checkboxItem}>
+                      <input 
+                        type="checkbox" 
+                        id="combo-featured"
+                        checked={comboFormData.is_featured} 
+                        onChange={e => setComboFormData({ ...comboFormData, is_featured: e.target.checked })} 
+                      />
+                      <label htmlFor="combo-featured">Destacar en Inicio (Ofertas)</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Combo Modal Footer */}
+              <div className={styles.modalFooter} style={{ borderTop: '1px solid rgba(255,255,255,0.08)', background: '#121219' }}>
+                <button type="button" onClick={() => setComboModalOpen(false)} className={styles.btnSecondary}>
+                  Cancelar
+                </button>
+                <button type="submit" className={styles.btnComboAdd} style={{ padding: '10px 24px', fontSize: '0.95rem' }}>
+                  <Gift size={18} />
+                  <span>{editingComboId ? 'Guardar Cambios del Combo' : 'Crear y Publicar Combo Pack'}</span>
                 </button>
               </div>
             </form>
