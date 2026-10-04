@@ -27,6 +27,9 @@ import {
 import { getBancameWidget } from '@bancame/widget-js'
 import styles from './productos.module.css'
 
+// Flag para activar o desactivar Banca.me hasta tener las credenciales oficiales
+const IS_BANCAME_ENABLED = process.env.NEXT_PUBLIC_ENABLE_BANCAME === 'true'
+
 export default function ProductosPage() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -45,7 +48,7 @@ export default function ProductosPage() {
   // Multi-Step Checkout Modal
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [checkoutStep, setCheckoutStep] = useState('details') // 'details' | 'payment' | 'success'
-  const [paymentMethod, setPaymentMethod] = useState('bancame') // 'bancame' | 'transfer' | 'whatsapp'
+  const [paymentMethod, setPaymentMethod] = useState('transfer') // 'transfer' | 'whatsapp' | 'bancame'
   const [deliveryTimeframe, setDeliveryTimeframe] = useState('24 a 48 horas hábiles en RM y 2 a 4 días hábiles a Regiones')
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -1078,11 +1081,13 @@ export default function ProductosPage() {
                       <strong>{formatPrice(cartTotal)}</strong>
                     </div>
 
-                    {/* BNPL Teaser in Cart */}
-                    <div style={{ background: 'rgba(234, 88, 12, 0.08)', border: '1px solid rgba(234, 88, 12, 0.25)', borderRadius: '8px', padding: '8px 12px', fontSize: '0.78rem', color: '#fed7aa', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
-                      <span>Hasta <strong>3 cuotas sin interés de {formatPrice(calculateInstallmentAmount(cartTotal, 3))}</strong></span>
-                      <span style={{ background: '#ea580c', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>BNPL</span>
-                    </div>
+                    {/* BNPL Teaser in Cart (Condicional) */}
+                    {IS_BANCAME_ENABLED && (
+                      <div style={{ background: 'rgba(234, 88, 12, 0.08)', border: '1px solid rgba(234, 88, 12, 0.25)', borderRadius: '8px', padding: '8px 12px', fontSize: '0.78rem', color: '#fed7aa', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
+                        <span>Hasta <strong>3 cuotas sin interés de {formatPrice(calculateInstallmentAmount(cartTotal, 3))}</strong></span>
+                        <span style={{ background: '#ea580c', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>BNPL</span>
+                      </div>
+                    )}
 
                     <button 
                       type="button" 
@@ -1317,24 +1322,26 @@ export default function ProductosPage() {
 
                       <div className={styles.paymentMethodsGrid} style={{ gridTemplateColumns: '1fr' }}>
 
-                        {/* 1. BANCA.ME BNPL */}
-                        <div 
-                          className={`${styles.paymentMethodCard} ${paymentMethod === 'bancame' ? styles.paymentMethodCardActive : ''}`}
-                          onClick={() => setPaymentMethod('bancame')}
-                        >
-                          <div className={styles.paymentMethodTop}>
-                            <div className={styles.paymentIconWrap} style={{ background: 'rgba(234, 88, 12, 0.15)', color: '#ea580c' }}>
-                              <CreditCard size={18} />
+                        {/* 1. BANCA.ME BNPL (Habilitado sólo si IS_BANCAME_ENABLED está en true) */}
+                        {IS_BANCAME_ENABLED && (
+                          <div 
+                            className={`${styles.paymentMethodCard} ${paymentMethod === 'bancame' ? styles.paymentMethodCardActive : ''}`}
+                            onClick={() => setPaymentMethod('bancame')}
+                          >
+                            <div className={styles.paymentMethodTop}>
+                              <div className={styles.paymentIconWrap} style={{ background: 'rgba(234, 88, 12, 0.15)', color: '#ea580c' }}>
+                                <CreditCard size={18} />
+                              </div>
+                              <span className={styles.paymentBadgePill} style={{ background: 'rgba(234, 88, 12, 0.2)', color: '#fdba74' }}>
+                                3 a 12 Cuotas con RUT
+                              </span>
                             </div>
-                            <span className={styles.paymentBadgePill} style={{ background: 'rgba(234, 88, 12, 0.2)', color: '#fdba74' }}>
-                              3 a 12 Cuotas con RUT
-                            </span>
+                            <h5 className={styles.paymentMethodName}>Banca.me BNPL (Compra Ahora, Paga en Cuotas)</h5>
+                            <p className={styles.paymentMethodDesc}>
+                              Paga en 3, 6 o 12 cuotas mensuales con tu RUT y tarjeta de débito/transferencia. Sin tarjeta de crédito.
+                            </p>
                           </div>
-                          <h5 className={styles.paymentMethodName}>Banca.me BNPL (Compra Ahora, Paga en Cuotas)</h5>
-                          <p className={styles.paymentMethodDesc}>
-                            Paga en 3, 6 o 12 cuotas mensuales con tu RUT y tarjeta de débito/transferencia. Sin tarjeta de crédito.
-                          </p>
-                        </div>
+                        )}
 
                         {/* 2. TRANSFERENCIA BANCARIA */}
                         <div 
@@ -1378,7 +1385,7 @@ export default function ProductosPage() {
                       {/* PAYMENT DETAILS BLOCK ACCORDING TO SELECTION */}
 
                       {/* BANCA.ME BNPL DETAILS */}
-                      {paymentMethod === 'bancame' && (
+                      {IS_BANCAME_ENABLED && paymentMethod === 'bancame' && (
                         <div className={styles.bnplDetailsBox} style={{ marginTop: '16px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <strong style={{ color: '#fff', fontSize: '0.9rem' }}>Simulador de Cuotas Banca.me</strong>
