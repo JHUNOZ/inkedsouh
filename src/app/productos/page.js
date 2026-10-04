@@ -24,6 +24,7 @@ import {
   isVideoUrl,
   calculateInstallmentAmount
 } from '@/lib/productUtils'
+import { getBancameWidget } from '@bancame/widget-js'
 import styles from './productos.module.css'
 
 export default function ProductosPage() {
@@ -58,6 +59,8 @@ export default function ProductosPage() {
   const [orderProcessing, setOrderProcessing] = useState(false)
   const [submittedOrder, setSubmittedOrder] = useState(null)
   const [copyFeedback, setCopyFeedback] = useState(false)
+  const [simulationData, setSimulationData] = useState(null)
+  const [bancameError, setBancameError] = useState(null)
 
   const supabase = createClient()
 
@@ -244,28 +247,146 @@ export default function ProductosPage() {
     if (cart.length === 0) return
 
     setOrderProcessing(true)
+    setBancameError(null)
+    setSimulationData(null)
     const orderNumber = `INK-${Math.floor(100000 + Math.random() * 900000)}`
 
     try {
-      // Try saving order to Supabase orders table (optional)
-      const orderPayload = {
-        order_number: orderNumber,
-        customer_name: customerInfo.name || 'Cliente Web',
-        customer_email: customerInfo.email || null,
-        customer_phone: customerInfo.phone || null,
-        delivery_type: customerInfo.deliveryType,
-        delivery_address: customerInfo.address || null,
-        total_amount: cartTotal,
-        payment_method: paymentMethod,
-        items: cart,
-        status: paymentMethod === 'whatsapp' ? 'solicitud_whatsapp' : 'pendiente_pago',
-        created_at: new Date().toISOString()
+      if (paymentMethod === 'bancame') {
+        // Iniciar sesión con Banca.me API
+        const res = await fetch('/api/bancame/create-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: cartTotal,
+            orderNumber,
+            customer: {
+              name: customerInfo.name,
+              email: customerInfo.email,
+              phone: customerInfo.phone
+            },
+            items: cart,
+            deliveryType: customerInfo.deliveryType,
+            deliveryAddress: customerInfo.address,
+            deliveryCity: customerInfo.city,
+            deliveryNotes: customerInfo.notes,
+            deliveryTimeframe
+          })
+        })
+
+        const session = await res.json()
+
+        if (!res.ok) {
+          throw new Error(session?.error || 'No se pudo iniciar la sesión de pago con Banca.me.')
+        }
+
+        // Si estamos en modo simulación (sin API key real aún o sandbox)
+        if (session.mode === 'simulation' || session.mode === 'sandbox_fallback') {
+          setSimulationData({
+            orderNumber: session.orderNumber,
+            widgetToken: session.widgetToken,
+            publicKey: session.publicKey,
+            warning: session.warning,
+            message: session.message
+          })
+          setOrderProcessing(false)
+          return
+        }
+
+        // Si estamos en modo live (API key configurada)
+        if (session.widgetToken) {
+          try {
+            const bancame = await getBancameWidget()
+            if (!bancame) {
+              throw new Error('El SDK de Banca.me no se pudo inicializar en el navegador.')
+            }
+
+            const widget = bancame.create({
+              widgetToken: session.widgetToken,
+              publicKey: session.publicKey || process.env.NEXT_PUBLIC_BANCAME_PUBLIC_KEY,
+              onSuccess: async (trxData) => {
+                console.log('[Banca.me Success]:', trxData)
+                await supabase
+                  .from('orders')
+                  .update({
+                    status: 'pagado_bnpl',
+                    payment_status: 'aprobado',
+                    bancame_trx_id: trxData?.id || null,
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq('order_number', session.orderNumber)
+                  .catch(() => {})
+
+                setSubmittedOrder({
+                  orderNumber: session.orderNumber,
+                  date: new Date().toLocaleDateString('es-CL'),
+                  total: cartTotal,
+                  items: [...cart],
+                  paymentMethod: 'bancame',
+                  deliveryType: customerInfo.deliveryType,
+                  status: 'Aprobado y Pagado en Cuotas'
+                })
+                setCart([])
+                setCheckoutStep('success')
+                setOrderProcessing(false)
+              },
+              onError: (err) => {
+                console.error('[Banca.me Error]:', err)
+                setBancameError(err?.message || 'Ocurrió un error en el widget de Banca.me.')
+                setOrderProcessing(false)
+              },
+              onReject: (rej) => {
+                console.warn('[Banca.me Rejected]:', rej)
+                setBancameError('Tu solicitud de cuotas no fue pre-aprobada por el sistema. Puedes optar por Transferencia Bancaria.')
+                setOrderProcessing(false)
+              },
+              onExit: () => {
+                setOrderProcessing(false)
+              }
+            })
+
+            widget.open()
+            return
+          } catch (widgetErr) {
+            console.error('[Banca.me Widget Launch Error]:', widgetErr)
+            setSimulationData({
+              orderNumber: session.orderNumber,
+              widgetToken: session.widgetToken,
+              warning: 'No se pudo abrir el widget externo. Se activó el panel de verificación.'
+            })
+            setOrderProcessing(false)
+            return
+          }
+        }
       }
 
-      await supabase.from('orders').insert([orderPayload]).catch(() => {})
+      // Método Transferencia Bancaria o WhatsApp
+      const orderRes = await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderNumber,
+          customer: {
+            name: customerInfo.name,
+            email: customerInfo.email,
+            phone: customerInfo.phone
+          },
+          items: cart,
+          totalAmount: cartTotal,
+          paymentMethod,
+          deliveryType: customerInfo.deliveryType,
+          deliveryAddress: customerInfo.address,
+          deliveryCity: customerInfo.city,
+          deliveryNotes: customerInfo.notes,
+          deliveryTimeframe
+        })
+      })
+
+      const orderData = await orderRes.json()
+      const effectiveOrderNumber = orderData?.orderNumber || orderNumber
 
       setSubmittedOrder({
-        orderNumber,
+        orderNumber: effectiveOrderNumber,
         date: new Date().toLocaleDateString('es-CL'),
         total: cartTotal,
         items: [...cart],
@@ -273,9 +394,9 @@ export default function ProductosPage() {
         deliveryType: customerInfo.deliveryType
       })
 
-      // If WhatsApp method, trigger chat immediately
+      // Si es WhatsApp, abrir chat de inmediato
       if (paymentMethod === 'whatsapp') {
-        let msg = `Estimado equipo InkedSouh,\nAcabo de generar la orden *#${orderNumber}* desde la tienda web:\n\n`
+        let msg = `Estimado equipo InkedSouh,\nAcabo de generar la orden *#${effectiveOrderNumber}* desde la tienda web:\n\n`
         msg += `*DATOS DEL CLIENTE:*\n`
         msg += `• Nombre: ${customerInfo.name || 'Cliente'}\n`
         msg += `• Teléfono: ${customerInfo.phone || 'No especificado'}\n`
@@ -294,12 +415,69 @@ export default function ProductosPage() {
         window.open(url, '_blank')
       }
 
+      setCart([])
       setCheckoutStep('success')
     } catch (err) {
-      console.error('Error placing order:', err)
-      setCheckoutStep('success')
+      console.error('Error procesando pedido:', err)
+      setBancameError(err?.message || 'Error al procesar la orden.')
     } finally {
       setOrderProcessing(false)
+    }
+  }
+
+  // Simular aprobación de Banca.me (Sandbox)
+  const handleSimulateBancameSuccess = async () => {
+    if (!simulationData) return
+    setOrderProcessing(true)
+    try {
+      await supabase
+        .from('orders')
+        .update({
+          status: 'pagado_bnpl',
+          payment_status: 'aprobado',
+          bancame_trx_id: `sim_approved_${Date.now()}`,
+          updated_at: new Date().toISOString()
+        })
+        .eq('order_number', simulationData.orderNumber)
+        .catch(() => {})
+
+      setSubmittedOrder({
+        orderNumber: simulationData.orderNumber,
+        date: new Date().toLocaleDateString('es-CL'),
+        total: cartTotal,
+        items: [...cart],
+        paymentMethod: 'bancame',
+        deliveryType: customerInfo.deliveryType,
+        status: 'Aprobado en Cuotas (Simulación Sandbox)'
+      })
+      setSimulationData(null)
+      setCart([])
+      setCheckoutStep('success')
+    } catch (err) {
+      console.error('Error simulando éxito:', err)
+    } finally {
+      setOrderProcessing(false)
+    }
+  }
+
+  // Simular rechazo de Banca.me (Sandbox)
+  const handleSimulateBancameReject = async () => {
+    if (!simulationData) return
+    try {
+      await supabase
+        .from('orders')
+        .update({
+          status: 'rechazado',
+          payment_status: 'rechazado',
+          updated_at: new Date().toISOString()
+        })
+        .eq('order_number', simulationData.orderNumber)
+        .catch(() => {})
+
+      alert('Simulación: Solicitud de crédito evaluada y rechazada por políticas crediticias. Por favor selecciona Transferencia Bancaria o WhatsApp para continuar tu compra.')
+      setSimulationData(null)
+    } catch (err) {
+      console.error('Error simulando rechazo:', err)
     }
   }
 
@@ -1263,11 +1441,66 @@ export default function ProductosPage() {
                         </div>
                       )}
 
+                      {/* ERROR BANNER */}
+                      {bancameError && (
+                        <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.35)', color: '#fca5a5', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <AlertCircle size={16} color="#ef4444" style={{ flexShrink: 0 }} />
+                          <span>{bancameError}</span>
+                        </div>
+                      )}
+
+                      {/* SANDBOX / SIMULATOR INTERACTIVE PANEL */}
+                      {simulationData && (
+                        <div className={styles.simulationBox}>
+                          <div className={styles.simulationHeader}>
+                            <h5 className={styles.simulationTitle}>
+                              <Zap size={16} /> Entorno de Pruebas Banca.me (Sandbox)
+                            </h5>
+                            <span className={styles.simulationBadge}>Modo Simulación</span>
+                          </div>
+                          <p className={styles.simulationText}>
+                            Sesión creada para la orden <strong>#{simulationData.orderNumber}</strong>. En producción con tu clave <code>BANCAME_SECRET_KEY</code> se despliega el widget oficial. Puedes simular la respuesta crediticia ahora:
+                          </p>
+                          <div className={styles.simulationTokenWrap}>
+                            Token de Sesión: {simulationData.widgetToken}
+                          </div>
+                          <div className={styles.simulationActions}>
+                            <button 
+                              type="button" 
+                              onClick={handleSimulateBancameSuccess}
+                              disabled={orderProcessing}
+                              className={styles.simulationBtnApprove}
+                            >
+                              <CheckCircle2 size={15} /> Simular Aprobación y Pago
+                            </button>
+                            <button 
+                              type="button" 
+                              onClick={handleSimulateBancameReject}
+                              disabled={orderProcessing}
+                              className={styles.simulationBtnReject}
+                            >
+                              <X size={15} /> Simular Rechazo de Crédito
+                            </button>
+                            <button 
+                              type="button" 
+                              onClick={() => setSimulationData(null)}
+                              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: '#94a3b8', borderRadius: '6px', padding: '6px 12px', fontSize: '0.75rem', cursor: 'pointer' }}
+                            >
+                              Cerrar Panel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
                       {/* BOTONES DE NAVEGACIÓN */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px' }}>
                         <button 
                           type="button" 
-                          onClick={() => setCheckoutStep('details')}
+                          onClick={() => {
+                            setSimulationData(null)
+                            setBancameError(null)
+                            setCheckoutStep('details')
+                          }}
                           className={styles.btnSecondary}
                           style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 18px' }}
                           disabled={orderProcessing}
@@ -1290,7 +1523,11 @@ export default function ProductosPage() {
                             </>
                           ) : (
                             <>
-                              <span>{paymentMethod === 'whatsapp' ? 'Finalizar por WhatsApp' : 'Confirmar Pedido'}</span>
+                              <span>
+                                {paymentMethod === 'whatsapp' && 'Finalizar por WhatsApp'}
+                                {paymentMethod === 'transfer' && 'Confirmar Pedido y Datos de Pago'}
+                                {paymentMethod === 'bancame' && 'Pagar en Cuotas con Banca.me'}
+                              </span>
                               <Check size={18} />
                             </>
                           )}
@@ -1345,13 +1582,15 @@ export default function ProductosPage() {
 
                     <p style={{ color: '#a1a1aa', fontSize: '0.9rem', lineHeight: 1.5, margin: 0 }}>
                       {submittedOrder.paymentMethod === 'whatsapp' && (
-                        'Se ha abierto tu chat de WhatsApp con el resumen completo y los datos de tu despacho.'
+                        'Se ha generado tu orden y abierto la conversación por WhatsApp para coordinar los detalles finales de tu entrega.'
                       )}
                       {submittedOrder.paymentMethod === 'transfer' && (
-                        'Tu pedido está registrado y a la espera de la validación de la transferencia bancaria. Envíanos el comprobante por WhatsApp para proceder con el despacho.'
+                        'Tu orden ha sido registrada. Realiza la transferencia bancaria con el número de orden en el asunto y envíanos el comprobante para procesar tu despacho.'
                       )}
                       {submittedOrder.paymentMethod === 'bancame' && (
-                        'Tu solicitud de cuotas con Banca.me BNPL ha sido iniciada. Te notificaremos una vez aprobada la primera cuota.'
+                        submittedOrder.status?.includes('Aprobado')
+                          ? '¡Tu pago en cuotas con Banca.me ha sido aprobado exitosamente! Hemos recibido la confirmación y estamos preparando tu despacho.'
+                          : 'Tu solicitud de cuotas con Banca.me BNPL ha sido registrada. Recibirás las notificaciones de cuotas en tu correo electrónico.'
                       )}
                     </p>
 
