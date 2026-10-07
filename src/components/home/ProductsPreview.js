@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import SectionTitle from '@/components/ui/SectionTitle'
 import BubbleButton from '@/components/ui/BubbleButton'
 import { parseProductSpecifications, calculateTotalVariantStock, isVideoUrl } from '@/lib/productUtils'
+import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import styles from './ProductsPreview.module.css'
 
@@ -21,12 +22,10 @@ export default function ProductsPreview() {
   useEffect(() => {
     async function loadProducts() {
       try {
-        const { createClient } = await import('@/lib/supabase/client')
         const supabase = createClient()
-        // Try to fetch real products, fallback to empty array if error
         const { data, error } = await supabase
           .from('products')
-          .select('*')
+          .select('id, name, price, discount, stock, image_url, category, badge, specifications')
           .eq('is_active', true)
           .limit(4)
           .order('created_at', { ascending: false })
@@ -51,12 +50,12 @@ export default function ProductsPreview() {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.15 }
+      transition: { staggerChildren: 0.12 }
     }
   }
 
   const itemVars = {
-    hidden: { opacity: 0, y: 50, scale: 0.9 },
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
     visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 100 } }
   }
 
@@ -106,8 +105,7 @@ export default function ProductsPreview() {
                   <motion.div 
                     className={`${styles.card} interactive`}
                     variants={itemVars}
-                    whileHover={{ scale: 1.05, rotateY: 5, rotateX: 5 }}
-                    style={{ perspective: 1000, height: '100%' }}
+                    whileHover={{ scale: 1.03 }}
                   >
                     {product.badge && (
                       <span style={{ position: 'absolute', top: '12px', left: '12px', background: '#ff2a3d', color: '#fff', padding: '3px 8px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 700, zIndex: 2 }}>
@@ -127,10 +125,11 @@ export default function ProductsPreview() {
                             muted 
                             loop 
                             playsInline 
+                            preload="none"
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           />
                         ) : (
-                          <img src={product.image_url} alt={product.name} />
+                          <img src={product.image_url} alt={product.name} loading="lazy" />
                         )
                       ) : (
                         <ShoppingBag size={32} />
@@ -174,7 +173,7 @@ export default function ProductsPreview() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, delay: 0.5 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
         >
           <BubbleButton href="/productos" variant="outline">
             Ver Catálogo

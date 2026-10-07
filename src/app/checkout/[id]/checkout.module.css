@@ -1,43 +1,67 @@
 .page {
   min-height: 100vh;
-  padding: 100px 20px 60px;
-  background-color: var(--color-background);
+  padding: 120px 20px 80px;
+  background-color: #08080c;
   color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 42, 61, 0.08) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .container {
-  max-width: 1000px;
+  max-width: 1050px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 400px;
-  gap: 40px;
+  gap: 36px;
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 900px) {
   .container {
     grid-template-columns: 1fr;
-    flex-direction: column-reverse;
     display: flex;
+    flex-direction: column-reverse;
+    gap: 24px;
   }
 }
 
 /* Left Form Area */
 .formSection {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  padding: 40px;
+  background: rgba(18, 18, 24, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 36px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .title {
-  font-size: 1.8rem;
-  margin-bottom: 5px;
+  font-family: var(--font-display, 'Oswald', sans-serif);
+  font-size: 2rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
 }
 
 .subtitle {
-  color: var(--color-text-muted);
-  margin-bottom: 30px;
+  color: #9999aa;
+  margin-bottom: 28px;
   font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .formGroup {
@@ -47,44 +71,106 @@
 .formGroup label {
   display: block;
   margin-bottom: 8px;
-  color: #ccc;
-  font-size: 0.9rem;
+  color: #cccccc;
+  font-size: 0.88rem;
+  font-weight: 500;
 }
 
 .input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: #fff;
-  padding: 12px 15px;
-  border-radius: 8px;
+  padding: 14px 16px;
+  border-radius: 10px;
   font-family: inherit;
-  transition: all 0.2s;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--color-primary);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: #ff2a3d;
+  background: rgba(255, 42, 61, 0.05);
+  box-shadow: 0 0 0 3px rgba(255, 42, 61, 0.15);
+}
+
+/* Payment Gateway Selector Box */
+.paymentGatewayBox {
+  background: rgba(255, 42, 61, 0.05);
+  border: 1px solid rgba(255, 42, 61, 0.25);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 24px 0;
+}
+
+.paymentGatewayHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.paymentGatewayTitle {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flowBadge {
+  background: linear-gradient(135deg, #ff2a3d 0%, #b80d1d 100%);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.paymentLogos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.paymentPill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #dddddd;
+  font-weight: 600;
 }
 
 .submitBtn {
   width: 100%;
-  background: var(--color-primary);
+  background: linear-gradient(135deg, #ff2a3d 0%, #b80d1d 100%);
   color: #fff;
   border: none;
-  padding: 15px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1.1rem;
+  padding: 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.5px;
   cursor: pointer;
-  margin-top: 20px;
-  transition: all 0.2s;
+  margin-top: 10px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(255, 42, 61, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .submitBtn:hover:not(:disabled) {
-  background: var(--color-primary-dark);
   transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(255, 42, 61, 0.55);
 }
 
 .submitBtn:disabled {
@@ -96,17 +182,20 @@
   background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
   border: 1px solid rgba(239, 68, 68, 0.3);
-  padding: 15px;
-  border-radius: 8px;
+  padding: 14px 16px;
+  border-radius: 10px;
   margin-bottom: 20px;
+  font-size: 0.9rem;
 }
 
 /* Right Summary Area */
 .summarySection {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  padding: 30px;
+  background: rgba(18, 18, 24, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 28px;
   height: fit-content;
   position: sticky;
   top: 100px;
@@ -116,41 +205,66 @@
   width: 100%;
   height: 200px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: 20px;
   background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .courseTitle {
-  font-size: 1.4rem;
-  margin-bottom: 10px;
+  font-family: var(--font-display, 'Oswald', sans-serif);
+  font-size: 1.5rem;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
 }
 
 .priceRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 0;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
+  padding: 16px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   margin: 20px 0;
 }
 
 .priceLabel {
-  color: var(--color-text-muted);
+  color: #9999aa;
+  font-weight: 500;
 }
 
 .priceValue {
-  font-size: 1.5rem;
+  font-family: var(--font-display, 'Oswald', sans-serif);
+  font-size: 1.8rem;
   font-weight: 700;
-  color: var(--color-primary);
+  color: #ff2a3d;
 }
 
 .secureNotice {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--color-text-muted);
+  color: #888899;
   font-size: 0.85rem;
   justify-content: center;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 95px 14px 40px;
+  }
+
+  .formSection {
+    padding: 22px 18px;
+    border-radius: 16px;
+  }
+
+  .summarySection {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .title {
+    font-size: 1.6rem;
+  }
 }

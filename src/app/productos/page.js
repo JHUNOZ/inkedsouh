@@ -48,7 +48,7 @@ export default function ProductosPage() {
   // Multi-Step Checkout Modal
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [checkoutStep, setCheckoutStep] = useState('details') // 'details' | 'payment' | 'success'
-  const [paymentMethod, setPaymentMethod] = useState('transfer') // 'transfer' | 'whatsapp' | 'bancame'
+  const [paymentMethod, setPaymentMethod] = useState('flow') // 'flow' | 'transfer' | 'whatsapp' | 'bancame'
   const [deliveryTimeframe, setDeliveryTimeframe] = useState('24 a 48 horas hábiles en RM y 2 a 4 días hábiles a Regiones')
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
@@ -255,6 +255,41 @@ export default function ProductosPage() {
     const orderNumber = `INK-${Math.floor(100000 + Math.random() * 900000)}`
 
     try {
+      if (paymentMethod === 'flow') {
+        const flowRes = await fetch('/api/flow/create-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'product',
+            amount: cartTotal,
+            orderNumber,
+            customer: {
+              name: customerInfo.name,
+              email: customerInfo.email,
+              phone: customerInfo.phone
+            },
+            items: cart,
+            deliveryType: customerInfo.deliveryType,
+            deliveryAddress: customerInfo.address,
+            deliveryCity: customerInfo.city,
+            deliveryNotes: customerInfo.notes,
+            deliveryTimeframe
+          })
+        })
+
+        const flowData = await flowRes.json()
+
+        if (!flowRes.ok || !flowData.success) {
+          throw new Error(flowData.error || 'No se pudo iniciar la pasarela de pago Flow.')
+        }
+
+        setCart([])
+        if (flowData.redirectUrl) {
+          window.location.href = flowData.redirectUrl
+          return
+        }
+      }
+
       if (paymentMethod === 'bancame') {
         // Iniciar sesión con Banca.me API
         const res = await fetch('/api/bancame/create-session', {
@@ -1322,6 +1357,31 @@ export default function ProductosPage() {
 
                       <div className={styles.paymentMethodsGrid} style={{ gridTemplateColumns: '1fr' }}>
 
+                        {/* 0. FLOW (WEBPAY PLUS / MACH / SERVIPAG / REDCOMPRA) - RECOMENDADO */}
+                        <div 
+                          className={`${styles.paymentMethodCard} ${paymentMethod === 'flow' ? styles.paymentMethodCardActive : ''}`}
+                          onClick={() => setPaymentMethod('flow')}
+                        >
+                          <div className={styles.paymentMethodTop}>
+                            <div className={styles.paymentIconWrap} style={{ background: 'rgba(255, 42, 61, 0.15)', color: '#ff2a3d' }}>
+                              <CreditCard size={18} />
+                            </div>
+                            <span className={styles.paymentBadgePill} style={{ background: 'rgba(255, 42, 61, 0.2)', color: '#ff8591' }}>
+                              Recomendado • Flow Chile
+                            </span>
+                          </div>
+                          <h5 className={styles.paymentMethodName}>Pago Online Seguro (Flow Webpay / Tarjetas)</h5>
+                          <p className={styles.paymentMethodDesc}>
+                            Paga de forma inmediata y 100% segura con Webpay Plus, Tarjetas de Débito, Crédito, Mach, Redcompra o Servipag.
+                          </p>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
+                            <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px', color: '#ccc' }}>💳 Webpay Plus</span>
+                            <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px', color: '#ccc' }}>🟣 Mach</span>
+                            <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px', color: '#ccc' }}>🟦 Redcompra</span>
+                            <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px', color: '#ccc' }}>🟡 Servipag</span>
+                          </div>
+                        </div>
+
                         {/* 1. BANCA.ME BNPL (Habilitado sólo si IS_BANCAME_ENABLED está en true) */}
                         {IS_BANCAME_ENABLED && (
                           <div 
@@ -1531,6 +1591,7 @@ export default function ProductosPage() {
                           ) : (
                             <>
                               <span>
+                                {paymentMethod === 'flow' && 'Pagar con Flow (Webpay / Tarjetas)'}
                                 {paymentMethod === 'whatsapp' && 'Finalizar por WhatsApp'}
                                 {paymentMethod === 'transfer' && 'Confirmar Pedido y Datos de Pago'}
                                 {paymentMethod === 'bancame' && 'Pagar en Cuotas con Banca.me'}

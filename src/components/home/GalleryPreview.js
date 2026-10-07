@@ -210,11 +210,12 @@ export default function GalleryPreview() {
                   tabIndex={0}
                 >
                   {(post.mediaType === 'VIDEO' || isVideoUrl(post.mediaUrl)) ? (
-                    <video src={post.mediaUrl} autoPlay muted loop playsInline className={styles.igMedia} />
+                    <video src={post.mediaUrl} autoPlay muted loop playsInline preload="none" className={styles.igMedia} />
                   ) : (
                     <img 
                       src={post.mediaUrl} 
                       alt={post.caption || 'Galería de Tatuajes'} 
+                      loading="lazy"
                       className={styles.igMedia}
                     />
                   )}

@@ -329,12 +329,38 @@
 }
 
 @media (max-width: 900px) {
-  .hero { min-height: 100svh; padding: 100px var(--container-padding) 40px; }
-  .inner { grid-template-columns: 1fr; gap: 30px; text-align: center; }
-  .imageWrap { max-width: 250px; margin: 0 auto; }
+  .hero { 
+    min-height: 100svh; 
+    padding: 95px var(--container-padding) 40px; 
+  }
+  .inner { 
+    grid-template-columns: 1fr; 
+    gap: 28px; 
+    text-align: center; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .imageWrap { 
+    max-width: 220px; 
+    width: 220px;
+    margin: 0 auto; 
+  }
+  .logoContainer {
+    justify-content: center;
+  }
+  .info {
+    align-items: center;
+    gap: 16px;
+  }
+  .bio {
+    font-size: 0.98rem;
+    line-height: 1.7;
+    text-align: center;
+  }
   .label::after { display: none; }
   .tags { justify-content: center; }
-  .scrollArrow { display: none; } /* Ocultar flecha en móvil si estorba */
+  .scrollArrow { display: none; }
 }
 
 /* Dynamic Scroll Darkening Overlay */

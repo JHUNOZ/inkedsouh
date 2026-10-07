@@ -1,5 +1,6 @@
 'use client'
-// Sección de Google Maps con información de contacto - Dark Tech Style
+// Sección de Google Maps con carga diferida e información de contacto - Dark Tech Style
+import { useState, useEffect, useRef } from 'react'
 import { MapPin, Clock, Phone, ArrowUpRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import SectionTitle from '@/components/ui/SectionTitle'
@@ -7,6 +8,27 @@ import { SITE_LOCATION } from '@/lib/constants'
 import styles from './GoogleMap.module.css'
 
 export default function GoogleMap() {
+  const [loadMap, setLoadMap] = useState(false)
+  const mapSectionRef = useRef(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setLoadMap(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '250px' }
+    )
+
+    if (mapSectionRef.current) {
+      observer.observe(mapSectionRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
   const containerVars = {
     hidden: { opacity: 0 },
     visible: {
@@ -39,7 +61,7 @@ export default function GoogleMap() {
   }
 
   return (
-    <section className={styles.section} id="ubicacion">
+    <section className={styles.section} id="ubicacion" ref={mapSectionRef}>
       <div className={styles.inner}>
         
         <motion.div 
@@ -100,7 +122,7 @@ export default function GoogleMap() {
 
           </motion.div>
 
-          {/* Lado Derecho: Mapa enmarcado oscuro */}
+          {/* Lado Derecho: Mapa enmarcado con carga diferida */}
           <motion.div 
             className={styles.mapCol}
             initial="hidden"
@@ -109,13 +131,19 @@ export default function GoogleMap() {
             variants={slideRight}
           >
             <div className={`${styles.mapContainer} bracket-borders`}>
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3345.5!2d-70.7394!3d-34.1701!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x966318c8e5a1f1f1%3A0x1!2sAlmarza%20552%2C%20Rancagua%2C%20Chile!5e0!3m2!1ses!2scl!4v1"
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Ubicación INKEDSOUH"
-              />
+              {loadMap ? (
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3345.5!2d-70.7394!3d-34.1701!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x966318c8e5a1f1f1%3A0x1!2sAlmarza%20552%2C%20Rancagua%2C%20Chile!5e0!3m2!1ses!2scl!4v1"
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Ubicación INKEDSOUH"
+                />
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0d0d12', color: '#555' }}>
+                  <span>Cargando mapa interactivo...</span>
+                </div>
+              )}
             </div>
           </motion.div>
           
