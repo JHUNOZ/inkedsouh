@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { 
   Calendar, Package, Image as ImageIcon, Settings, LogOut, 
   Menu, X, LayoutDashboard, BookOpen, User, ExternalLink,
-  ChevronRight, Shield, Flame, Sparkles, Layers
+  ChevronRight, Shield, Flame, Sparkles, Layers, ShoppingBag
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import styles from './layout.module.css'
@@ -37,6 +37,7 @@ export default function AdminLayout({ children }) {
 
   const navItems = [
     { href: '/admin/resumen', label: 'Resumen General', icon: LayoutDashboard },
+    { href: '/admin/pedidos', label: 'Ventas & Pedidos', icon: ShoppingBag },
     { href: '/admin/reservas', label: 'Agenda & Citas', icon: Calendar },
     { href: '/admin/servicios', label: 'Servicios', icon: Layers },
     { 

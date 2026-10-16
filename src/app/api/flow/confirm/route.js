@@ -52,13 +52,13 @@ export async function POST(request) {
     const meta = order?.metadata || statusData.optional || {}
 
     if (isPaid) {
-      // 3. Update order in Supabase
+      // 3. Update order in Supabase to completada and pagado
       if (order) {
         await supabase
           .from('orders')
           .update({
-            status: meta.type === 'course' ? 'inscrito_pagado' : 'pagado',
-            payment_status: 'aprobado',
+            status: 'completada',
+            payment_status: 'pagado',
             metadata: {
               ...meta,
               flow_status: statusData.statusName,
@@ -99,45 +99,72 @@ export async function POST(request) {
           const targetEmail = order?.customer_email || statusData.payerEmail
           
           if (targetEmail) {
+            const items = Array.isArray(order?.items) ? order.items : (Array.isArray(meta.items) ? meta.items : [])
+            const itemsHtml = items.length > 0 
+              ? items.map(it => `
+                <tr>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #2a2a38; color: #ffffff;">${it.name || it.title || 'Producto'}</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #2a2a38; text-align: center; color: #aaaaaa;">x${it.quantity || 1}</td>
+                  <td style="padding: 10px 0; border-bottom: 1px solid #2a2a38; text-align: right; color: #ffffff; font-weight: bold;">$${new Intl.NumberFormat('es-CL').format((it.price || 0) * (it.quantity || 1))} CLP</td>
+                </tr>
+              `).join('')
+              : `<tr><td colspan="3" style="padding: 10px 0; color: #aaaaaa;">Compra de productos en tienda INKEDSOUH</td></tr>`
+
+            const isExpress = order?.delivery_type === 'santiago' || order?.delivery_type === 'express'
+            const deliveryLabel = isExpress ? 'Envío Express Rancagua & RM' : 'Envío a Regiones (Starken por pagar)'
+
             await resend.emails.send({
               from: 'INKEDSOUH Studio <contacto@inkedsouh.com>',
               to: [targetEmail],
               subject: meta.type === 'course' 
                 ? '¡Bienvenido a tu Curso en INKEDSOUH! - Pago Confirmado' 
-                : `Comprobante de Pago Orden #${orderNumber} - INKEDSOUH`,
+                : `¡Pago Confirmado! Detalle de tu Orden #${orderNumber} - INKEDSOUH`,
               html: `
-                <div style="font-family: Arial, sans-serif; background-color: #0d0d11; color: #ffffff; padding: 40px 20px; text-align: center;">
-                  <div style="max-width: 600px; margin: 0 auto; background: #16161f; border: 1px solid #2a2a38; border-radius: 12px; padding: 30px; text-align: left;">
+                <div style="font-family: Arial, sans-serif; background-color: #0b0b10; color: #ffffff; padding: 40px 20px; text-align: center;">
+                  <div style="max-width: 600px; margin: 0 auto; background: #14141c; border: 1px solid #282838; border-radius: 14px; padding: 32px; text-align: left;">
                     <div style="text-align: center; margin-bottom: 25px;">
-                      <h1 style="color: #ff2a3d; margin: 0; font-size: 28px; letter-spacing: 2px;">INKEDSOUH</h1>
-                      <p style="color: #888899; margin-top: 5px; font-size: 14px;">TATTOO STUDIO & ACADEMY</p>
+                      <h1 style="color: #e11d48; margin: 0; font-size: 28px; letter-spacing: 2px;">INKEDSOUH</h1>
+                      <p style="color: #94a3b8; margin-top: 5px; font-size: 13px; letter-spacing: 1px;">TATTOO STUDIO & TATTOO SUPPLIES</p>
                     </div>
                     
-                    <div style="background: rgba(74, 222, 128, 0.1); border: 1px solid #4ade80; border-radius: 8px; padding: 15px; margin-bottom: 25px; text-align: center;">
-                      <h2 style="color: #4ade80; margin: 0; font-size: 18px;">✓ ¡Pago Exitoso Aprobado por Flow!</h2>
+                    <div style="background: rgba(34, 197, 94, 0.12); border: 1px solid #22c55e; border-radius: 10px; padding: 14px; margin-bottom: 24px; text-align: center;">
+                      <h2 style="color: #22c55e; margin: 0; font-size: 17px;">✓ ¡Pago Exitoso Aprobado con Webpay!</h2>
+                      <p style="color: #cbd5e1; margin: 4px 0 0 0; font-size: 13px;">Tu pedido ha sido completado y registrado exitosamente.</p>
                     </div>
 
-                    <p style="font-size: 16px; line-height: 1.6; color: #dddddd;">
-                      Hola <strong>${order?.customer_name || 'Estimado(a)'}</strong>, tu pago por <strong>$${new Intl.NumberFormat('es-CL').format(statusData.amount)} CLP</strong> ha sido verificado con éxito.
+                    <p style="font-size: 15px; line-height: 1.6; color: #e2e8f0;">
+                      Hola <strong>${order?.customer_name || 'Estimado(a)'}</strong>, confirmamos la recepción de tu pago por <strong>$${new Intl.NumberFormat('es-CL').format(statusData.amount)} CLP</strong>.
                     </p>
 
-                    <div style="background: #0d0d11; border-radius: 8px; padding: 18px; margin: 20px 0;">
-                      <p style="margin: 5px 0; color: #aaaaaa; font-size: 14px;"><strong>N° de Orden:</strong> ${orderNumber}</p>
-                      <p style="margin: 5px 0; color: #aaaaaa; font-size: 14px;"><strong>N° Flow:</strong> ${statusData.flowOrder || 'N/A'}</p>
-                      <p style="margin: 5px 0; color: #aaaaaa; font-size: 14px;"><strong>Medio de Pago:</strong> ${statusData.paymentData?.media || 'Flow Webpay'}</p>
-                      <p style="margin: 5px 0; color: #aaaaaa; font-size: 14px;"><strong>Fecha:</strong> ${new Date().toLocaleString('es-CL')}</p>
+                    <div style="background: #09090d; border: 1px solid #232330; border-radius: 10px; padding: 18px; margin: 20px 0;">
+                      <p style="margin: 4px 0; color: #94a3b8; font-size: 13px;"><strong>N° de Orden:</strong> #${orderNumber}</p>
+                      <p style="margin: 4px 0; color: #94a3b8; font-size: 13px;"><strong>N° Flow:</strong> ${statusData.flowOrder || 'N/A'}</p>
+                      <p style="margin: 4px 0; color: #94a3b8; font-size: 13px;"><strong>Medio de Pago:</strong> ${statusData.paymentData?.media || 'Webpay / Flow'}</p>
+                      <p style="margin: 4px 0; color: #94a3b8; font-size: 13px;"><strong>Fecha:</strong> ${new Date().toLocaleString('es-CL')}</p>
+                      ${order?.delivery_address ? `<p style="margin: 4px 0; color: #94a3b8; font-size: 13px;"><strong>Dirección de Entrega:</strong> ${order.delivery_address}${order.delivery_city ? `, ${order.delivery_city}` : ''}</p>` : ''}
+                      <p style="margin: 4px 0; color: #94a3b8; font-size: 13px;"><strong>Tipo de Entrega:</strong> ${deliveryLabel}</p>
                     </div>
 
                     ${meta.type === 'course' ? `
                       <div style="text-align: center; margin-top: 30px;">
-                        <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://inkedsouh.com'}/estudiante" style="display: inline-block; background: #ff2a3d; color: #ffffff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">
+                        <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://inkedsouh.com'}/estudiante" style="display: inline-block; background: #e11d48; color: #ffffff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 15px;">
                           Acceder a mi Aula Virtual
                         </a>
                       </div>
                     ` : `
-                      <p style="color: #aaaaaa; font-size: 14px; line-height: 1.6;">
-                        Estamos preparando tu despacho. Te enviaremos el número de seguimiento apenas sea despachado.
-                      </p>
+                      <h3 style="color: #ffffff; font-size: 15px; margin: 20px 0 10px 0; border-bottom: 1px solid #282838; padding-bottom: 8px;">
+                        Detalle de los Productos Comprados:
+                      </h3>
+                      <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <tbody>
+                          ${itemsHtml}
+                        </tbody>
+                      </table>
+                      <div style="margin-top: 24px; padding: 14px; background: rgba(225, 29, 72, 0.08); border: 1px solid rgba(225, 29, 72, 0.25); border-radius: 8px;">
+                        <p style="margin: 0; color: #fecdd3; font-size: 13px; line-height: 1.5;">
+                          📦 <strong>Preparación de Despacho:</strong> Tu pedido está siendo preparado desde nuestro estudio en Rancagua. Te enviaremos tu código de seguimiento por correo y WhatsApp apenas sea entregado al transportista.
+                        </p>
+                      </div>
                     `}
                   </div>
                 </div>

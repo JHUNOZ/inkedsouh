@@ -66,6 +66,9 @@ export default function ConfiguracionPage() {
         data.forEach(item => {
           if (item.key_name && item.value !== undefined && item.value !== null) {
             loaded[item.key_name] = item.value
+            if (item.key_name === 'cta_text' && (!loaded.cta_subtitle || loaded.cta_subtitle === DEFAULT_CONFIGS.cta_subtitle)) {
+              loaded.cta_subtitle = item.value
+            }
           }
         })
         setFormData(loaded)
@@ -91,13 +94,20 @@ export default function ConfiguracionPage() {
 
   // Modificar campo localmente
   const handleChange = (key, value) => {
-    setFormData(prev => ({ ...prev, [key]: value }))
+    setFormData(prev => {
+      const next = { ...prev, [key]: value }
+      if (key === 'cta_subtitle') {
+        next.cta_text = value
+      }
+      return next
+    })
   }
 
   // Guardar todo y sincronizar en tiempo real
   const handleSaveAll = async () => {
     setSaving(true)
     try {
+      const now = new Date().toISOString()
       const rows = Object.keys(formData).map(key => {
         let section = 'General'
         if (['hero_bio', 'artist_photo', 'hero_badge', 'hero_title', 'contact_address'].includes(key)) section = 'Artista & Estudio'
@@ -108,9 +118,17 @@ export default function ConfiguracionPage() {
         return {
           section,
           key_name: key,
-          value: formData[key],
-          updated_at: new Date().toISOString()
+          value: formData[key] ?? '',
+          updated_at: now
         }
+      })
+
+      // Also ensure cta_text is persisted with cta_subtitle
+      rows.push({
+        section: 'Agendar Cita',
+        key_name: 'cta_text',
+        value: formData.cta_subtitle ?? '',
+        updated_at: now
       })
 
       const { error } = await supabase

@@ -121,7 +121,7 @@ export default function GalleryPreview() {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
         >
-          <SectionTitle number="01" subtitle="PORTAFOLIO DE TRABAJOS">GALERÍA DE ARTE</SectionTitle>
+          <SectionTitle number="01" subtitle="PORTAFOLIO DE TRABAJOS">GALERÍA</SectionTitle>
         </motion.div>
 
         {/* Controles del Carrusel y Link a Galería */}

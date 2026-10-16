@@ -31,13 +31,13 @@ export async function GET(request) {
         order = data
 
         // If Flow confirms payment and order isn't updated yet, sync it immediately
-        if (flowStatus.isPaid && order && order.payment_status !== 'aprobado') {
+        if (flowStatus.isPaid && order && order.payment_status !== 'pagado' && order.status !== 'completada') {
           const meta = order.metadata || flowStatus.optional || {}
           const { data: updatedOrder } = await supabase
             .from('orders')
             .update({
-              status: meta.type === 'course' ? 'inscrito_pagado' : 'pagado',
-              payment_status: 'aprobado',
+              status: 'completada',
+              payment_status: 'pagado',
               metadata: {
                 ...meta,
                 flow_status: flowStatus.statusName,

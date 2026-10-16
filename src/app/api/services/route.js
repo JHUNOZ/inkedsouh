@@ -26,7 +26,13 @@ export async function GET() {
         try {
           const parsed = JSON.parse(servicesRow.value)
           if (Array.isArray(parsed) && parsed.length > 0) {
-            services = parsed
+            services = parsed.map(cat => ({
+              ...cat,
+              services: (cat.services || []).map(s => ({
+                ...s,
+                priceStr: s.priceStr ? String(s.priceStr).replace(/^\$+/, '') : ''
+              }))
+            }))
           }
         } catch (e) {
           console.warn('Error parsing artist_services JSON:', e)

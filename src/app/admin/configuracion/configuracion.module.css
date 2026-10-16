@@ -488,9 +488,26 @@
 }
 
 .textarea {
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
+  padding: 12px 14px;
+  border-radius: 10px;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  width: 100%;
+  min-height: 95px;
   resize: vertical;
-  line-height: 1.5;
-  min-height: 80px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.textarea:focus {
+  background: #FFFFFF;
+  border-color: #E11D48;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
 }
 
 /* Photo control in card */

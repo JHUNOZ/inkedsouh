@@ -408,7 +408,7 @@ export default function ReservarPage() {
                           <div className={styles.serviceMeta} style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <span>{svc.timeStr} |</span>
-                              <span className={styles.servicePrice}>{svc.priceStr ? `$${svc.priceStr}` : ''}</span>
+                              <span className={styles.servicePrice}>{svc.priceStr ? `$${String(svc.priceStr).replace(/^\$+/, '')}` : ''}</span>
                             </div>
                             {svc.deposit ? (
                               <div style={{ fontSize: '0.78rem', color: '#E11D48', fontWeight: 700 }}>

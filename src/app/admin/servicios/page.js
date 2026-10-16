@@ -2,15 +2,13 @@
 import { useState, useEffect } from 'react'
 import { 
   Layers, Plus, Edit2, Trash2, Save, RefreshCw, 
-  Truck, MapPin, Clock, DollarSign, Check, AlertCircle, X,
-  ShieldCheck, ArrowUpRight
+  MapPin, Clock, DollarSign, Check, AlertCircle, X,
+  ShieldCheck
 } from 'lucide-react'
 import styles from './servicios.module.css'
 
 export default function AdminServiciosPage() {
   const [categories, setCategories] = useState([])
-  const [expressShippingCost, setExpressShippingCost] = useState(3990)
-  const [deliveryTimeframe, setDeliveryTimeframe] = useState('24h hábiles en Rancagua y Machalí • 24 a 48h en RM • 2 a 4 días a Regiones')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState(null)
@@ -40,18 +38,20 @@ export default function AdminServiciosPage() {
       setLoading(true)
       const res = await fetch('/api/services', { cache: 'no-store' })
       const data = await res.json()
-      if (data.success) {
-        setCategories(data.services || [])
-        if (data.expressShippingCost) {
-          setExpressShippingCost(data.expressShippingCost)
-        }
-        if (data.deliveryTimeframe) {
-          setDeliveryTimeframe(data.deliveryTimeframe)
-        }
+      if (data.success && data.services) {
+        // Sanitize any existing priceStr from double dollar signs
+        const cleaned = data.services.map(cat => ({
+          ...cat,
+          services: (cat.services || []).map(s => ({
+            ...s,
+            priceStr: s.priceStr ? String(s.priceStr).replace(/^\$+/, '') : ''
+          }))
+        }))
+        setCategories(cleaned)
       }
     } catch (err) {
       console.error('Error fetching services:', err)
-      showToast('Error al cargar servicios y tarifas', 'error')
+      showToast('Error al cargar servicios', 'error')
     } finally {
       setLoading(false)
     }
@@ -62,22 +62,20 @@ export default function AdminServiciosPage() {
   }, [])
 
   // Sincronización persistente en tiempo real con la web
-  const persistChanges = async (newCats, newShipping = expressShippingCost, newTimeframe = deliveryTimeframe) => {
+  const persistChanges = async (newCats) => {
     try {
       setSaving(true)
       const res = await fetch('/api/services', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          services: newCats,
-          expressShippingCost: parseInt(newShipping, 10) || 3990,
-          deliveryTimeframe: newTimeframe
+          services: newCats
         })
       })
 
       const result = await res.json()
       if (res.ok && result.success) {
-        showToast('Cambios guardados y sincronizados en vivo con la web')
+        showToast('Servicios sincronizados exitosamente con la web')
       } else {
         throw new Error(result.error || 'Error al guardar')
       }
@@ -91,7 +89,7 @@ export default function AdminServiciosPage() {
 
   // Guardar todo manualmente
   const handleSaveAll = async () => {
-    await persistChanges(categories, expressShippingCost, deliveryTimeframe)
+    await persistChanges(categories)
   }
 
   // Abrir Modal para Crear
@@ -120,7 +118,7 @@ export default function AdminServiciosPage() {
       desc: service.desc || '',
       time: service.time || 1,
       timeStr: service.timeStr || `${service.time || 1} h`,
-      priceStr: service.priceStr || '',
+      priceStr: String(service.priceStr || '').replace(/^\$+/, ''),
       deposit: service.deposit || 20000
     })
     setModalOpen(true)
@@ -134,14 +132,19 @@ export default function AdminServiciosPage() {
       return
     }
 
+    const cleanedFormData = {
+      ...serviceFormData,
+      priceStr: String(serviceFormData.priceStr || '').replace(/^\$+/, '')
+    }
+
     const updatedCategories = categories.map(cat => {
       if (cat.id !== targetCategory) return cat
 
       let newServices = [...(cat.services || [])]
       if (editingService) {
-        newServices = newServices.map(s => s.id === editingService.id ? { ...serviceFormData } : s)
+        newServices = newServices.map(s => s.id === editingService.id ? { ...cleanedFormData } : s)
       } else {
-        newServices.push({ ...serviceFormData })
+        newServices.push({ ...cleanedFormData })
       }
       return { ...cat, services: newServices }
     })
@@ -186,9 +189,9 @@ export default function AdminServiciosPage() {
               <MapPin size={13} style={{ color: '#E11D48' }} /> Rancagua, Chile
             </span>
           </div>
-          <h1 className={styles.title}>Servicios, Tarifas y Despacho</h1>
+          <h1 className={styles.title}>Servicios y Tarifas de Tatuaje</h1>
           <p className={styles.subtitle}>
-            Administra los tipos de tatuajes, tiempos, valores de abono y el precio fijo de despacho express desde Rancagua. Todo cambio se sincroniza en vivo con la web.
+            Administra los tipos de tatuajes, tiempos estimados y valores de abono para la agenda de reservas. Los cambios se sincronizan en vivo.
           </p>
         </div>
 
@@ -210,62 +213,12 @@ export default function AdminServiciosPage() {
             disabled={loading || saving}
           >
             <Save size={16} />
-            <span>{saving ? 'Sincronizando...' : 'Guardar Todo'}</span>
+            <span>{saving ? 'Sincronizando...' : 'Guardar Servicios'}</span>
           </button>
         </div>
       </div>
 
-      {/* SECCIÓN 1: TARIFA FIJA DE ENVÍO EXPRESS & ORIGEN RANCAGUA */}
-      <div className={styles.shippingCard}>
-        <div className={styles.shippingCardHeader}>
-          <h2 className={styles.shippingCardTitle}>
-            <Truck size={20} style={{ color: '#E11D48' }} />
-            <span>Tarifa de Despacho Express & Origen</span>
-          </h2>
-          <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>
-            Configuración para la tienda online de insumos y productos
-          </span>
-        </div>
-
-        <div className={styles.shippingInfoBanner}>
-          <MapPin size={18} style={{ color: '#E11D48', flexShrink: 0 }} />
-          <div>
-            <strong>Estudio Base en Rancagua (Almarza 552):</strong> Los envíos dentro de Rancagua y Machalí se procesan de forma inmediata en 24 horas hábiles. Para la RM el plazo es 24 a 48 horas. A Regiones se envía por pagar vía Starken o Chilexpress.
-          </div>
-        </div>
-
-        <div className={styles.shippingFormRow}>
-          <div className={styles.formField}>
-            <label>Precio Fijo Envío Express (CLP)</label>
-            <input 
-              type="number" 
-              value={expressShippingCost}
-              onChange={(e) => setExpressShippingCost(e.target.value)}
-              placeholder="3990"
-              min="0"
-              step="100"
-            />
-            <span className={styles.fieldHelper}>
-              Monto que se suma al total del pedido si el cliente selecciona Envío Express.
-            </span>
-          </div>
-
-          <div className={styles.formField}>
-            <label>Texto Informativo de Plazos de Entrega</label>
-            <input 
-              type="text" 
-              value={deliveryTimeframe}
-              onChange={(e) => setDeliveryTimeframe(e.target.value)}
-              placeholder="24h Rancagua / Machalí • 24-48h RM • 2 a 4 días Regiones"
-            />
-            <span className={styles.fieldHelper}>
-              Se mostrará en la tienda de productos y en el resumen de entrega al pagar.
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* SECCIÓN 2: CATÁLOGO DE SERVICIOS & RESERVAS */}
+      {/* CATÁLOGO DE SERVICIOS & RESERVAS */}
       <div className={styles.categoriesContainer}>
         {categories.map((category) => (
           <div key={category.id} className={styles.categoryGroup}>
@@ -289,64 +242,68 @@ export default function AdminServiciosPage() {
             </div>
 
             <div className={styles.servicesGrid}>
-              {(category.services || []).map((service) => (
-                <div key={service.id} className={styles.serviceCard}>
-                  <div className={styles.serviceTop}>
-                    <div>
-                      <h3 className={styles.serviceTitleText}>{service.title}</h3>
-                      {service.desc ? (
-                        <p className={styles.serviceDescText}>{service.desc}</p>
-                      ) : (
-                        <p className={styles.serviceDescText} style={{ fontStyle: 'italic', color: '#94A3B8' }}>
-                          Sin descripción adicional.
-                        </p>
-                      )}
-
-                      <div className={styles.serviceBadgesRow}>
-                        <span className={styles.timeBadge}>
-                          <Clock size={12} />
-                          {service.timeStr || `${service.time} h`}
-                        </span>
-                        {service.priceStr && (
-                          <span className={styles.priceBadge}>
-                            Tarifa: ${service.priceStr}
-                          </span>
+              {(category.services || []).map((service) => {
+                // Ensure no double dollar sign
+                const cleanPrice = String(service.priceStr || '').replace(/^\$+/, '')
+                return (
+                  <div key={service.id} className={styles.serviceCard}>
+                    <div className={styles.serviceTop}>
+                      <div>
+                        <h3 className={styles.serviceTitleText}>{service.title}</h3>
+                        {service.desc ? (
+                          <p className={styles.serviceDescText}>{service.desc}</p>
+                        ) : (
+                          <p className={styles.serviceDescText} style={{ fontStyle: 'italic', color: '#94A3B8' }}>
+                            Sin descripción adicional.
+                          </p>
                         )}
+
+                        <div className={styles.serviceBadgesRow}>
+                          <span className={styles.timeBadge}>
+                            <Clock size={12} />
+                            {service.timeStr || `${service.time} h`}
+                          </span>
+                          {cleanPrice && (
+                            <span className={styles.priceBadge}>
+                              Tarifa: ${cleanPrice}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Abono / Valor de Reserva */}
-                  <div className={styles.depositBox}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <ShieldCheck size={16} style={{ color: '#E11D48' }} />
-                      <span className={styles.depositLabel}>Abono / Reserva:</span>
+                    {/* Abono / Valor de Reserva */}
+                    <div className={styles.depositBox}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <ShieldCheck size={16} style={{ color: '#E11D48' }} />
+                        <span className={styles.depositLabel}>Abono / Reserva:</span>
+                      </div>
+                      <span className={styles.depositAmount}>
+                        ${(service.deposit || 20000).toLocaleString('es-CL')} CLP
+                      </span>
                     </div>
-                    <span className={styles.depositAmount}>
-                      ${(service.deposit || 20000).toLocaleString('es-CL')} CLP
-                    </span>
-                  </div>
 
-                  <div className={styles.serviceCardActions}>
-                    <button 
-                      type="button" 
-                      className={styles.btnActionEdit}
-                      onClick={() => handleOpenEdit(category.id, service)}
-                    >
-                      <Edit2 size={13} />
-                      <span>Editar</span>
-                    </button>
-                    <button 
-                      type="button" 
-                      className={styles.btnActionDelete}
-                      onClick={() => handleDeleteService(category.id, service.id)}
-                    >
-                      <Trash2 size={13} />
-                      <span>Eliminar</span>
-                    </button>
+                    <div className={styles.serviceCardActions}>
+                      <button 
+                        type="button" 
+                        className={styles.btnActionEdit}
+                        onClick={() => handleOpenEdit(category.id, service)}
+                      >
+                        <Edit2 size={13} />
+                        <span>Editar</span>
+                      </button>
+                      <button 
+                        type="button" 
+                        className={styles.btnActionDelete}
+                        onClick={() => handleDeleteService(category.id, service.id)}
+                      >
+                        <Trash2 size={13} />
+                        <span>Eliminar</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         ))}
@@ -429,7 +386,7 @@ export default function AdminServiciosPage() {
                       type="text" 
                       value={serviceFormData.priceStr}
                       onChange={(e) => setServiceFormData({ ...serviceFormData, priceStr: e.target.value })}
-                      placeholder="Ej: 70.000 a 120.000"
+                      placeholder="Ej: 70.000 a 120.000 (sin signo $)"
                     />
                     <span className={styles.fieldHelper}>Visible al cliente en la selección de reserva</span>
                   </div>

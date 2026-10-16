@@ -7,7 +7,7 @@ import {
   Users, Sparkles, Clock, CheckCircle2, AlertCircle, 
   TrendingUp, ArrowRight, ShieldCheck, Zap, ShoppingBag,
   DollarSign, Check, Phone, Truck, X, Eye, ExternalLink,
-  Wallet, CreditCard
+  Wallet, CreditCard, Layers
 } from 'lucide-react'
 import styles from './resumen.module.css'
 
@@ -260,158 +260,150 @@ export default function ResumenPage() {
               <div className={styles.financeSubCard}>
                 <div className={styles.financeSubTop}>
                   <span className={styles.financeSubLabel}>Ventas Tienda Web</span>
-                  <div className={`${styles.statIcon} ${styles.iconRed}`} style={{ width: '30px', height: '30px' }}>
-                    <ShoppingBag size={15} />
+                  <div className={`${styles.statIcon} ${styles.iconRed}`} style={{ width: '32px', height: '32px' }}>
+                    <ShoppingBag size={16} />
                   </div>
                 </div>
                 <span className={styles.financeSubAmount}>{formatPrice(stats.totalVentas)}</span>
                 <span className={styles.financeSubDetails}>
                   {stats.pedidosPagados} pedidos pagados • {stats.pedidosPendientes} pendientes
                 </span>
+
+                <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Link 
+                    href="/admin/pedidos" 
+                    style={{ fontSize: '0.8rem', color: '#E11D48', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <span>Ver Pedidos</span>
+                    <ArrowRight size={13} />
+                  </Link>
+
+                  <Link 
+                    href="/admin/pedidos?filter=pendientes" 
+                    style={{ 
+                      fontSize: '0.78rem', 
+                      background: stats.pedidosPendientes > 0 ? '#FEF3C7' : '#F1F5F9', 
+                      color: stats.pedidosPendientes > 0 ? '#B45309' : '#475569', 
+                      border: `1px solid ${stats.pedidosPendientes > 0 ? '#FDE68A' : '#E2E8F0'}`, 
+                      padding: '4px 9px', 
+                      borderRadius: '6px', 
+                      fontWeight: 700, 
+                      textDecoration: 'none', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '4px',
+                      transition: 'all 0.2s ease'
+                    }}
+                    title="Ver pedidos pendientes de confirmación"
+                  >
+                    <span>Ver Pendientes {stats.pedidosPendientes > 0 ? `(${stats.pedidosPendientes})` : ''}</span>
+                  </Link>
+                </div>
               </div>
 
               <div className={styles.financeSubCard}>
                 <div className={styles.financeSubTop}>
                   <span className={styles.financeSubLabel}>Academia & Cursos</span>
-                  <div className={`${styles.statIcon} ${styles.iconGreen}`} style={{ width: '30px', height: '30px' }}>
-                    <BookOpen size={15} />
+                  <div className={`${styles.statIcon} ${styles.iconGreen}`} style={{ width: '32px', height: '32px' }}>
+                    <BookOpen size={16} />
                   </div>
                 </div>
                 <span className={styles.financeSubAmount}>{formatPrice(stats.gananciasCursos)}</span>
                 <span className={styles.financeSubDetails}>
                   {stats.alumnosActivos} alumnos activos • {stats.cursosActivos} cursos
                 </span>
+                <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #F1F5F9' }}>
+                  <Link 
+                    href="/admin/cursos" 
+                    style={{ fontSize: '0.8rem', color: '#15803D', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <span>Ver Cursos & Alumnos</span>
+                    <ArrowRight size={13} />
+                  </Link>
+                </div>
               </div>
 
               <div className={styles.financeSubCard}>
                 <div className={styles.financeSubTop}>
                   <span className={styles.financeSubLabel}>Abonos de Tatuaje</span>
-                  <div className={`${styles.statIcon} ${styles.iconPurple}`} style={{ width: '30px', height: '30px' }}>
-                    <Calendar size={15} />
+                  <div className={`${styles.statIcon} ${styles.iconPurple}`} style={{ width: '32px', height: '32px' }}>
+                    <Calendar size={16} />
                   </div>
                 </div>
                 <span className={styles.financeSubAmount}>{formatPrice(stats.gananciasAbonos)}</span>
                 <span className={styles.financeSubDetails}>
                   {stats.reservasConfirmadas} citas confirmadas • {stats.reservasPendientes} por revisar
                 </span>
+                <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #F1F5F9' }}>
+                  <Link 
+                    href="/admin/reservas" 
+                    style={{ fontSize: '0.8rem', color: '#7E22CE', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <span>Ver Agenda & Citas</span>
+                    <ArrowRight size={13} />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Stats Grid: 4 Cards */}
-          <div className={styles.statsGrid}>
-            
-            {/* 1. VENTAS TIENDA WEB */}
-            <div className={styles.statCard}>
-              <div className={styles.statTop}>
-                <span className={styles.statLabel}>Ventas Tienda Web</span>
-                <div className={`${styles.statIcon} ${styles.iconRed}`}>
-                  <DollarSign size={18} />
-                </div>
-              </div>
-              <div className={styles.statValueWrap}>
-                <span className={styles.statValue}>{formatPrice(stats.totalVentas)}</span>
-                <span className={styles.statSubText}>
-                  {stats.pedidosTotales} pedidos ({stats.pedidosPendientes} por confirmar)
-                </span>
-              </div>
-              <a href="#ventas-web" className={styles.statLink}>
-                <span>Ver Pedidos Web</span>
-                <ArrowRight size={14} />
-              </a>
-            </div>
-
-            {/* 2. CITAS & RESERVAS */}
-            <div className={styles.statCard}>
-              <div className={styles.statTop}>
-                <span className={styles.statLabel}>Citas & Reservas</span>
-                <div className={`${styles.statIcon} ${styles.iconPurple}`}>
-                  <Calendar size={18} />
-                </div>
-              </div>
-              <div className={styles.statValueWrap}>
-                <span className={styles.statValue}>{stats.reservasPendientes}</span>
-                <span className={styles.statSubText}>Pendientes por revisar</span>
-              </div>
-              <Link href="/admin/reservas" className={styles.statLink}>
-                <span>Ver Agenda</span>
-                <ArrowRight size={14} />
-              </Link>
-            </div>
-
-            {/* 3. PRODUCTOS & INVENTARIO */}
-            <div className={styles.statCard}>
-              <div className={styles.statTop}>
-                <span className={styles.statLabel}>HONE CATALOG</span>
-                <div className={`${styles.statIcon} ${styles.iconPurple}`}>
-                  <Package size={18} />
-                </div>
-              </div>
-              <div className={styles.statValueWrap}>
-                <span className={styles.statValue}>{stats.productosActivos}</span>
-                <span className={styles.statSubText}>{stats.totalStock} unidades en stock</span>
-              </div>
-              <Link href="/admin/productos" className={styles.statLink}>
-                <span>Gestionar Catálogo</span>
-                <ArrowRight size={14} />
-              </Link>
-            </div>
-
-            {/* 4. ACADEMIA & ALUMNOS */}
-            <div className={styles.statCard}>
-              <div className={styles.statTop}>
-                <span className={styles.statLabel}>Academia & Alumnos</span>
-                <div className={`${styles.statIcon} ${styles.iconGreen}`}>
-                  <BookOpen size={18} />
-                </div>
-              </div>
-              <div className={styles.statValueWrap}>
-                <span className={styles.statValue}>{stats.cursosActivos}</span>
-                <span className={styles.statSubText}>{stats.totalAlumnos} alumnos registrados</span>
-              </div>
-              <Link href="/admin/cursos" className={styles.statLink}>
-                <span>Ver Cursos & Alumnos</span>
-                <ArrowRight size={14} />
-              </Link>
-            </div>
-          </div>
-
-          {/* Quick Action Hub */}
+          {/* Quick Action Hub - Mejorado y Profesional */}
           <div className={styles.quickHub}>
-            <h3 className={styles.hubTitle}>Accesos Rápidos</h3>
-            <div className={styles.hubGrid}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h3 className={styles.hubTitle} style={{ margin: 0 }}>Accesos Rápidos</h3>
+              <span style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 600 }}>Atajos de Gestión Diaria</span>
+            </div>
+            <div className={styles.hubGrid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+              <Link href="/admin/pedidos" className={styles.hubCard}>
+                <div className={styles.hubCardIcon} style={{ background: '#FFF1F2', color: '#E11D48', border: '1px solid #FECDD3' }}><ShoppingBag size={18} /></div>
+                <div>
+                  <strong>Ventas & Pedidos Online</strong>
+                  <p>Confirma transferencias y elimina pruebas</p>
+                </div>
+                <ArrowUpRight size={16} className={styles.hubArrow} />
+              </Link>
+
+              <Link href="/admin/pedidos?tab=envios" className={styles.hubCard}>
+                <div className={styles.hubCardIcon} style={{ background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE' }}><Truck size={18} /></div>
+                <div>
+                  <strong>Envíos y Entregas</strong>
+                  <p>Despachos Rancagua, RM y plazos automáticos</p>
+                </div>
+                <ArrowUpRight size={16} className={styles.hubArrow} />
+              </Link>
+
               <Link href="/admin/servicios" className={styles.hubCard}>
-                <div className={styles.hubCardIcon}><Sparkles size={20} /></div>
+                <div className={styles.hubCardIcon} style={{ background: '#F8FAFC', color: '#0F172A', border: '1px solid #E2E8F0' }}><Layers size={18} /></div>
                 <div>
                   <strong>Servicios & Tarifas</strong>
-                  <p>Configura abonos y despacho express Rancagua</p>
+                  <p>Configura abonos y tipos de tatuajes</p>
                 </div>
                 <ArrowUpRight size={16} className={styles.hubArrow} />
               </Link>
 
               <Link href="/admin/productos" className={styles.hubCard}>
-                <div className={styles.hubCardIcon}><Package size={20} /></div>
+                <div className={styles.hubCardIcon} style={{ background: '#F5F3FF', color: '#7C3AED', border: '1px solid #DDD6FE' }}><Package size={18} /></div>
                 <div>
-                  <strong>Carga Masiva de Productos</strong>
-                  <p>Sube imágenes en lote y gestiona precios</p>
+                  <strong>HONE CATALOG</strong>
+                  <p>Administra stock y precios de insumos</p>
                 </div>
                 <ArrowUpRight size={16} className={styles.hubArrow} />
               </Link>
 
               <Link href="/admin/reservas" className={styles.hubCard}>
-                <div className={styles.hubCardIcon}><Calendar size={20} /></div>
+                <div className={styles.hubCardIcon} style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}><Calendar size={18} /></div>
                 <div>
-                  <strong>Revisar Cotizaciones</strong>
+                  <strong>Agenda & Cotizaciones</strong>
                   <p>Acepta, agenda o reprograma clientes</p>
                 </div>
                 <ArrowUpRight size={16} className={styles.hubArrow} />
               </Link>
 
               <Link href="/admin/cursos" className={styles.hubCard}>
-                <div className={styles.hubCardIcon}><BookOpen size={20} /></div>
+                <div className={styles.hubCardIcon} style={{ background: '#FEF3C7', color: '#D97706', border: '1px solid #FDE68A' }}><BookOpen size={18} /></div>
                 <div>
-                  <strong>Nuevo Curso & Lecciones</strong>
-                  <p>Publica clases con video y materiales</p>
+                  <strong>Academia & Cursos</strong>
+                  <p>Lecciones con video y alumnos activos</p>
                 </div>
                 <ArrowUpRight size={16} className={styles.hubArrow} />
               </Link>
@@ -431,9 +423,17 @@ export default function ResumenPage() {
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <Link 
+                  href="/admin/pedidos" 
+                  className={styles.btnSecondary} 
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none', fontSize: '0.82rem', padding: '6px 12px' }}
+                >
+                  <ExternalLink size={14} />
+                  <span>Gestionar en Pedidos & Envíos</span>
+                </Link>
                 <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>
-                  Total: {recentOrders.length} pedidos
+                  ({recentOrders.length} recientes)
                 </span>
               </div>
             </div>

@@ -28,7 +28,7 @@ export const SERVICE_CATEGORIES = [
     title: 'Proyectos Especiales',
     services: [
       { id: 'cobertura', title: 'Cobertura de tatuajes', desc: 'Sesión para cubrir tatuajes. A veces es necesario 2 sesiones para lograr una cobertura de buena calidad.', time: 4, timeStr: '4 h', priceStr: 'Desde los 65.000 a 160000' },
-      { id: 'lienzo', title: 'Lienzo artistico', desc: 'Si todavía estás en la búsqueda de esa idea perfecta para tu próximo tatuaje, nuestro servicio está diseñado especialmente para ti.', time: 2, timeStr: '2 h', priceStr: '$140.000' },
+      { id: 'lienzo', title: 'Lienzo artistico', desc: 'Si todavía estás en la búsqueda de esa idea perfecta para tu próximo tatuaje, nuestro servicio está diseñado especialmente para ti.', time: 2, timeStr: '2 h', priceStr: '140.000' },
       { id: 'espalda', title: 'Espalda completa', desc: '', time: 6, timeStr: '6 h', priceStr: '950.000 a 1.500.000' }
     ]
   }
