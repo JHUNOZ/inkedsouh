@@ -44,10 +44,10 @@ export default function RegistroPage() {
 
         {success ? (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ color: '#4ade80', fontSize: '1.2rem', marginBottom: '15px' }}>
+            <div style={{ color: '#059669', fontSize: '1.2rem', fontWeight: 700, marginBottom: '15px' }}>
               ¡Registro exitoso!
             </div>
-            <p style={{ color: '#888', marginBottom: '20px' }}>
+            <p style={{ color: '#475569', marginBottom: '20px' }}>
               Revisa tu bandeja de entrada o spam para confirmar tu correo.
             </p>
             <Link href="/login" className={styles.button} style={{ display: 'block', textDecoration: 'none' }}>

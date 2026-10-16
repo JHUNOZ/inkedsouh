@@ -43,9 +43,9 @@ export default function CursosPage() {
 
           <div className={styles.coursesWrapper}>
             {loading ? (
-              <div style={{ textAlign: 'center', color: '#888', padding: '40px' }}>Cargando cursos...</div>
+              <div style={{ textAlign: 'center', color: '#64748B', padding: '40px' }}>Cargando cursos...</div>
             ) : courses.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#888', padding: '40px' }}>
+              <div style={{ textAlign: 'center', color: '#64748B', padding: '40px' }}>
                 Aún no hay cursos activos. ¡Vuelve pronto!
               </div>
             ) : (

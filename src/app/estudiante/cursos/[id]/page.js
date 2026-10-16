@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { 
   ArrowLeft, Play, CheckCircle2, Circle, Clock, 
   FileText, Download, Award, ChevronRight, Share2, 
-  BookOpen, Sparkles, Check, ExternalLink
+  BookOpen, Sparkles, Check, ExternalLink, ShieldCheck
 } from 'lucide-react'
 import styles from './classroom.module.css'
 

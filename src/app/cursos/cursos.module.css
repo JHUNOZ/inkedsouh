@@ -1,7 +1,9 @@
-/* Layout Página Cursos */
+/* Layout Página Cursos — Editorial Light Theme */
 .page {
   padding: 120px 0;
   min-height: 100vh;
+  background: radial-gradient(circle at 50% 0%, rgba(225, 29, 72, 0.05) 0%, transparent 60%), #FAFAFC;
+  color: #0F172A;
 }
 
 .container {
@@ -20,12 +22,14 @@
 
 /* Card del curso */
 .card {
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
   overflow: hidden;
-  transition: all var(--transition-base);
+  transition: all 0.25s ease;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
 }
 
 @media (max-width: 768px) {
@@ -34,29 +38,30 @@
 }
 
 .card:hover {
-  border-color: var(--color-red);
+  border-color: #E11D48;
   transform: translateY(-5px);
-  box-shadow: var(--shadow-neon-sm);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
 }
 
 .cardImage {
   aspect-ratio: 16/9;
-  background: #111;
+  background: #F1F5F9;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-gray-600);
+  color: #64748B;
   position: relative;
+  border-bottom: 1px solid #E2E8F0;
 }
 
 .playOverlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-white);
+  color: #FFFFFF;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -74,8 +79,10 @@
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--color-white);
-  border-radius: 4px;
+  background: #FFF1F2;
+  color: #E11D48;
+  border: 1px solid rgba(225, 29, 72, 0.25);
+  border-radius: 6px;
 }
 
 .cardBody {
@@ -88,14 +95,14 @@
 .cardTitle {
   font-family: var(--font-display);
   font-size: 1.5rem;
-  color: var(--color-white);
+  color: #0F172A;
   margin-bottom: 12px;
   letter-spacing: 1px;
 }
 
 .cardDesc {
   font-size: 0.9rem;
-  color: var(--color-gray-400);
+  color: #475569;
   line-height: 1.6;
   margin-bottom: 24px;
   flex: 1;
@@ -103,7 +110,7 @@
 
 .meta {
   display: flex;
-  gap: 16px;
+  gap: 10px;
   margin-bottom: 24px;
   flex-wrap: wrap;
 }
@@ -113,7 +120,12 @@
   align-items: center;
   gap: 6px;
   font-size: 0.8rem;
-  color: var(--color-gray-500);
+  color: #64748B;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-weight: 500;
 }
 
 .cardFooter {
@@ -121,13 +133,34 @@
   align-items: center;
   justify-content: space-between;
   padding-top: 20px;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid #E2E8F0;
 }
 
 .price {
-  font-size: 1.25rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.btnComprar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #E11D48;
+  color: #FFFFFF;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 0.88rem;
   font-weight: 700;
-  color: var(--color-white);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25);
+}
+
+.btnComprar:hover {
+  background: #BE123C;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(225, 29, 72, 0.35);
 }
 
 /* Overlay Próximamente en página Cursos */
@@ -139,9 +172,9 @@
 .comingSoonOverlay {
   position: absolute;
   inset: -20px;
-  background: rgba(8, 8, 8, 0.5);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  background: rgba(248, 250, 252, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 10;
   display: flex;
   align-items: center;
@@ -151,12 +184,13 @@
 }
 
 .comingSoonBox {
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-red);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
   padding: 50px 40px;
   max-width: 500px;
   text-align: center;
-  box-shadow: 0 0 40px rgba(232, 36, 40, 0.15);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
   animation: floatIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
 }
@@ -168,12 +202,11 @@
   left: 20%;
   right: 20%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--color-red), transparent);
-  box-shadow: 0 0 15px var(--color-red-glow);
+  background: linear-gradient(90deg, transparent, #E11D48, transparent);
 }
 
 .comingSoonIcon {
-  color: var(--color-red);
+  color: #E11D48;
   margin-bottom: 20px;
 }
 
@@ -181,13 +214,13 @@
   font-family: var(--font-display);
   font-size: 2.2rem;
   letter-spacing: 5px;
-  color: var(--color-white);
+  color: #0F172A;
   margin-bottom: 12px;
 }
 
 .comingSoonBox p {
   font-size: 0.95rem;
-  color: var(--color-gray-400);
+  color: #475569;
   line-height: 1.6;
   margin-bottom: 24px;
 }
@@ -195,9 +228,8 @@
 .comingSoonLine {
   width: 40px;
   height: 2px;
-  background: var(--color-red);
+  background: #E11D48;
   margin: 0 auto;
-  box-shadow: var(--shadow-neon-sm);
 }
 
 @keyframes floatIn {

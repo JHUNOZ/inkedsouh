@@ -42,25 +42,23 @@
   margin-left: 20px;
 }
 
-/* Texto Gigante con Efecto Metálico */
+/* Texto Gigante con Efecto Editorial Oscuro */
 .title {
   font-family: var(--font-display);
-  font-size: clamp(4rem, 12vw, 9rem);
+  font-size: clamp(3.6rem, 10vw, 7.5rem);
   letter-spacing: 4px;
-  line-height: 0.85;
+  line-height: 0.88;
   text-transform: uppercase;
   position: relative;
   display: inline-flex;
   align-items: flex-end;
-  /* Gradiente Metálico Premium */
-  background: linear-gradient(135deg, #FFFFFF 0%, #B0B0B0 50%, #FFFFFF 100%);
+  background: linear-gradient(135deg, #0F172A 0%, #334155 50%, #0F172A 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
   animation: metallicShine 8s linear infinite;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
 }
 
 @keyframes metallicShine {

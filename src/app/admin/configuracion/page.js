@@ -5,7 +5,7 @@ import {
   Save, RefreshCw, Plus, Search, Check, AlertCircle, 
   Trash2, RotateCcw, Sliders, Globe, Sparkles, Layout, 
   MessageSquare, Share2, UploadCloud, Layers,
-  CheckCheck, User, Calendar, FileText, ExternalLink, Truck
+  CheckCheck, User, Calendar, FileText, ExternalLink, Truck, X
 } from 'lucide-react'
 import styles from './configuracion.module.css'
 
@@ -660,7 +660,7 @@ export default function ConfiguracionPage() {
                   <div className={styles.cardTitleWrap}>
                     <div className={styles.cardKeyHeader}>
                       <span className={styles.keyTag}>{config.key_name}</span>
-                      {isDirty && <span className={styles.dirtyDot} title="Modificado sin guardar">● Sin Guardar</span>}
+                      {isDirty && <span className={styles.dirtyDot} title="Modificado sin guardar">Sin Guardar</span>}
                     </div>
                     <h3 className={styles.cardTitle}>{getFriendlyKeyLabel(config.key_name)}</h3>
                   </div>
@@ -726,7 +726,7 @@ export default function ConfiguracionPage() {
                         onClick={() => termsInputRef.current?.click()}
                         className={styles.btnUploadPhoto}
                         disabled={uploadingTerms}
-                        style={{ background: '#2563eb', border: '1px solid #3b82f6' }}
+                        style={{ background: '#2563EB', border: '1px solid #1D4ED8', color: '#FFFFFF' }}
                       >
                         <FileText size={16} />
                         <span>{uploadingTerms ? 'Subiendo PDF...' : 'Subir PDF Términos'}</span>
@@ -743,9 +743,9 @@ export default function ConfiguracionPage() {
                           href={config.value} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(59,130,246,0.4)', color: '#93c5fd', padding: '6px 14px', borderRadius: '8px', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600 }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#1D4ED8', padding: '6px 14px', borderRadius: '8px', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600 }}
                         >
-                          <ExternalLink size={14} /> Ver PDF Actual ↗
+                          <ExternalLink size={14} /> Ver PDF Actual
                         </a>
                       )}
                     </div>
@@ -835,7 +835,7 @@ export default function ConfiguracionPage() {
                 onClick={() => setModalOpen(false)} 
                 className={styles.btnCloseModal}
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 

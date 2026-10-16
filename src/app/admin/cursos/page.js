@@ -504,9 +504,9 @@ export default function AdminCursosPage() {
                   filteredStudents.map(student => (
                     <tr key={student.id}>
                       <td>
-                        <strong style={{ color: '#fff' }}>{student.name}</strong>
+                        <strong style={{ color: '#0F172A' }}>{student.name}</strong>
                       </td>
-                      <td style={{ color: '#8e8e9f' }}>{student.email}</td>
+                      <td style={{ color: '#64748B' }}>{student.email}</td>
                       <td>
                         <span className={styles.courseTag}>{student.courses?.title || 'Curso General'}</span>
                       </td>
@@ -652,7 +652,7 @@ export default function AdminCursosPage() {
                         onChange={handleImageUpload} 
                         disabled={uploading} 
                       />
-                      {uploading && <span style={{ color: '#ff2a3d', fontSize: '0.85rem' }}>Subiendo portada...</span>}
+                      {uploading && <span style={{ color: '#E11D48', fontSize: '0.85rem', fontWeight: 600 }}>Subiendo portada...</span>}
                     </div>
                   </div>
 
@@ -766,7 +766,7 @@ export default function AdminCursosPage() {
             
             <form onSubmit={handleSaveStudentExpiration} style={{ padding: '20px' }}>
               <div className={styles.formGroup}>
-                <label style={{ fontSize: '0.85rem', color: '#8e8e9f', marginBottom: '8px' }}>
+                <label style={{ fontSize: '0.85rem', color: '#64748B', marginBottom: '8px' }}>
                   El estudiante perderá el acceso a las clases en la fecha elegida. Si lo dejas vacío, tendrá <strong>Acceso Vitalicio</strong>.
                 </label>
                 <input 

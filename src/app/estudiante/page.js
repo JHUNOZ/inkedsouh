@@ -103,7 +103,7 @@ export default function EstudianteDashboard() {
             </div>
           </div>
           <div className={styles.statPill}>
-            <ShieldCheck size={18} style={{ color: '#4ade80' }} />
+            <ShieldCheck size={18} style={{ color: '#10B981' }} />
             <div>
               <strong>Activo</strong>
               <span>Membresía Verificada</span>

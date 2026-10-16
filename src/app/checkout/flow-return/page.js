@@ -71,8 +71,8 @@ function FlowReturnContent() {
       <div className={styles.card}>
         <div className={styles.loadingBox}>
           <div className={styles.spinner} />
-          <h2 style={{ fontSize: '1.3rem', marginBottom: '8px' }}>Verificando transacción con Flow...</h2>
-          <p style={{ color: '#888', fontSize: '0.9rem' }}>Por favor espera un momento mientras confirmamos con la pasarela.</p>
+          <h2 style={{ fontSize: '1.3rem', marginBottom: '8px', color: '#0F172A' }}>Verificando transacción con Flow...</h2>
+          <p style={{ color: '#64748B', fontSize: '0.9rem' }}>Por favor espera un momento mientras confirmamos con la pasarela.</p>
         </div>
       </div>
     )
@@ -104,7 +104,7 @@ function FlowReturnContent() {
           </div>
           <div className={styles.receiptRow}>
             <span className={styles.label}>Estado</span>
-            <span className={styles.val} style={{ color: '#ef4444' }}>Rechazado / Cancelado</span>
+            <span className={styles.val} style={{ color: '#DC2626' }}>Rechazado / Cancelado</span>
           </div>
         </div>
 

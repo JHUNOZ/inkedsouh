@@ -202,27 +202,27 @@
   align-items: center;
   gap: 15px;
   z-index: 12;
-  background: linear-gradient(180deg, transparent 0%, rgba(6, 6, 8, 0.9) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.85) 100%);
 }
 
 .cardNumber {
   font-family: var(--font-display);
   font-size: 1.2rem;
-  color: var(--color-gray-100);
+  color: #FFFFFF;
   letter-spacing: 2px;
 }
 
 .cardLine {
   flex-grow: 1;
   height: 1px;
-  background-color: var(--color-gray-600);
+  background-color: rgba(255, 255, 255, 0.35);
 }
 
 .cardLabel {
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 3px;
-  color: var(--color-gray-300);
+  color: #F8FAFC;
   text-transform: uppercase;
   max-width: 180px;
   overflow: hidden;
@@ -234,7 +234,7 @@
 .lightboxOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.92);
+  background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(12px);
   z-index: 10000;
   display: flex;
@@ -247,9 +247,9 @@
   position: absolute;
   top: 24px;
   right: 24px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  color: #0F172A;
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -257,6 +257,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow: var(--shadow-md);
   transition: all 0.2s;
   z-index: 10001;
 }
@@ -264,6 +265,7 @@
 .lightboxCloseBtn:hover {
   background: var(--color-red);
   border-color: var(--color-red);
+  color: #FFFFFF;
   transform: scale(1.1);
 }
 
@@ -271,9 +273,9 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  color: #0F172A;
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -281,6 +283,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow: var(--shadow-md);
   transition: all 0.2s;
   z-index: 10001;
 }
@@ -288,6 +291,7 @@
 .lightboxNavBtn:hover {
   background: var(--color-red);
   border-color: var(--color-red);
+  color: #FFFFFF;
   transform: translateY(-50%) scale(1.1);
 }
 
@@ -300,22 +304,22 @@
 }
 
 .lightboxContent {
-  background: #0d0d12;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
   overflow: hidden;
   max-width: 800px;
   width: 100%;
   max-height: 88vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25);
 }
 
 .lightboxMediaWrapper {
   width: 100%;
   max-height: 65vh;
-  background: #000;
+  background: #0F172A;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -333,8 +337,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #0d0d12;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
   flex-wrap: wrap;
   gap: 16px;
 }
@@ -350,7 +354,7 @@
 }
 
 .lightboxTitle {
-  color: #ffffff;
+  color: #0F172A;
   font-size: 1.15rem;
   font-weight: 700;
   margin: 0;
@@ -363,9 +367,9 @@
 }
 
 .lightboxBtnGallery {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #0F172A;
   padding: 8px 16px;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -375,7 +379,7 @@
 }
 
 .lightboxBtnGallery:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: #E2E8F0;
 }
 
 .lightboxBtnBook {
@@ -390,7 +394,7 @@
 }
 
 .lightboxBtnBook:hover {
-  background: #e02435;
+  background: var(--color-red-hover);
   transform: translateY(-1px);
 }
 
@@ -405,9 +409,9 @@
 
 /* Empty Gallery Banner */
 .emptyGalleryBanner {
-  background: #0a0a0e;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  background: #FFFFFF;
+  border: 1px dashed #CBD5E1;
+  border-radius: 20px;
   padding: 50px 24px;
   text-align: center;
   display: flex;
@@ -416,14 +420,15 @@
   gap: 12px;
   max-width: 600px;
   margin: 20px auto 0;
+  box-shadow: var(--shadow-sm);
 }
 
 .emptyIconWrap {
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background: rgba(255, 42, 61, 0.1);
-  border: 1px solid rgba(255, 42, 61, 0.25);
+  background: var(--color-red-subtle);
+  border: 1px solid rgba(225, 29, 72, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -431,14 +436,14 @@
 }
 
 .emptyGalleryBanner h3 {
-  color: #ffffff;
+  color: #0F172A;
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
 }
 
 .emptyGalleryBanner p {
-  color: #a0a0ab;
+  color: #64748B;
   font-size: 0.9rem;
   max-width: 480px;
   line-height: 1.5;
@@ -454,9 +459,9 @@
 }
 
 .btnEmptyIg {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
   padding: 9px 18px;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -466,7 +471,7 @@
 }
 
 .btnEmptyIg:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: #E2E8F0;
 }
 
 .btnEmptyBook {
@@ -481,6 +486,6 @@
 }
 
 .btnEmptyBook:hover {
-  background: #e02435;
+  background: var(--color-red-hover);
 }
 

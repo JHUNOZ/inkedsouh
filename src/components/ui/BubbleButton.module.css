@@ -57,21 +57,23 @@
 
 /* Primary */
 .primary {
-  border-color: rgba(215, 26, 33, 0.3);
-  box-shadow: var(--shadow-sm);
-  color: var(--color-white);
+  border-color: var(--color-red);
+  box-shadow: var(--shadow-red);
+  color: #FFFFFF;
 }
 
 .primary::after {
-  background: rgba(215, 26, 33, 0.85);
-  backdrop-filter: var(--glass-blur-sm);
-  -webkit-backdrop-filter: var(--glass-blur-sm);
+  background: var(--color-red);
+  border-radius: calc(var(--radius-sm) - 1px);
 }
 
 .primary:hover {
   border-color: var(--color-red-hover);
-  box-shadow: var(--shadow-red);
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 10px 28px rgba(225, 29, 72, 0.35);
+}
+
+.primary:hover::after {
+  background: var(--color-red-hover);
 }
 
 .primary:hover::before {
@@ -84,14 +86,25 @@
 
 /* Outline */
 .outline {
-  border-color: var(--color-border);
+  border-color: #CBD5E1;
+  color: #0F172A;
+  background: #FFFFFF;
+  box-shadow: var(--shadow-sm);
+}
+
+.outline::after {
+  background: #FFFFFF;
+  border-radius: calc(var(--radius-sm) - 1px);
 }
 
 .outline:hover {
   border-color: var(--color-red);
-  color: var(--color-white); /* Mejor contraste en hover que rojo */
-  text-shadow: 0 0 10px rgba(232, 36, 40, 0.8);
-  box-shadow: 0 5px 25px rgba(232, 36, 40, 0.25), inset 0 0 15px rgba(232, 36, 40, 0.1);
+  color: var(--color-red);
+  box-shadow: 0 8px 25px rgba(225, 29, 72, 0.15);
+}
+
+.outline:hover::after {
+  background: #FFF1F2;
 }
 
 .outline:hover::before {

@@ -3,32 +3,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-background);
+  background: radial-gradient(circle at 50% 0%, rgba(225, 29, 72, 0.05) 0%, transparent 60%), #FAFAFC;
+  color: #0F172A;
   padding: 20px;
 }
 
 .card {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
   padding: 40px;
-  border-radius: 12px;
+  border-radius: 16px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
 }
 
 .title {
   text-align: center;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   font-size: 1.8rem;
-  background: linear-gradient(90deg, #fff, #888);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  color: #0F172A;
 }
 
 .subtitle {
   text-align: center;
-  color: var(--color-text-muted);
+  color: #64748B;
   margin-bottom: 30px;
   font-size: 0.9rem;
 }
@@ -46,38 +46,46 @@
 }
 
 .inputGroup label {
-  color: #fff;
+  color: #0F172A;
   font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .input {
-  background-color: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--color-border);
-  color: #fff;
-  padding: 12px;
-  border-radius: 8px;
+  background-color: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
+  padding: 12px 14px;
+  border-radius: 10px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
+}
+
+.input::placeholder {
+  color: #94A3B8;
 }
 
 .input:focus {
-  border-color: var(--color-primary);
+  border-color: #E11D48;
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
 }
 
 .button {
-  background-color: var(--color-primary);
-  color: #fff;
+  background-color: #E11D48;
+  color: #FFFFFF;
   border: none;
-  padding: 12px;
-  border-radius: 8px;
-  font-weight: 600;
+  padding: 13px;
+  border-radius: 10px;
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
   margin-top: 10px;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25);
 }
 
 .button:hover:not(:disabled) {
-  background-color: var(--color-primary-dark);
+  background-color: #BE123C;
 }
 
 .button:disabled {
@@ -86,24 +94,24 @@
 }
 
 .error {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background-color: #FEF2F2;
+  color: #DC2626;
   padding: 12px;
   border-radius: 8px;
   font-size: 0.9rem;
   text-align: center;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border: 1px solid #FECACA;
 }
 
 .loginLink {
   text-align: center;
   margin-top: 20px;
   font-size: 0.9rem;
-  color: var(--color-text-muted);
+  color: #64748B;
 }
 
 .loginLink a {
-  color: var(--color-primary);
+  color: #E11D48;
   text-decoration: none;
   font-weight: 600;
 }

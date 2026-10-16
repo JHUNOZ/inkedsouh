@@ -38,7 +38,7 @@ export default function EstudianteLayout({ children }) {
           <Link href="/" className={styles.logo}>
             INKED<span className={styles.logoAccent}>SOUH</span>
           </Link>
-          <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '5px' }}>Portal de Estudiantes</div>
+          <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '5px', fontWeight: 500 }}>Portal de Estudiantes</div>
         </div>
 
         <nav className={styles.nav}>

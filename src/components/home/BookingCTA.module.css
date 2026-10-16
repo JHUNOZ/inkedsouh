@@ -1,13 +1,13 @@
-/* CTA Agendar — Split Layout Premium */
+/* CTA Agendar — Split Layout Editorial White */
 .section {
-  padding: 160px 0;
+  padding: 150px 0;
   position: relative;
-  background: var(--color-bg);
+  background: linear-gradient(180deg, #FAFAFC 0%, #FFF1F2 50%, #FAFAFC 100%);
   overflow: hidden;
   display: flex;
   justify-content: center;
-  border-top: 1px solid rgba(232, 36, 40, 0.1);
-  border-bottom: 1px solid rgba(232, 36, 40, 0.1);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
 }
 
 /* Elementos geométricos removidos en favor del minimalismo líquido */

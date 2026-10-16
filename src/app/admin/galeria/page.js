@@ -291,7 +291,7 @@ export default function MultimediaPage() {
           <div className={styles.uploadCard}>
             <div className={styles.cardHeader}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Sparkles size={18} style={{ color: '#ff2a3d' }} />
+                <Sparkles size={18} style={{ color: '#E11D48' }} />
                 <h3>Publicar Nueva Obra o Video</h3>
               </div>
               <span className={styles.headerHint}>Se sincronizará en tiempo real con la web</span>
@@ -427,7 +427,7 @@ export default function MultimediaPage() {
               </div>
             ) : media.length === 0 ? (
               <div className={styles.emptyBox}>
-                <ImageIcon size={44} style={{ color: '#ff2a3d', opacity: 0.6 }} />
+                <ImageIcon size={44} style={{ color: '#E11D48', opacity: 0.7 }} />
                 <h4>Aún no has subido obras personalizadas</h4>
                 <p>Utiliza el formulario de arriba para publicar tu primera fotografía o video en el portafolio.</p>
               </div>
@@ -485,7 +485,7 @@ export default function MultimediaPage() {
           <div className={styles.uploadCard}>
             <div className={styles.cardHeader}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <User size={18} style={{ color: '#ff2a3d' }} />
+                <User size={18} style={{ color: '#E11D48' }} />
                 <h3>Foto de Perfil / Biografía Pública</h3>
               </div>
               <span className={styles.headerHint}>Aparece en el Hero de inicio y en la sección Biografía</span>

@@ -14,10 +14,10 @@ export default function TerminosPage() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: '100vh', background: '#0a0a0c', color: '#f4f4f5', paddingTop: '130px', paddingBottom: '80px' }}>
+      <main style={{ minHeight: '100vh', background: 'radial-gradient(circle at 50% 0%, rgba(225, 29, 72, 0.05) 0%, transparent 60%), #FAFAFC', color: '#0F172A', paddingTop: '130px', paddingBottom: '80px' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 24px' }}>
           
-          <Link href="/productos" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#a1a1aa', textDecoration: 'none', marginBottom: '24px', fontSize: '0.9rem' }}>
+          <Link href="/productos" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#64748B', textDecoration: 'none', marginBottom: '24px', fontSize: '0.9rem', fontWeight: 500 }}>
             <ArrowLeft size={16} /> Volver a la Tienda
           </Link>
 
@@ -26,31 +26,31 @@ export default function TerminosPage() {
           </SectionTitle>
 
           {customPdfUrl && (
-            <div style={{ background: 'rgba(255,42,61,0.08)', border: '1px solid rgba(255,42,61,0.25)', borderRadius: '12px', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: '12px', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <FileText size={24} style={{ color: '#ff2a3d' }} />
+                <FileText size={24} style={{ color: '#E11D48' }} />
                 <div>
-                  <strong style={{ color: '#fff', display: 'block', fontSize: '0.95rem' }}>Documento Oficial de Términos</strong>
-                  <span style={{ fontSize: '0.8rem', color: '#a1a1aa' }}>Documento PDF subido por el administrador</span>
+                  <strong style={{ color: '#0F172A', display: 'block', fontSize: '0.95rem' }}>Documento Oficial de Términos</strong>
+                  <span style={{ fontSize: '0.8rem', color: '#64748B' }}>Documento PDF subido por el administrador</span>
                 </div>
               </div>
               <a 
                 href={customPdfUrl} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                style={{ background: '#ff2a3d', color: '#fff', textDecoration: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600 }}
+                style={{ background: '#E11D48', color: '#FFFFFF', textDecoration: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600 }}
               >
                 Abrir PDF en Pestaña Nueva ↗
               </a>
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', lineHeight: 1.7, fontSize: '0.92rem', color: '#d4d4d8' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', lineHeight: 1.7, fontSize: '0.92rem', color: '#475569' }}>
             
             {/* 1. Métodos de Envío */}
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px' }}>
-              <h3 style={{ color: '#fff', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                <Truck size={20} style={{ color: '#ff2a3d' }} /> 1. Métodos y Plazos de Envío
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '24px', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.06)' }}>
+              <h3 style={{ color: '#0F172A', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <Truck size={20} style={{ color: '#E11D48' }} /> 1. Métodos y Plazos de Envío
               </h3>
               <p>
                 Todos los pedidos realizados a través de la tienda web de <strong>INKEDSOUH</strong> son despachados directamente a domicilio o sucursal.
@@ -63,11 +63,12 @@ export default function TerminosPage() {
             </div>
 
             {/* 2. Métodos de Pago */}
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px' }}>
-              <h3 style={{ color: '#fff', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                <CreditCard size={20} style={{ color: '#ff2a3d' }} /> 2. Formas de Pago Aceptadas
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '24px', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.06)' }}>
+              <h3 style={{ color: '#0F172A', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <CreditCard size={20} style={{ color: '#E11D48' }} /> 2. Formas de Pago Aceptadas
               </h3>
               <ul style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <li><strong>Flow Chile (Webpay Plus / Tarjetas):</strong> Pago inmediato en línea con tarjetas de crédito, débito, Redcompra, Mach y Servipag.</li>
                 <li><strong>Banca.me BNPL (Compra Ahora, Paga en Cuotas):</strong> Permite pagar en hasta 12 cuotas fijas mensuales utilizando tu RUT, sin requerir tarjeta de crédito bancaria. La evaluación es inmediata.</li>
                 <li><strong>Transferencia Bancaria Directa:</strong> Pago directo a nuestra cuenta bancaria oficial. El pedido se procesa una vez validado el comprobante enviado al WhatsApp oficial.</li>
                 <li><strong>WhatsApp Directo:</strong> Coordinación personalizada para pedidos mayoristas o consultas técnicas con el artista.</li>
@@ -75,9 +76,9 @@ export default function TerminosPage() {
             </div>
 
             {/* 3. Garantía y Devoluciones */}
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px' }}>
-              <h3 style={{ color: '#fff', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                <RotateCcw size={20} style={{ color: '#ff2a3d' }} /> 3. Garantía e Insumos Sellados
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '24px', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.06)' }}>
+              <h3 style={{ color: '#0F172A', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <RotateCcw size={20} style={{ color: '#E11D48' }} /> 3. Garantía e Insumos Sellados
               </h3>
               <p>
                 Por razones de estricta bioseguridad e higiene quirúrgica, insumos como <strong>agujas, cartuchos y tintas</strong> deben mantener su sellado hermético original de fábrica intacto para admitir cambios o garantías por defectos de fabricación.
@@ -85,15 +86,15 @@ export default function TerminosPage() {
             </div>
 
             {/* 4. Privacidad y Contacto */}
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px' }}>
-              <h3 style={{ color: '#fff', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                <Lock size={20} style={{ color: '#ff2a3d' }} /> 4. Privacidad y Soporte
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '24px', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.06)' }}>
+              <h3 style={{ color: '#0F172A', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <Lock size={20} style={{ color: '#E11D48' }} /> 4. Privacidad y Soporte
               </h3>
               <p>
                 Los datos personales ingresados para los envíos y pagos son tratados con absoluta confidencialidad y utilizados exclusivamente para procesar tu orden.
               </p>
               <p style={{ marginTop: '10px' }}>
-                Para cualquier duda o asistencia inmediata, contáctanos a través de nuestro WhatsApp oficial: <strong>{textos?.contact_whatsapp || '+56 9 3025 4425'}</strong> o correo <strong>inkedsouhtattoo@gmail.com</strong>.
+                Para cualquier duda o asistencia inmediata, contáctanos a través de nuestro WhatsApp oficial: <strong style={{ color: '#0F172A' }}>{textos?.contact_whatsapp || '+56 9 3025 4425'}</strong> o correo <strong style={{ color: '#0F172A' }}>inkedsouhtattoo@gmail.com</strong>.
               </p>
             </div>
 

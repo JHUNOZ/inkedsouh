@@ -76,8 +76,8 @@ export default function SparklesBg({ count = 30 }) {
         return
       }
 
-      // Obsidian background fill
-      ctx.fillStyle = '#050507'
+      // Pearl White background fill
+      ctx.fillStyle = '#FAFAFC'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       // Smooth mouse lerp
@@ -88,23 +88,23 @@ export default function SparklesBg({ count = 30 }) {
 
       time += 0.008
 
-      // Orb 1: Liquid Crimson follow
-      const radius1 = Math.min(canvas.width, canvas.height) * 0.4
+      // Orb 1: Soft Crimson glow follow
+      const radius1 = Math.min(canvas.width, canvas.height) * 0.45
       const grad1 = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, radius1)
-      grad1.addColorStop(0, 'rgba(255, 42, 61, 0.14)')
-      grad1.addColorStop(1, 'rgba(5, 5, 7, 0)')
+      grad1.addColorStop(0, 'rgba(225, 29, 72, 0.09)')
+      grad1.addColorStop(1, 'rgba(250, 250, 252, 0)')
       ctx.fillStyle = grad1
       ctx.beginPath()
       ctx.arc(mouseX, mouseY, radius1, 0, Math.PI * 2)
       ctx.fill()
 
-      // Orb 2: Abyssal Purple floating
+      // Orb 2: Warm Rose / Slate floating aura
       const orb2X = canvas.width / 2 + Math.cos(time * 0.5) * canvas.width * 0.25
       const orb2Y = canvas.height / 2 + Math.sin(time * 0.3) * canvas.height * 0.25
-      const radius2 = Math.min(canvas.width, canvas.height) * 0.5
+      const radius2 = Math.min(canvas.width, canvas.height) * 0.55
       const grad2 = ctx.createRadialGradient(orb2X, orb2Y, 0, orb2X, orb2Y, radius2)
-      grad2.addColorStop(0, 'rgba(70, 20, 90, 0.10)')
-      grad2.addColorStop(1, 'rgba(5, 5, 7, 0)')
+      grad2.addColorStop(0, 'rgba(244, 63, 94, 0.06)')
+      grad2.addColorStop(1, 'rgba(250, 250, 252, 0)')
       ctx.fillStyle = grad2
       ctx.beginPath()
       ctx.arc(orb2X, orb2Y, radius2, 0, Math.PI * 2)
@@ -117,12 +117,12 @@ export default function SparklesBg({ count = 30 }) {
           if (s.y < -10) s.y = canvas.height + 10
 
           s.phase += s.blinkSpeed
-          const opacity = Math.pow(Math.sin(s.phase), 8)
+          const opacity = Math.pow(Math.sin(s.phase), 8) * 0.65
 
-          if (opacity > 0.1) {
+          if (opacity > 0.08) {
             ctx.beginPath()
             ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2)
-            ctx.fillStyle = `rgba(255, 42, 61, ${opacity})`
+            ctx.fillStyle = `rgba(225, 29, 72, ${opacity})`
             ctx.fill()
           }
         })

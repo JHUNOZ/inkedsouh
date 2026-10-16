@@ -204,10 +204,10 @@ export default function ConsentForm({ onSubmit, onCancel }) {
           <p className={styles.sectionHint}>Firma dentro del recuadro para aceptar los términos.</p>
           <div className={styles.signatureContainer}>
             <SignatureCanvas 
-              penColor="red"
+              penColor="#E11D48"
               canvasProps={{ className: styles.sigPad }}
               ref={sigCanvas}
-              backgroundColor="rgba(255, 255, 255, 0.05)"
+              backgroundColor="#F8FAFC"
             />
             <button type="button" onClick={clearSignature} className={styles.clearSigBtn}>
               <X size={14} /> Limpiar

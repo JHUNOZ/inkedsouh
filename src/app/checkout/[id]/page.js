@@ -140,7 +140,7 @@ export default function CheckoutPage({ params }) {
         <Navbar />
         <div className={styles.page} style={{ textAlign: 'center', paddingTop: '150px' }}>
           <h2>Curso no encontrado</h2>
-          <Link href="/cursos" style={{ color: '#ff2a3d', marginTop: '10px', display: 'inline-block' }}>
+          <Link href="/cursos" style={{ color: '#E11D48', marginTop: '10px', display: 'inline-block', fontWeight: 600 }}>
             Volver a Cursos
           </Link>
         </div>
@@ -157,7 +157,7 @@ export default function CheckoutPage({ params }) {
           
           {/* Formulario de Checkout */}
           <div className={styles.formSection}>
-            <Link href="/cursos" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#888', textDecoration: 'none', marginBottom: '20px', fontSize: '0.9rem' }}>
+            <Link href="/cursos" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#64748B', textDecoration: 'none', marginBottom: '20px', fontSize: '0.9rem', fontWeight: 500 }}>
               <ArrowLeft size={16} /> Volver a cursos
             </Link>
             
@@ -211,7 +211,7 @@ export default function CheckoutPage({ params }) {
               <div className={styles.paymentGatewayBox}>
                 <div className={styles.paymentGatewayHeader}>
                   <div className={styles.paymentGatewayTitle}>
-                    <Lock size={16} color="#4ade80" />
+                    <Lock size={16} color="#10B981" />
                     <span>Pago Seguro en Línea</span>
                   </div>
                   <span className={styles.flowBadge}>Flow Chile</span>
@@ -238,7 +238,7 @@ export default function CheckoutPage({ params }) {
 
           {/* Resumen del Pedido */}
           <div className={styles.summarySection}>
-            <h2 style={{ fontSize: '1.2rem', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            <h2 style={{ fontSize: '1.2rem', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px', color: '#0F172A' }}>
               Resumen de Compra
             </h2>
             
@@ -246,12 +246,12 @@ export default function CheckoutPage({ params }) {
               <img src={course.image_url} alt={course.title} className={styles.courseImage} />
             ) : (
               <div className={styles.courseImage} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <BookOpen size={48} color="#555" />
+                <BookOpen size={48} color="#64748B" />
               </div>
             )}
             
             <h3 className={styles.courseTitle}>{course.title}</h3>
-            <p style={{ color: '#888', fontSize: '0.88rem', lineHeight: '1.5' }}>{course.description}</p>
+            <p style={{ color: '#475569', fontSize: '0.88rem', lineHeight: '1.5' }}>{course.description}</p>
 
             <div className={styles.priceRow}>
               <span className={styles.priceLabel}>Total a pagar</span>
@@ -259,7 +259,7 @@ export default function CheckoutPage({ params }) {
             </div>
 
             <div className={styles.secureNotice}>
-              <ShieldCheck size={18} color="#4ade80" />
+              <ShieldCheck size={18} color="#10B981" />
               <span>Acceso de por vida, certificado y soporte directo</span>
             </div>
           </div>

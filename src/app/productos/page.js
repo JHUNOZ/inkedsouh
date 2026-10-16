@@ -6,7 +6,7 @@ import {
   Star, MessageCircle, ArrowRight, CreditCard, Building2,
   Zap, Copy, CheckCircle2, Truck, MapPin, User, Mail, Phone,
   FileText, ExternalLink, RefreshCw, AlertCircle, ArrowLeft,
-  Gift, Flame
+  Gift, Flame, Package
 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
@@ -578,15 +578,15 @@ export default function ProductosPage() {
 
           {/* Grid de productos sincronizados con HONE CATALOG */}
           {loading ? (
-            <div style={{ textAlign: 'center', color: '#888', padding: '80px' }}>
-              <div style={{ width: '36px', height: '36px', border: '3px solid rgba(255,42,61,0.2)', borderTopColor: '#ff2a3d', borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 1s linear infinite' }} />
+            <div style={{ textAlign: 'center', color: '#64748B', padding: '80px' }}>
+              <div style={{ width: '36px', height: '36px', border: '3px solid rgba(225,29,72,0.2)', borderTopColor: '#E11D48', borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 1s linear infinite' }} />
               Cargando catálogo en tiempo real...
             </div>
           ) : products.length === 0 ? (
-            <div style={{ textAlign: 'center', color: 'var(--color-gray-400)', padding: '80px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px dashed rgba(255,255,255,0.1)', maxWidth: '600px', margin: '40px auto' }}>
-              <ShoppingBag size={48} style={{ marginBottom: '16px', opacity: 0.5, color: 'var(--color-red)' }} />
-              <h3>Aún no tenemos productos disponibles</h3>
-              <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '8px' }}>
+            <div style={{ textAlign: 'center', color: '#475569', padding: '80px 20px', background: '#FFFFFF', borderRadius: '20px', border: '1px dashed #CBD5E1', maxWidth: '600px', margin: '40px auto', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.04)' }}>
+              <ShoppingBag size={48} style={{ marginBottom: '16px', opacity: 0.7, color: '#E11D48' }} />
+              <h3 style={{ color: '#0F172A' }}>Aún no tenemos productos disponibles</h3>
+              <p style={{ fontSize: '0.9rem', color: '#64748B', marginTop: '8px' }}>
                 Los productos creados y sincronizados desde HONE CATALOG aparecerán aquí automáticamente.
               </p>
             </div>
@@ -627,7 +627,7 @@ export default function ProductosPage() {
                           PACK COMBO
                         </span>
                       ) : product.badge ? (
-                        <span className={styles.discountBadge} style={{ background: '#ff2a3d', left: '12px', right: 'auto' }}>
+                        <span className={styles.discountBadge} style={{ background: '#E11D48', left: '12px', right: 'auto' }}>
                           {product.badge}
                         </span>
                       ) : null}
@@ -641,7 +641,7 @@ export default function ProductosPage() {
                       )}
 
                       {productImages.length > 1 && (
-                        <span style={{ position: 'absolute', bottom: '10px', right: '10px', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px' }}>
+                        <span style={{ position: 'absolute', bottom: '10px', right: '10px', background: 'rgba(15, 23, 42, 0.75)', color: '#fff', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px' }}>
                           +{productImages.length} fotos
                         </span>
                       )}
@@ -756,7 +756,7 @@ export default function ProductosPage() {
                         <img src={currentImg} alt={selectedProduct.name} className={styles.modalMainImage} />
                       )
                     ) : (
-                      <ShoppingBag size={56} style={{ color: '#444' }} />
+                      <ShoppingBag size={56} style={{ color: '#64748B' }} />
                     )}
                     {isBundle ? (
                       <span className={styles.comboBadgeStore}>
@@ -764,7 +764,7 @@ export default function ProductosPage() {
                         PACK PROMOCIONAL
                       </span>
                     ) : selectedProduct.badge ? (
-                      <span style={{ position: 'absolute', top: '12px', left: '12px', background: '#ff2a3d', color: '#fff', fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: '6px' }}>
+                      <span style={{ position: 'absolute', top: '12px', left: '12px', background: '#E11D48', color: '#fff', fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: '6px' }}>
                         {selectedProduct.badge}
                       </span>
                     ) : null}
@@ -807,7 +807,7 @@ export default function ProductosPage() {
                     <div className={styles.ratingRow} style={{ marginTop: '4px', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', gap: '2px' }}>
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={15} fill="#facc15" color="#facc15" />
+                          <Star key={i} size={15} fill="#F59E0B" color="#F59E0B" />
                         ))}
                       </div>
                       <span className={styles.ratingReviews}>(1 Reseña)</span>
@@ -816,10 +816,10 @@ export default function ProductosPage() {
                     {/* SKU & Stock Box (Exact Match to Photo 1) */}
                     <div className={styles.skuStockBox}>
                       <div className={styles.skuCell}>
-                        SKU: <span style={{ color: '#fff', fontFamily: 'monospace' }}>{activeSku || 'N/A'}</span>
+                        SKU: <span style={{ color: '#0F172A', fontFamily: 'monospace' }}>{activeSku || 'N/A'}</span>
                       </div>
                       <div className={styles.stockCell}>
-                        STOCK: <span style={{ color: activeStock > 0 ? '#4ade80' : '#f87171' }}>{activeStock}</span>
+                        STOCK: <span style={{ color: activeStock > 0 ? '#059669' : '#DC2626' }}>{activeStock}</span>
                       </div>
                     </div>
 
@@ -827,7 +827,7 @@ export default function ProductosPage() {
                     {isBundle && modalBundleConfig.enabled && modalBundleConfig.items?.length > 0 && (
                       <div className={styles.comboModalSection}>
                         <div className={styles.comboModalTitle}>
-                          <Package size={16} color="#f59e0b" />
+                          <Package size={16} color="#D97706" />
                           <span>Contenido de este Pack ({modalBundleConfig.items.length} productos)</span>
                         </div>
 
@@ -839,13 +839,13 @@ export default function ProductosPage() {
                                   <img src={bItem.image_url} alt={bItem.name} className={styles.comboModalItemThumb} />
                                 ) : (
                                   <div className={styles.comboModalItemThumb} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <ShoppingBag size={14} color="#8e8e9f" />
+                                    <ShoppingBag size={14} color="#64748B" />
                                   </div>
                                 )}
                                 <div>
                                   <div className={styles.comboModalItemName}>{bItem.name}</div>
                                   <div className={styles.comboModalItemQty}>
-                                    Incluye: <strong style={{ color: '#fff' }}>{bItem.quantity || 1} un.</strong> {bItem.sku ? `• SKU: ${bItem.sku}` : ''}
+                                    Incluye: <strong style={{ color: '#0F172A' }}>{bItem.quantity || 1} un.</strong> {bItem.sku ? `• SKU: ${bItem.sku}` : ''}
                                   </div>
                                 </div>
                               </div>
@@ -971,7 +971,7 @@ export default function ProductosPage() {
                         </button>
                       </div>
                       {activeStock > 0 && (
-                        <span style={{ fontSize: '0.8rem', color: '#8e8e9f' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#64748B' }}>
                           ({activeStock} unidades disponibles)
                         </span>
                       )}
@@ -992,10 +992,10 @@ export default function ProductosPage() {
                     </div>
 
                     {/* Delivery Timeframe Notice */}
-                    <div style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: '10px', padding: '9px 12px', display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-                      <Truck size={18} style={{ color: '#60a5fa', flexShrink: 0 }} />
-                      <div style={{ fontSize: '0.78rem', color: '#bfdbfe', lineHeight: 1.35 }}>
-                        <strong>Envíos a todo Chile</strong> • Plazo estimado: <span style={{ color: '#fff', fontWeight: 600 }}>{deliveryTimeframe}</span>
+                    <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '10px', padding: '9px 12px', display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                      <Truck size={18} style={{ color: '#2563EB', flexShrink: 0 }} />
+                      <div style={{ fontSize: '0.78rem', color: '#1E40AF', lineHeight: 1.35 }}>
+                        <strong>Envíos a todo Chile</strong> • Plazo estimado: <span style={{ color: '#0F172A', fontWeight: 600 }}>{deliveryTimeframe}</span>
                       </div>
                     </div>
 
@@ -1017,20 +1017,20 @@ export default function ProductosPage() {
 
                   {/* Ficha Técnica / Especificaciones Técnicas */}
                   {modalSpecs.length > 0 && (
-                    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '16px', marginTop: '14px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                        <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: 'rgba(255,42,61,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ff2a3d' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '16px', marginTop: '14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #E2E8F0' }}>
+                        <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: '#FFF1F2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E11D48' }}>
                           <FileText size={13} />
                         </div>
-                        <span style={{ fontSize: '0.82rem', color: '#fff', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+                        <span style={{ fontSize: '0.82rem', color: '#0F172A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px' }}>
                           Ficha Técnica & Especificaciones
                         </span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' }}>
                         {modalSpecs.map((s, idx) => (
-                          <div key={idx} style={{ background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '9px', padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            <span style={{ color: '#8e8e9f', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600 }}>{s.key}</span>
-                            <span style={{ color: '#f5f5f7', fontSize: '0.85rem', fontWeight: 600 }}>{s.value}</span>
+                          <div key={idx} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '9px', padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ color: '#64748B', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600 }}>{s.key}</span>
+                            <span style={{ color: '#0F172A', fontSize: '0.85rem', fontWeight: 700 }}>{s.value}</span>
                           </div>
                         ))}
                       </div>
@@ -1118,9 +1118,9 @@ export default function ProductosPage() {
 
                     {/* BNPL Teaser in Cart (Condicional) */}
                     {IS_BANCAME_ENABLED && (
-                      <div style={{ background: 'rgba(234, 88, 12, 0.08)', border: '1px solid rgba(234, 88, 12, 0.25)', borderRadius: '8px', padding: '8px 12px', fontSize: '0.78rem', color: '#fed7aa', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
+                      <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '8px', padding: '8px 12px', fontSize: '0.78rem', color: '#9A3412', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
                         <span>Hasta <strong>3 cuotas sin interés de {formatPrice(calculateInstallmentAmount(cartTotal, 3))}</strong></span>
-                        <span style={{ background: '#ea580c', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>BNPL</span>
+                        <span style={{ background: '#EA580C', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px' }}>BNPL</span>
                       </div>
                     )}
 
@@ -1152,7 +1152,7 @@ export default function ProductosPage() {
               {/* Header */}
               <div className={styles.checkoutHeader}>
                 <div className={styles.checkoutTitle}>
-                  <CreditCard size={22} style={{ color: '#ff2a3d' }} />
+                  <CreditCard size={22} style={{ color: '#E11D48' }} />
                   <span>Proceso de Pago & Checkout</span>
                 </div>
                 {!orderProcessing && (
@@ -1190,7 +1190,7 @@ export default function ProductosPage() {
                   <div className={styles.checkoutGrid}>
                     <div>
                       <h4 className={styles.checkoutSectionTitle}>
-                        <User size={18} style={{ color: '#ff2a3d' }} /> Datos de Contacto
+                        <User size={18} style={{ color: '#E11D48' }} /> Datos de Contacto
                       </h4>
 
                       <div className={styles.formGrid}>
@@ -1233,7 +1233,7 @@ export default function ProductosPage() {
                               className={`${styles.shippingCard} ${customerInfo.deliveryType === 'santiago' ? styles.shippingCardActive : ''}`}
                               onClick={() => setCustomerInfo({ ...customerInfo, deliveryType: 'santiago' })}
                             >
-                              <div className={styles.shippingCardIcon}><Truck size={20} style={{ color: '#ff2a3d' }} /></div>
+                              <div className={styles.shippingCardIcon}><Truck size={20} style={{ color: '#E11D48' }} /></div>
                               <div className={styles.shippingCardText}>
                                 <strong>Envío Express RM</strong>
                                 <small>Santiago y comunas aledañas</small>
@@ -1245,7 +1245,7 @@ export default function ProductosPage() {
                               className={`${styles.shippingCard} ${customerInfo.deliveryType === 'starken' ? styles.shippingCardActive : ''}`}
                               onClick={() => setCustomerInfo({ ...customerInfo, deliveryType: 'starken' })}
                             >
-                              <div className={styles.shippingCardIcon}><Package size={20} style={{ color: '#ff2a3d' }} /></div>
+                              <div className={styles.shippingCardIcon}><Package size={20} style={{ color: '#E11D48' }} /></div>
                               <div className={styles.shippingCardText}>
                                 <strong>Por Pagar Regiones</strong>
                                 <small>Starken / Chilexpress a todo Chile</small>
@@ -1256,10 +1256,10 @@ export default function ProductosPage() {
                         </div>
 
                         {/* Banner Plazo de Entrega */}
-                        <div className={styles.fullCol} style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <Truck size={20} style={{ color: '#60a5fa', flexShrink: 0 }} />
-                          <div style={{ fontSize: '0.8rem', color: '#bfdbfe', lineHeight: 1.4 }}>
-                            <strong>Plazo de Entrega Estimado:</strong> <span style={{ color: '#fff', fontWeight: 600 }}>{deliveryTimeframe}</span>. Todos los pedidos cuentan con código de seguimiento.
+                        <div className={styles.fullCol} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <Truck size={20} style={{ color: '#2563EB', flexShrink: 0 }} />
+                          <div style={{ fontSize: '0.8rem', color: '#1E40AF', lineHeight: 1.4 }}>
+                            <strong>Plazo de Entrega Estimado:</strong> <span style={{ color: '#0F172A', fontWeight: 600 }}>{deliveryTimeframe}</span>. Todos los pedidos cuentan con código de seguimiento.
                           </div>
                         </div>
 
@@ -1326,22 +1326,22 @@ export default function ProductosPage() {
                     {/* Summary Col */}
                     <div className={styles.checkoutOrderSummary}>
                       <h4 className={styles.checkoutSectionTitle}>
-                        <ShoppingBag size={18} style={{ color: '#ff2a3d' }} /> Resumen ({cartCount})
+                        <ShoppingBag size={18} style={{ color: '#E11D48' }} /> Resumen ({cartCount})
                       </h4>
                       {cart.map((item) => (
                         <div key={item.id} className={styles.summaryItemRow}>
                           <div className={styles.summaryItemName}>
                             <span>{item.name} {item.variantName ? `(${item.variantName})` : ''}</span>
-                            <small style={{ color: '#71717a' }}>{item.quantity} un. x {formatPrice(item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price)}</small>
+                            <small style={{ color: '#64748B' }}>{item.quantity} un. x {formatPrice(item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price)}</small>
                           </div>
-                          <span style={{ color: '#fff', fontWeight: 600 }}>
+                          <span style={{ color: '#0F172A', fontWeight: 700 }}>
                             {formatPrice((item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price) * item.quantity)}
                           </span>
                         </div>
                       ))}
                       <div className={styles.summaryTotalRow}>
                         <span>Total</span>
-                        <span style={{ color: '#ff2a3d' }}>{formatPrice(cartTotal)} CLP</span>
+                        <span style={{ color: '#E11D48' }}>{formatPrice(cartTotal)} CLP</span>
                       </div>
                     </div>
                   </div>
@@ -1352,7 +1352,7 @@ export default function ProductosPage() {
                   <div className={styles.checkoutGrid}>
                     <div>
                       <h4 className={styles.checkoutSectionTitle}>
-                        <CreditCard size={18} style={{ color: '#ff2a3d' }} /> Selecciona tu Método de Pago
+                        <CreditCard size={18} style={{ color: '#E11D48' }} /> Selecciona tu Método de Pago
                       </h4>
 
                       <div className={styles.paymentMethodsGrid} style={{ gridTemplateColumns: '1fr' }}>
@@ -1363,10 +1363,10 @@ export default function ProductosPage() {
                           onClick={() => setPaymentMethod('flow')}
                         >
                           <div className={styles.paymentMethodTop}>
-                            <div className={styles.paymentIconWrap} style={{ background: 'rgba(255, 42, 61, 0.15)', color: '#ff2a3d' }}>
+                            <div className={styles.paymentIconWrap} style={{ background: '#FFF1F2', color: '#E11D48' }}>
                               <CreditCard size={18} />
                             </div>
-                            <span className={styles.paymentBadgePill} style={{ background: 'rgba(255, 42, 61, 0.2)', color: '#ff8591' }}>
+                            <span className={styles.paymentBadgePill} style={{ background: '#FFF1F2', color: '#E11D48', border: '1px solid #FECDD3' }}>
                               Recomendado • Flow Chile
                             </span>
                           </div>
@@ -1375,10 +1375,10 @@ export default function ProductosPage() {
                             Paga de forma inmediata y 100% segura con Webpay Plus, Tarjetas de Débito, Crédito, Mach, Redcompra o Servipag.
                           </p>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
-                            <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px', color: '#ccc' }}>💳 Webpay Plus</span>
-                            <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px', color: '#ccc' }}>🟣 Mach</span>
-                            <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px', color: '#ccc' }}>🟦 Redcompra</span>
-                            <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px', color: '#ccc' }}>🟡 Servipag</span>
+                            <span style={{ fontSize: '0.72rem', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '2px 8px', borderRadius: '4px', color: '#475569', fontWeight: 600 }}>💳 Webpay Plus</span>
+                            <span style={{ fontSize: '0.72rem', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '2px 8px', borderRadius: '4px', color: '#475569', fontWeight: 600 }}>🟣 Mach</span>
+                            <span style={{ fontSize: '0.72rem', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '2px 8px', borderRadius: '4px', color: '#475569', fontWeight: 600 }}>🟦 Redcompra</span>
+                            <span style={{ fontSize: '0.72rem', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '2px 8px', borderRadius: '4px', color: '#475569', fontWeight: 600 }}>🟡 Servipag</span>
                           </div>
                         </div>
 
@@ -1389,10 +1389,10 @@ export default function ProductosPage() {
                             onClick={() => setPaymentMethod('bancame')}
                           >
                             <div className={styles.paymentMethodTop}>
-                              <div className={styles.paymentIconWrap} style={{ background: 'rgba(234, 88, 12, 0.15)', color: '#ea580c' }}>
+                              <div className={styles.paymentIconWrap} style={{ background: '#FFF7ED', color: '#EA580C' }}>
                                 <CreditCard size={18} />
                               </div>
-                              <span className={styles.paymentBadgePill} style={{ background: 'rgba(234, 88, 12, 0.2)', color: '#fdba74' }}>
+                              <span className={styles.paymentBadgePill} style={{ background: '#FFF7ED', color: '#C2410C', border: '1px solid #FED7AA' }}>
                                 3 a 12 Cuotas con RUT
                               </span>
                             </div>
@@ -1409,10 +1409,10 @@ export default function ProductosPage() {
                           onClick={() => setPaymentMethod('transfer')}
                         >
                           <div className={styles.paymentMethodTop}>
-                            <div className={styles.paymentIconWrap} style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6' }}>
+                            <div className={styles.paymentIconWrap} style={{ background: '#EFF6FF', color: '#2563EB' }}>
                               <Building2 size={18} />
                             </div>
-                            <span className={styles.paymentBadgePill} style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#93c5fd' }}>
+                            <span className={styles.paymentBadgePill} style={{ background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE' }}>
                               Transferencia Directa
                             </span>
                           </div>
@@ -1428,10 +1428,10 @@ export default function ProductosPage() {
                           onClick={() => setPaymentMethod('whatsapp')}
                         >
                           <div className={styles.paymentMethodTop}>
-                            <div className={styles.paymentIconWrap} style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e' }}>
+                            <div className={styles.paymentIconWrap} style={{ background: '#ECFDF5', color: '#059669' }}>
                               <MessageCircle size={18} />
                             </div>
-                            <span className={styles.paymentBadgePill} style={{ background: 'rgba(34, 197, 94, 0.2)', color: '#86efac' }}>
+                            <span className={styles.paymentBadgePill} style={{ background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0' }}>
                               Atención Directa
                             </span>
                           </div>
@@ -1448,10 +1448,10 @@ export default function ProductosPage() {
                       {IS_BANCAME_ENABLED && paymentMethod === 'bancame' && (
                         <div className={styles.bnplDetailsBox} style={{ marginTop: '16px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <strong style={{ color: '#fff', fontSize: '0.9rem' }}>Simulador de Cuotas Banca.me</strong>
-                            <span style={{ fontSize: '0.75rem', color: '#fdba74' }}>Aprobación con RUT en 1 min</span>
+                            <strong style={{ color: '#0F172A', fontSize: '0.9rem' }}>Simulador de Cuotas Banca.me</strong>
+                            <span style={{ fontSize: '0.75rem', color: '#C2410C', fontWeight: 600 }}>Aprobación con RUT en 1 min</span>
                           </div>
-                          <p style={{ fontSize: '0.8rem', color: '#e5e7eb', margin: 0 }}>
+                          <p style={{ fontSize: '0.8rem', color: '#475569', margin: 0 }}>
                             Paga tu primera cuota hoy y el resto en cuotas fijas mensuales con débito o transferencia:
                           </p>
                           <div className={styles.bnplInstallmentsRow}>
@@ -1475,9 +1475,9 @@ export default function ProductosPage() {
                       {paymentMethod === 'transfer' && (
                         <div className={styles.bankDetailsBox} style={{ marginTop: '16px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <strong style={{ color: '#fff', fontSize: '0.9rem' }}>Datos para Transferencia</strong>
+                            <strong style={{ color: '#0F172A', fontSize: '0.9rem' }}>Datos para Transferencia</strong>
                             <button type="button" onClick={handleCopyBankDetails} className={styles.copyBankBtn}>
-                              {copyFeedback ? <Check size={14} color="#4ade80" /> : <Copy size={14} />}
+                              {copyFeedback ? <Check size={14} color="#059669" /> : <Copy size={14} />}
                               <span>{copyFeedback ? '¡Copiado!' : 'Copiar Datos'}</span>
                             </button>
                           </div>
@@ -1510,8 +1510,8 @@ export default function ProductosPage() {
 
                       {/* ERROR BANNER */}
                       {bancameError && (
-                        <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.35)', color: '#fca5a5', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <AlertCircle size={16} color="#ef4444" style={{ flexShrink: 0 }} />
+                        <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <AlertCircle size={16} color="#DC2626" style={{ flexShrink: 0 }} />
                           <span>{bancameError}</span>
                         </div>
                       )}
@@ -1551,7 +1551,7 @@ export default function ProductosPage() {
                             <button 
                               type="button" 
                               onClick={() => setSimulationData(null)}
-                              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: '#94a3b8', borderRadius: '6px', padding: '6px 12px', fontSize: '0.75rem', cursor: 'pointer' }}
+                              style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#475569', borderRadius: '6px', padding: '6px 12px', fontSize: '0.75rem', cursor: 'pointer' }}
                             >
                               Cerrar Panel
                             </button>
@@ -1606,28 +1606,28 @@ export default function ProductosPage() {
                     {/* Summary Col */}
                     <div className={styles.checkoutOrderSummary}>
                       <h4 className={styles.checkoutSectionTitle}>
-                        <ShoppingBag size={18} style={{ color: '#ff2a3d' }} /> Resumen del Pedido
+                        <ShoppingBag size={18} style={{ color: '#E11D48' }} /> Resumen del Pedido
                       </h4>
-                      <div style={{ fontSize: '0.8rem', color: '#a1a1aa', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '8px' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#475569', borderBottom: '1px solid #E2E8F0', paddingBottom: '8px' }}>
                         <div><strong>Cliente:</strong> {customerInfo.name}</div>
                         <div><strong>Teléfono:</strong> {customerInfo.phone}</div>
                         <div><strong>Dirección:</strong> {customerInfo.address}, {customerInfo.city}</div>
-                        <div style={{ marginTop: '4px', color: '#60a5fa' }}><strong>Plazo estimado:</strong> {deliveryTimeframe}</div>
+                        <div style={{ marginTop: '4px', color: '#2563EB' }}><strong>Plazo estimado:</strong> {deliveryTimeframe}</div>
                       </div>
                       {cart.map((item) => (
                         <div key={item.id} className={styles.summaryItemRow}>
                           <div className={styles.summaryItemName}>
                             <span>{item.name} {item.variantName ? `(${item.variantName})` : ''}</span>
-                            <small style={{ color: '#71717a' }}>{item.quantity} un.</small>
+                            <small style={{ color: '#64748B' }}>{item.quantity} un.</small>
                           </div>
-                          <span style={{ color: '#fff', fontWeight: 600 }}>
+                          <span style={{ color: '#0F172A', fontWeight: 700 }}>
                             {formatPrice((item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price) * item.quantity)}
                           </span>
                         </div>
                       ))}
                       <div className={styles.summaryTotalRow}>
                         <span>Total Final</span>
-                        <span style={{ color: '#ff2a3d' }}>{formatPrice(cartTotal)} CLP</span>
+                        <span style={{ color: '#E11D48' }}>{formatPrice(cartTotal)} CLP</span>
                       </div>
                     </div>
                   </div>
@@ -1640,7 +1640,7 @@ export default function ProductosPage() {
                       <CheckCircle2 size={36} />
                     </div>
 
-                    <h3 style={{ color: '#fff', fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>
+                    <h3 style={{ color: '#0F172A', fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>
                       ¡Pedido Registrado con Éxito!
                     </h3>
 
@@ -1648,7 +1648,7 @@ export default function ProductosPage() {
                       Orden #{submittedOrder.orderNumber}
                     </div>
 
-                    <p style={{ color: '#a1a1aa', fontSize: '0.9rem', lineHeight: 1.5, margin: 0 }}>
+                    <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: 1.5, margin: 0 }}>
                       {submittedOrder.paymentMethod === 'whatsapp' && (
                         'Se ha generado tu orden y abierto la conversación por WhatsApp para coordinar los detalles finales de tu entrega.'
                       )}
@@ -1662,8 +1662,8 @@ export default function ProductosPage() {
                       )}
                     </p>
 
-                    <div style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: '10px', padding: '10px 16px', fontSize: '0.82rem', color: '#bfdbfe', maxWidth: '480px' }}>
-                      <Truck size={15} style={{ display: 'inline', verticalAlign: '-2px', marginRight: '6px', color: '#60a5fa' }} />
+                    <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '10px', padding: '10px 16px', fontSize: '0.82rem', color: '#1E40AF', maxWidth: '480px' }}>
+                      <Truck size={15} style={{ display: 'inline', verticalAlign: '-2px', marginRight: '6px', color: '#2563EB' }} />
                       <strong>Plazo estimado de entrega:</strong> {deliveryTimeframe}
                     </div>
 
@@ -1671,7 +1671,7 @@ export default function ProductosPage() {
                       <button 
                         type="button" 
                         className={styles.checkoutBtnNext} 
-                        style={{ background: '#27272a', color: '#fff' }}
+                        style={{ background: '#0F172A', color: '#FFFFFF' }}
                         onClick={() => {
                           setCheckoutOpen(false)
                           setCheckoutStep('details')

@@ -1,5 +1,5 @@
 .container {
-  padding: 32px;
+  padding: 8px 0 32px;
   max-width: 1400px;
   margin: 0 auto;
   min-height: 100vh;
@@ -17,21 +17,21 @@
   padding: 14px 20px;
   border-radius: 12px;
   font-size: 0.9rem;
-  font-weight: 500;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .toastSuccess {
-  background: #0f1f14;
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  color: #4ade80;
+  background: #DCFCE7;
+  border: 1px solid #86EFAC;
+  color: #15803D;
 }
 
 .toastError {
-  background: #200d0f;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #f87171;
+  background: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  color: #B91C1C;
 }
 
 @keyframes slideUp {
@@ -60,17 +60,17 @@
   font-family: var(--font-display, sans-serif);
   font-size: 1.1rem;
   letter-spacing: 2px;
-  color: #a855f7;
+  color: #E11D48;
   font-weight: 800;
   text-transform: uppercase;
 }
 
 .versionBadge {
-  background: rgba(168, 85, 247, 0.12);
-  border: 1px solid rgba(168, 85, 247, 0.25);
-  color: #d8b4fe;
+  background: #FFF1F2;
+  border: 1px solid #FECDD3;
+  color: #E11D48;
   font-size: 0.72rem;
-  font-weight: 600;
+  font-weight: 700;
   padding: 3px 8px;
   border-radius: 6px;
 }
@@ -78,13 +78,13 @@
 .title {
   font-size: 1.85rem;
   font-weight: 700;
-  color: #fff;
+  color: #0F172A;
   letter-spacing: -0.5px;
   margin-bottom: 6px;
 }
 
 .subtitle {
-  color: #8e8e9f;
+  color: #64748B;
   font-size: 0.92rem;
   max-width: 650px;
 }
@@ -93,39 +93,43 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #ff2a3d 0%, #b80c1d 100%);
-  color: #fff;
-  border: 1px solid rgba(255, 42, 61, 0.4);
+  background: #E11D48;
+  color: #FFFFFF;
+  border: 1px solid #E11D48;
   padding: 10px 18px;
   border-radius: 10px;
   font-size: 0.88rem;
   font-weight: 600;
-  box-shadow: 0 4px 16px rgba(255, 42, 61, 0.25);
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25);
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .btnAdd:hover {
+  background: #BE123C;
+  border-color: #BE123C;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(255, 42, 61, 0.4);
+  box-shadow: 0 6px 20px rgba(225, 29, 72, 0.35);
 }
 
 .btnSecondary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e5e5e7;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #334155;
   padding: 10px 16px;
   border-radius: 10px;
   font-size: 0.88rem;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .btnSecondary:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: #E2E8F0;
+  color: #0F172A;
 }
 
 /* Metrics Bar */
@@ -137,18 +141,19 @@
 }
 
 .metricCard {
-  background: rgba(20, 20, 26, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
   padding: 18px 20px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
 }
 
 .metricLabel {
   font-size: 0.8rem;
-  color: #8e8e9f;
+  color: #64748B;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .metricValueWrap {
@@ -161,23 +166,23 @@
 .metricValue {
   font-size: 1.55rem;
   font-weight: 700;
-  color: #f5f5f7;
+  color: #0F172A;
   font-family: var(--font-display, sans-serif);
   letter-spacing: 1px;
 }
 
 .metricIcon {
-  color: #636366;
+  color: #94A3B8;
 }
 
-.textSuccess { color: #4ade80 !important; }
+.textSuccess { color: #15803D !important; }
 
 /* Tabs */
 .tabs {
   display: flex;
   gap: 12px;
   margin-bottom: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid #E2E8F0;
   padding-bottom: 12px;
 }
 
@@ -187,21 +192,24 @@
   gap: 8px;
   padding: 10px 18px;
   border-radius: 10px;
-  color: #8e8e9f;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #475569;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .tab:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.03);
+  color: #0F172A;
+  background: #E2E8F0;
 }
 
 .tabActive {
-  background: rgba(168, 85, 247, 0.15);
-  color: #d8b4fe;
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  background: #FFF1F2;
+  color: #E11D48;
+  border: 1px solid #FECDD3;
 }
 
 /* Student Toolbar */
@@ -225,39 +233,54 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #636366;
+  color: #64748B;
 }
 
 .searchInput {
   width: 100%;
-  background: rgba(20, 20, 26, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
   padding: 10px 16px 10px 40px;
   border-radius: 10px;
-  color: #fff;
+  color: #0F172A;
   font-size: 0.88rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.searchInput:focus {
+  border-color: #E11D48;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
 }
 
 .select {
-  background: rgba(20, 20, 26, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
   padding: 10px 16px;
   border-radius: 10px;
-  color: #e5e5e7;
+  color: #0F172A;
   font-size: 0.88rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.select:focus {
+  border-color: #E11D48;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
 }
 
 .select option {
-  background: #121217;
-  color: #fff;
+  background: #FFFFFF;
+  color: #0F172A;
 }
 
 /* Table */
 .tableResponsive {
-  background: rgba(18, 18, 24, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: 16px;
   overflow-x: auto;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
 }
 
 .table {
@@ -269,10 +292,10 @@
 
 .table th {
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  color: #8e8e9f;
-  font-weight: 500;
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+  color: #475569;
+  font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
   letter-spacing: 0.5px;
@@ -280,8 +303,8 @@
 
 .table td {
   padding: 14px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  color: #e5e5e7;
+  border-bottom: 1px solid #E2E8F0;
+  color: #0F172A;
   vertical-align: middle;
 }
 
@@ -290,7 +313,7 @@
 }
 
 .table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: #F8FAFC;
 }
 
 .thumbWrapper {
@@ -303,18 +326,19 @@
   height: 50px;
   border-radius: 8px;
   object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid #E2E8F0;
 }
 
 .thumbPlaceholder {
   width: 50px;
   height: 50px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #636366;
+  color: #64748B;
 }
 
 .courseTitleCol {
@@ -325,20 +349,22 @@
 
 .courseTitle {
   font-weight: 600;
-  color: #fff;
+  color: #0F172A;
 }
 
 .courseSub {
   font-size: 0.75rem;
-  color: #8e8e9f;
+  color: #64748B;
 }
 
 .metaBadge {
-  background: rgba(255, 255, 255, 0.05);
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
   padding: 3px 8px;
   border-radius: 6px;
   font-size: 0.78rem;
-  color: #c7c7cc;
+  color: #334155;
+  font-weight: 500;
 }
 
 .priceColumn {
@@ -349,12 +375,13 @@
 
 .priceMain {
   font-weight: 600;
-  color: #fff;
+  color: #0F172A;
 }
 
 .discountTag {
-  background: rgba(255, 42, 61, 0.15);
-  color: #ff8591;
+  background: #FFE4E6;
+  color: #E11D48;
+  border: 1px solid #FECDD3;
   font-size: 0.7rem;
   font-weight: 700;
   padding: 1px 5px;
@@ -362,55 +389,63 @@
 }
 
 .moduleBadge {
-  background: rgba(168, 85, 247, 0.1);
-  color: #d8b4fe;
-  border: 1px solid rgba(168, 85, 247, 0.25);
+  background: #F3E8FF;
+  color: #7E22CE;
+  border: 1px solid #D8B4FE;
   padding: 3px 8px;
   border-radius: 6px;
   font-size: 0.78rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .statusBadge {
   display: inline-block;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .statusActive {
-  background: rgba(34, 197, 94, 0.1);
-  color: #4ade80;
-  border: 1px solid rgba(34, 197, 94, 0.2);
+  background: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #86EFAC;
 }
 
 .statusInactive {
-  background: rgba(255, 255, 255, 0.05);
-  color: #8e8e9f;
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #CBD5E1;
 }
 
 .statusVetado {
-  background: rgba(239, 68, 68, 0.1);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: #FEE2E2;
+  color: #B91C1C;
+  border: 1px solid #FCA5A5;
 }
 
 .courseTag {
-  background: rgba(255, 255, 255, 0.04);
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #334155;
   padding: 3px 8px;
   border-radius: 6px;
   font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .expirationBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #a855f7;
+  color: #E11D48;
   font-size: 0.82rem;
+  font-weight: 600;
+  background: none;
+  border: none;
   cursor: pointer;
   text-decoration: underline;
+  padding: 0;
 }
 
 .actionButtonsRow {
@@ -427,25 +462,28 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  color: #c7c7cc;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #475569;
   transition: all 0.15s ease;
+  cursor: pointer;
 }
 
 .btnActionIcon:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: #E2E8F0;
+  color: #0F172A;
 }
 
 .btnDeleteIcon:hover {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+  color: #B91C1C;
 }
 
 .emptyStateTd {
   padding: 60px 20px;
   text-align: center;
-  color: #8e8e9f;
+  color: #64748B;
 }
 
 .emptyStateTd p {
@@ -456,8 +494,8 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(6px);
   z-index: 999;
   display: flex;
   align-items: center;
@@ -466,22 +504,24 @@
 }
 
 .modal {
-  background: #0e0e13;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: 20px;
   width: 100%;
   max-width: 800px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.15);
 }
 
 .smallModal {
-  background: #0e0e13;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: 16px;
   width: 100%;
   max-width: 460px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.15);
 }
 
 .modalHeader {
@@ -489,48 +529,64 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  border-radius: 20px 20px 0 0;
 }
 
 .modalSub {
   font-size: 0.75rem;
-  font-weight: 600;
-  color: #a855f7;
+  font-weight: 700;
+  color: #E11D48;
   text-transform: uppercase;
 }
 
 .modalTitle {
   font-size: 1.25rem;
-  color: #fff;
+  color: #0F172A;
   font-weight: 700;
 }
 
 .closeModal {
-  color: #8e8e9f;
+  color: #64748B;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .closeModal:hover {
-  color: #fff;
+  color: #E11D48;
+  background: #FFF1F2;
+  border-color: #FECDD3;
 }
 
 .modalTabs {
   display: flex;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
 }
 
 .modalTab {
   padding: 12px 20px;
-  color: #8e8e9f;
+  color: #64748B;
   font-size: 0.88rem;
-  font-weight: 500;
+  font-weight: 600;
+  background: none;
+  border: none;
   border-bottom: 2px solid transparent;
+  cursor: pointer;
 }
 
 .modalTabActive {
-  color: #d8b4fe;
-  border-bottom-color: #a855f7;
-  background: rgba(168, 85, 247, 0.05);
+  color: #E11D48;
+  border-bottom-color: #E11D48;
+  background: #FFF1F2;
 }
 
 .modalForm {
@@ -562,20 +618,25 @@
 
 .formGroup label {
   font-size: 0.82rem;
-  color: #c7c7cc;
+  font-weight: 600;
+  color: #334155;
 }
 
 .input, .textarea {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
   border-radius: 10px;
   padding: 10px 14px;
-  color: #fff;
+  color: #0F172A;
   font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
 }
 
 .input:focus, .textarea:focus {
-  border-color: #a855f7;
+  background: #FFFFFF;
+  border-color: #E11D48;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
 }
 
 .imageUploadRow {
@@ -589,7 +650,7 @@
   height: 70px;
   border-radius: 8px;
   object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid #E2E8F0;
 }
 
 .checkboxItem {
@@ -597,7 +658,7 @@
   align-items: center;
   gap: 10px;
   font-size: 0.88rem;
-  color: #e5e5e7;
+  color: #334155;
   margin-top: 6px;
 }
 
@@ -609,12 +670,12 @@
 }
 
 .syllabusHeader h4 {
-  color: #fff;
+  color: #0F172A;
   font-size: 1rem;
 }
 
 .syllabusHeader p {
-  color: #8e8e9f;
+  color: #64748B;
   font-size: 0.8rem;
 }
 
@@ -625,8 +686,8 @@
 }
 
 .moduleBox {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
   border-radius: 12px;
   padding: 16px;
 }
@@ -641,13 +702,19 @@
 
 .moduleTitleInput {
   flex: 1;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
   padding: 8px 12px;
   border-radius: 8px;
-  color: #fff;
+  color: #0F172A;
   font-weight: 600;
   font-size: 0.9rem;
+  outline: none;
+}
+
+.moduleTitleInput:focus {
+  border-color: #E11D48;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
 }
 
 .moduleBoxActions {
@@ -660,18 +727,28 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(168, 85, 247, 0.15);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  color: #d8b4fe;
+  background: #FFF1F2;
+  border: 1px solid #FECDD3;
+  color: #E11D48;
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 0.78rem;
   font-weight: 600;
+  cursor: pointer;
+}
+
+.btnAddLesson:hover {
+  background: #E11D48;
+  color: #FFFFFF;
 }
 
 .btnRemoveModule {
-  color: #f87171;
+  color: #B91C1C;
+  background: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  border-radius: 6px;
   padding: 6px;
+  cursor: pointer;
 }
 
 .lessonsList {
@@ -679,7 +756,7 @@
   flex-direction: column;
   gap: 8px;
   padding-left: 12px;
-  border-left: 2px solid rgba(255, 255, 255, 0.06);
+  border-left: 2px solid #E2E8F0;
 }
 
 .lessonRow {
@@ -689,7 +766,7 @@
 }
 
 .lessonIcon {
-  color: #a855f7;
+  color: #E11D48;
 }
 
 .modalFooter {
@@ -697,13 +774,15 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 18px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  border-radius: 0 0 20px 20px;
 }
 
 .loadingContainer {
   padding: 60px 20px;
   text-align: center;
-  color: #8e8e9f;
+  color: #64748B;
 }
 
 .spin {

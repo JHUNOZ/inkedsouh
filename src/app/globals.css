@@ -6,39 +6,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
 
 :root {
-  /* Fondo Base (Obsidian) */
-  --color-bg: #050507;
-  --color-bg-elevated: #09090D;
-  --color-bg-card: rgba(20, 20, 25, 0.6);
-  --color-bg-card-hover: rgba(30, 30, 38, 0.8);
-  --color-glass-border: rgba(255, 255, 255, 0.06);
+  /* Fondo Base (Editorial White & Alabaster) */
+  --color-bg: #FAFAFC;
+  --color-bg-elevated: #F1F5F9;
+  --color-bg-card: #FFFFFF;
+  --color-bg-card-hover: #F8FAFC;
+  --color-glass-border: rgba(15, 23, 42, 0.08);
 
-  /* El Rojo Líquido */
-  --color-red: #FF2A3D;
-  --color-red-hover: #FF4D5D;
-  --color-red-dark: #A3101C;
-  --color-red-glow: rgba(255, 42, 61, 0.25);
-  --color-red-neon: rgba(255, 42, 61, 0.45);
-  --color-red-subtle: rgba(255, 42, 61, 0.06);
+  /* El Rojo Carmesí Vibrante */
+  --color-red: #E11D48;
+  --color-red-hover: #BE123C;
+  --color-red-dark: #9F1239;
+  --color-red-glow: rgba(225, 29, 72, 0.22);
+  --color-red-neon: rgba(225, 29, 72, 0.35);
+  --color-red-subtle: rgba(225, 29, 72, 0.07);
 
-  /* Textos y Luces */
-  --color-white: #F5F5F7;
-  --color-white-soft: rgba(245, 245, 247, 0.8);
-  --color-white-glow: rgba(245, 245, 247, 0.15);
+  /* Blanco Puro (para textos sobre botones rojos/oscuros) y Tinta Principal */
+  --color-white: #FFFFFF;
+  --color-white-soft: rgba(255, 255, 255, 0.9);
+  --color-white-glow: rgba(225, 29, 72, 0.12);
+  --color-ink: #0F172A;
 
-  /* Grises */
-  --color-gray-100: #EAEAEA;
-  --color-gray-200: #C7C7CC;
-  --color-gray-300: #AEAEB2;
-  --color-gray-400: #8E8E9F;
-  --color-gray-500: #636366;
-  --color-gray-600: #48484A;
-  --color-gray-700: #3A3A3C;
-  --color-gray-800: #2C2C2E;
-  --color-gray-900: #1C1C1E;
+  /* Escala de Grises Invertida para Tema Claro (100 = más oscuro/tinta, 900 = superficie clara) */
+  --color-gray-100: #0F172A;
+  --color-gray-200: #1E293B;
+  --color-gray-300: #334155;
+  --color-gray-400: #475569;
+  --color-gray-500: #64748B;
+  --color-gray-600: #64748B;
+  --color-gray-700: #CBD5E1;
+  --color-gray-800: #E2E8F0;
+  --color-gray-900: #F1F5F9;
 
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-border-hover: rgba(255, 255, 255, 0.15);
+  --color-border: #E2E8F0;
+  --color-border-hover: #CBD5E1;
 
   --font-display: 'Bebas Neue', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -47,17 +48,17 @@
   /* Bordes Orgánicos */
   --radius-none: 0px;
   --radius-xs: 8px;
-  --radius-sm: 16px;
-  --radius-md: 24px;
-  --radius-lg: 32px;
+  --radius-sm: 14px;
+  --radius-md: 22px;
+  --radius-lg: 30px;
   --radius-full: 9999px;
 
-  /* Sombras Inmersivas GPU Friendly */
-  --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.7);
-  --shadow-red: 0 6px 24px var(--color-red-glow);
-  --shadow-glow: 0 0 40px var(--color-red-glow);
+  /* Sombras Limpias y Elegantes para Tema Claro */
+  --shadow-sm: 0 4px 16px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 12px 32px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 20px 48px rgba(15, 23, 42, 0.12);
+  --shadow-red: 0 8px 24px rgba(225, 29, 72, 0.25);
+  --shadow-glow: 0 0 36px rgba(225, 29, 72, 0.18);
 
   /* Glassmorphism Filters Optimizado */
   --glass-blur: blur(16px);

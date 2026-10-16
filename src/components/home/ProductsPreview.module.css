@@ -13,21 +13,23 @@
   justify-content: center;
   gap: 20px;
   padding: 80px 20px;
-  background: rgba(20, 20, 25, 0.4);
-  border: 1px dashed rgba(232, 36, 40, 0.3);
+  background: #FFFFFF;
+  border: 1px dashed #CBD5E1;
   border-radius: 24px;
   margin: 40px 0;
+  box-shadow: var(--shadow-sm);
 }
 
 .emptyIcon {
-  color: var(--color-gray-600);
-  opacity: 0.5;
+  color: var(--color-red);
+  opacity: 0.7;
 }
 
 .emptyState p {
-  color: var(--color-gray-400);
-  font-size: 1.2rem;
-  letter-spacing: 1px;
+  color: #475569;
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 .loadingState {

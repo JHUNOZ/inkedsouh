@@ -1423,10 +1423,10 @@ export default function HoneCatalogPage() {
               <tbody>
                 {importPreview.map((item, idx) => (
                   <tr key={idx}>
-                    <td><strong style={{ color: '#fff' }}>{item.name}</strong></td>
+                    <td><strong style={{ color: '#0F172A' }}>{item.name}</strong></td>
                     <td><span className={styles.skuTagInline}>{item.sku}</span></td>
                     <td><span className={styles.categoryBadge}>{item.category}</span></td>
-                    <td><span style={{ color: '#4ade80', fontWeight: 600 }}>{formatCLP(item.price)}</span></td>
+                    <td><span style={{ color: '#15803D', fontWeight: 600 }}>{formatCLP(item.price)}</span></td>
                     <td><span>{item.stock} un.</span></td>
                   </tr>
                 ))}
@@ -1901,7 +1901,7 @@ export default function HoneCatalogPage() {
                             className={styles.copySkuBtn}
                             title="Copiar SKU"
                           >
-                            {copiedSku === product.sku ? <CheckCheck size={12} color="#4ade80" /> : <Clipboard size={12} />}
+                            {copiedSku === product.sku ? <CheckCheck size={12} color="#16A34A" /> : <Clipboard size={12} />}
                           </button>
                         )}
                       </div>
@@ -2151,7 +2151,7 @@ export default function HoneCatalogPage() {
           <div className={styles.helpModal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <HelpCircle size={20} style={{ color: '#ff2a3d' }} />
+                <HelpCircle size={20} style={{ color: '#E11D48' }} />
                 <h3 className={styles.modalTitle}>¿Cómo funciona el botón Importar?</h3>
               </div>
               <button className={styles.closeModal} onClick={() => setShowImportHelp(false)}>
@@ -2358,7 +2358,7 @@ export default function HoneCatalogPage() {
 
                       {/* Quick Category Chips */}
                       <div className={styles.categoryQuickChips}>
-                        <span style={{ fontSize: '0.72rem', color: '#8e8e9f', marginRight: '2px' }}>Rápido:</span>
+                        <span style={{ fontSize: '0.72rem', color: '#64748B', marginRight: '2px' }}>Rápido:</span>
                         {['Agujas', 'Tintas', 'Cuidado', 'Máquinas', 'Fuentes & Pedales', 'Grips & Punteras', 'Kits', 'Diseños'].map((cat) => (
                           <button
                             key={cat}
@@ -2459,7 +2459,7 @@ export default function HoneCatalogPage() {
 
                   {/* Pricing Quick Chips for 1-Click Discounts */}
                   <div className={styles.pricingQuickChips}>
-                    <span style={{ fontSize: '0.74rem', color: '#8e8e9f' }}>Descuento rápido:</span>
+                    <span style={{ fontSize: '0.74rem', color: '#64748B' }}>Descuento rápido:</span>
                     {[
                       { label: '5% OFF', val: 5 },
                       { label: '10% OFF', val: 10 },
@@ -2509,7 +2509,7 @@ export default function HoneCatalogPage() {
                       <label>
                         Stock disponible
                         {variantConfig.enabled && variantConfig.variants?.length > 0 && (
-                          <span style={{ color: '#4ade80', fontSize: '0.8rem', marginLeft: '6px' }}>
+                          <span style={{ color: '#15803D', fontSize: '0.8rem', marginLeft: '6px' }}>
                             (Suma de variantes: {calculateTotalVariantStock(variantConfig.variants)} un.)
                           </span>
                         )}
@@ -2648,10 +2648,10 @@ export default function HoneCatalogPage() {
                         <div className={styles.variantCard}>
                           <div className={styles.variantCardHeader}>
                             <span className={styles.variantCardTitle}>
-                              <Tag size={16} color="#ff2a3d" />
+                              <Tag size={16} color="#E11D48" />
                               1. ¿De qué se trata la variedad o subcategoría? *
                             </span>
-                            <span style={{ fontSize: '0.78rem', color: '#8e8e9f' }}>
+                            <span style={{ fontSize: '0.78rem', color: '#64748B' }}>
                               Aparecerá en la tienda como título sobre los botones de selección
                             </span>
                           </div>
@@ -2667,7 +2667,7 @@ export default function HoneCatalogPage() {
 
                           {/* Sugerencias rápidas con 1 clic */}
                           <div className={styles.variantChipsRow}>
-                            <span style={{ fontSize: '0.75rem', color: '#8e8e9f', marginRight: '4px' }}>Sugerencias:</span>
+                            <span style={{ fontSize: '0.75rem', color: '#64748B', marginRight: '4px' }}>Sugerencias:</span>
                             <button 
                               type="button" 
                               onClick={() => setVariantConfig({ ...variantConfig, name: 'Calibre de las agujas' })}
@@ -2710,11 +2710,11 @@ export default function HoneCatalogPage() {
                         <div className={styles.variantCard}>
                           <div className={styles.variantCardHeader}>
                             <span className={styles.variantCardTitle}>
-                              <Wand2 size={16} color="#ff8591" />
+                              <Wand2 size={16} color="#E11D48" />
                               2. Creador Rápido en Lote (Medidas & Variedades)
                             </span>
-                            <span style={{ fontSize: '0.78rem', color: '#4ade80' }}>
-                              ¡Añade múltiples calibres al instante!
+                            <span style={{ fontSize: '0.78rem', color: '#15803D', fontWeight: 600 }}>
+                              Añade múltiples calibres al instante
                             </span>
                           </div>
 
@@ -2794,7 +2794,7 @@ export default function HoneCatalogPage() {
                         <div className={styles.variantCard}>
                           <div className={styles.variantCardHeader}>
                             <span className={styles.variantCardTitle}>
-                              <ListPlus size={16} color="#ff2a3d" />
+                              <ListPlus size={16} color="#E11D48" />
                               3. Lista de Medidas / Variantes ({variantConfig.variants?.length || 0})
                             </span>
                             <button 
@@ -2826,15 +2826,15 @@ export default function HoneCatalogPage() {
                           )}
 
                           {(!variantConfig.variants || variantConfig.variants.length === 0) ? (
-                            <div style={{ textAlign: 'center', padding: '30px 10px', color: '#8e8e9f' }}>
+                            <div style={{ textAlign: 'center', padding: '30px 10px', color: '#64748B' }}>
                               <Package size={32} style={{ opacity: 0.4, margin: '0 auto 8px' }} />
                               <p>Aún no has agregado medidas o variantes para este producto.</p>
-                              <p style={{ fontSize: '0.8rem', color: '#636366' }}>
+                              <p style={{ fontSize: '0.8rem', color: '#64748B' }}>
                                 Usa el creador rápido de arriba o haz clic en &quot;Añadir Manual&quot;.
                               </p>
                             </div>
                           ) : (
-                            <div className={styles.tableResponsive} style={{ background: 'rgba(0,0,0,0.3)' }}>
+                            <div className={styles.tableResponsive} style={{ background: '#FFFFFF' }}>
                               <table className={styles.variantItemsTable}>
                                 <thead>
                                   <tr>
@@ -2859,7 +2859,7 @@ export default function HoneCatalogPage() {
                                             value={v.name}
                                             onChange={(e) => handleUpdateVariant(idx, 'name', e.target.value)}
                                             className={styles.inlineInput}
-                                            style={{ fontWeight: 600, color: '#ff8591' }}
+                                            style={{ fontWeight: 600, color: '#E11D48' }}
                                           />
                                         </td>
                                         <td>
@@ -2903,12 +2903,12 @@ export default function HoneCatalogPage() {
                                         </td>
                                         <td>
                                           {vStock > 0 ? (
-                                            <span style={{ color: '#4ade80', fontSize: '0.75rem', fontWeight: 600 }}>
-                                              ● {vStock} un.
+                                            <span style={{ color: '#15803D', fontSize: '0.75rem', fontWeight: 600 }}>
+                                              {vStock} un.
                                             </span>
                                           ) : (
-                                            <span style={{ color: '#f87171', fontSize: '0.75rem', fontWeight: 600 }}>
-                                              ✕ Agotado
+                                            <span style={{ color: '#B91C1C', fontSize: '0.75rem', fontWeight: 600 }}>
+                                              Agotado
                                             </span>
                                           )}
                                         </td>
@@ -2943,8 +2943,8 @@ export default function HoneCatalogPage() {
                   <div className={styles.specsHeader}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FileText size={16} style={{ color: '#ff2a3d' }} />
-                        <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#fff', fontWeight: 600 }}>
+                        <FileText size={16} style={{ color: '#E11D48' }} />
+                        <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#0F172A', fontWeight: 600 }}>
                           Ficha Técnica & Especificaciones
                         </h4>
                         {specList.filter(s => s.key?.trim()).length > 0 && (
@@ -2953,7 +2953,7 @@ export default function HoneCatalogPage() {
                           </span>
                         )}
                       </div>
-                      <p style={{ margin: '3px 0 0 0', fontSize: '0.78rem', color: '#8e8e9f' }}>
+                      <p style={{ margin: '3px 0 0 0', fontSize: '0.78rem', color: '#64748B' }}>
                         Añade especificaciones que se mostrarán de forma destacada y profesional en la tienda online.
                       </p>
                     </div>
@@ -3012,7 +3012,7 @@ export default function HoneCatalogPage() {
 
                   {/* Presets Bar */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
-                    <span style={{ fontSize: '0.72rem', color: '#6e6e82', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       <Wand2 size={12} style={{ display: 'inline', verticalAlign: '-1px', marginRight: '4px' }} /> Plantillas:
                     </span>
                     <button
@@ -3091,7 +3091,7 @@ export default function HoneCatalogPage() {
                   {specList.some(s => s.key?.trim() && s.value?.trim()) && (
                     <div className={styles.specsLivePreview}>
                       <div className={styles.specsLivePreviewTitle}>
-                        <Eye size={13} color="#60a5fa" />
+                        <Eye size={13} color="#2563EB" />
                         <span>Vista Previa en Tienda Web (Así lo verá tu cliente):</span>
                       </div>
                       <div className={styles.specsLiveGrid}>
@@ -3144,7 +3144,7 @@ export default function HoneCatalogPage() {
                 {/* Left Column: Product Selector & Tray */}
                 <div className={styles.comboPickerCol}>
                   <div className={styles.comboColTitle}>
-                    <ShoppingBag size={18} color="#f59e0b" />
+                    <ShoppingBag size={18} color="#D97706" />
                     <span>1. Selecciona los productos incluidos en el pack</span>
                   </div>
 
@@ -3194,7 +3194,7 @@ export default function HoneCatalogPage() {
                                 <img src={p.image_url} alt={p.name} className={styles.comboProductThumb} />
                               ) : (
                                 <div className={styles.comboProductThumb} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  <ImageIcon size={16} color="#636366" />
+                                  <ImageIcon size={16} color="#94A3B8" />
                                 </div>
                               )}
                               <div className={styles.comboProductText}>
@@ -3212,7 +3212,7 @@ export default function HoneCatalogPage() {
                                 type="checkbox" 
                                 checked={isSelected} 
                                 onChange={() => {}} 
-                                style={{ accentColor: '#f59e0b', cursor: 'pointer' }}
+                                style={{ accentColor: '#F59E0B', cursor: 'pointer' }}
                               />
                             </div>
                           </div>
@@ -3224,11 +3224,11 @@ export default function HoneCatalogPage() {
                   <div className={styles.comboSelectedTray}>
                     <div className={styles.comboSelectedHeader}>
                       <span>Artículos en el pack ({selectedComboItems.length})</span>
-                      <span style={{ color: '#fff' }}>Total Normal: {formatCLP(comboTotalOrig)}</span>
+                      <span style={{ color: '#0F172A' }}>Total Normal: {formatCLP(comboTotalOrig)}</span>
                     </div>
 
                     {selectedComboItems.length === 0 ? (
-                      <p style={{ fontSize: '0.8rem', color: '#8e8e9f', textAlign: 'center', margin: '8px 0' }}>
+                      <p style={{ fontSize: '0.8rem', color: '#64748B', textAlign: 'center', margin: '8px 0' }}>
                         Haz clic en los productos de arriba para agregarlos a este pack promocional.
                       </p>
                     ) : (
@@ -3237,7 +3237,7 @@ export default function HoneCatalogPage() {
                           <div key={item.productId} className={styles.comboSelectedRow}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
                               {item.image_url && <img src={item.image_url} alt="" style={{ width: 28, height: 28, borderRadius: 4, objectFit: 'cover' }} />}
-                              <span style={{ fontSize: '0.8rem', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <span style={{ fontSize: '0.8rem', color: '#0F172A', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {item.name}
                               </span>
                             </div>
@@ -3263,7 +3263,7 @@ export default function HoneCatalogPage() {
                                 </button>
                               </div>
 
-                              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#4ade80' }}>
+                              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#15803D' }}>
                                 {formatCLP((item.price || 0) * (item.quantity || 1))}
                               </span>
 
@@ -3287,14 +3287,14 @@ export default function HoneCatalogPage() {
                 {/* Right Column: Pricing, Name & Publish */}
                 <div className={styles.comboFormCol}>
                   <div className={styles.comboColTitle}>
-                    <Flame size={18} color="#ff2a3d" />
+                    <Flame size={18} color="#E11D48" />
                     <span>2. Precios Especiales & Publicación</span>
                   </div>
 
                   {/* Pricing Card */}
                   <div className={styles.comboPricingCard}>
                     <div className={styles.comboPricingHeader}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>Modo de Precio Promocional:</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0F172A' }}>Modo de Precio Promocional:</span>
                       <div className={styles.comboModeToggle}>
                         <button 
                           type="button"
@@ -3315,7 +3315,7 @@ export default function HoneCatalogPage() {
 
                     {comboPricingMode === 'fixed' ? (
                       <div className={styles.formGroup}>
-                        <label style={{ color: '#fff', fontSize: '0.82rem' }}>Precio Especial del Combo (CLP) *</label>
+                        <label style={{ color: '#0F172A', fontSize: '0.82rem' }}>Precio Especial del Combo (CLP) *</label>
                         <input 
                           type="number"
                           required
@@ -3323,12 +3323,12 @@ export default function HoneCatalogPage() {
                           value={comboPrice}
                           onChange={(e) => setComboPrice(e.target.value)}
                           className={styles.input}
-                          style={{ borderColor: '#f59e0b', fontSize: '1.1rem', fontWeight: 700, color: '#4ade80' }}
+                          style={{ borderColor: '#F59E0B', fontSize: '1.1rem', fontWeight: 700, color: '#15803D', background: '#FFFFFF' }}
                         />
                       </div>
                     ) : (
                       <div className={styles.formGroup}>
-                        <label style={{ color: '#fff', fontSize: '0.82rem' }}>Porcentaje de Descuento (%) *</label>
+                        <label style={{ color: '#0F172A', fontSize: '0.82rem' }}>Porcentaje de Descuento (%) *</label>
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                           <input 
                             type="range"
@@ -3337,9 +3337,9 @@ export default function HoneCatalogPage() {
                             step="5"
                             value={comboDiscountPercent}
                             onChange={(e) => setComboDiscountPercent(Number(e.target.value))}
-                            style={{ flex: 1, accentColor: '#f59e0b' }}
+                            style={{ flex: 1, accentColor: '#F59E0B' }}
                           />
-                          <span style={{ fontSize: '1rem', fontWeight: 700, color: '#f59e0b', minWidth: '48px' }}>
+                          <span style={{ fontSize: '1rem', fontWeight: 700, color: '#D97706', minWidth: '48px' }}>
                             {comboDiscountPercent}% OFF
                           </span>
                         </div>
@@ -3354,7 +3354,7 @@ export default function HoneCatalogPage() {
                       </div>
                       <div className={styles.comboSavingsRow}>
                         <span>Precio Final Combo:</span>
-                        <strong style={{ color: '#4ade80', fontSize: '0.95rem' }}>{formatCLP(finalComboPrice)}</strong>
+                        <strong style={{ color: '#15803D', fontSize: '0.95rem' }}>{formatCLP(finalComboPrice)}</strong>
                       </div>
                       {comboSavings > 0 && (
                         <div className={styles.comboSavingsHighlight}>
@@ -3414,7 +3414,7 @@ export default function HoneCatalogPage() {
                     <div className={styles.formGroup} style={{ flex: 1 }}>
                       <label>
                         Stock Disponible
-                        <span style={{ color: '#f59e0b', fontSize: '0.72rem', display: 'block' }}>
+                        <span style={{ color: '#D97706', fontSize: '0.72rem', display: 'block' }}>
                           (Mínimo según items: {recommendedComboStock} un.)
                         </span>
                       </label>
@@ -3498,7 +3498,7 @@ export default function HoneCatalogPage() {
               </div>
 
               {/* Combo Modal Footer */}
-              <div className={styles.modalFooter} style={{ borderTop: '1px solid rgba(255,255,255,0.08)', background: '#121219' }}>
+              <div className={styles.modalFooter} style={{ borderTop: '1px solid #E2E8F0', background: '#F8FAFC' }}>
                 <button type="button" onClick={() => setComboModalOpen(false)} className={styles.btnSecondary}>
                   Cancelar
                 </button>

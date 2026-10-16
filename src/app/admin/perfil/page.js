@@ -169,7 +169,7 @@ export default function PerfilPage() {
               disabled 
               style={{ opacity: 0.7, cursor: 'not-allowed' }}
             />
-            <small style={{ color: '#888', marginTop: '4px' }}>El correo de administrador no se puede cambiar por seguridad.</small>
+            <small style={{ color: '#64748B', marginTop: '4px' }}>El correo de administrador no se puede cambiar por seguridad.</small>
           </div>
 
           <form onSubmit={handleUpdatePassword}>

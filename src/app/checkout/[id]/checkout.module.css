@@ -1,8 +1,8 @@
 .page {
   min-height: 100vh;
   padding: 120px 20px 80px;
-  background-color: #08080c;
-  color: #fff;
+  background-color: #FAFAFC;
+  color: #0F172A;
   position: relative;
   overflow: hidden;
 }
@@ -15,7 +15,7 @@
   transform: translateX(-50%);
   width: 600px;
   height: 400px;
-  background: radial-gradient(circle, rgba(255, 42, 61, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(225, 29, 72, 0.06) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -40,13 +40,11 @@
 
 /* Left Form Area */
 .formSection {
-  background: rgba(18, 18, 24, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: 20px;
   padding: 36px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
 }
 
 .title {
@@ -55,10 +53,11 @@
   letter-spacing: 1px;
   text-transform: uppercase;
   margin-bottom: 6px;
+  color: #0F172A;
 }
 
 .subtitle {
-  color: #9999aa;
+  color: #475569;
   margin-bottom: 28px;
   font-size: 0.95rem;
   line-height: 1.5;
@@ -71,16 +70,16 @@
 .formGroup label {
   display: block;
   margin-bottom: 8px;
-  color: #cccccc;
+  color: #0F172A;
   font-size: 0.88rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
   padding: 14px 16px;
   border-radius: 10px;
   font-family: inherit;
@@ -88,17 +87,21 @@
   transition: all 0.2s ease;
 }
 
+.input::placeholder {
+  color: #94A3B8;
+}
+
 .input:focus {
   outline: none;
-  border-color: #ff2a3d;
-  background: rgba(255, 42, 61, 0.05);
-  box-shadow: 0 0 0 3px rgba(255, 42, 61, 0.15);
+  border-color: #E11D48;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
 }
 
 /* Payment Gateway Selector Box */
 .paymentGatewayBox {
-  background: rgba(255, 42, 61, 0.05);
-  border: 1px solid rgba(255, 42, 61, 0.25);
+  background: #FFF1F2;
+  border: 1px solid #FECDD3;
   border-radius: 12px;
   padding: 16px;
   margin: 24px 0;
@@ -114,15 +117,15 @@
 .paymentGatewayTitle {
   font-weight: 700;
   font-size: 0.9rem;
-  color: #ffffff;
+  color: #0F172A;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .flowBadge {
-  background: linear-gradient(135deg, #ff2a3d 0%, #b80d1d 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, #E11D48 0%, #BE123C 100%);
+  color: #FFFFFF;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 1px;
@@ -139,19 +142,19 @@
 }
 
 .paymentPill {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 0.75rem;
-  color: #dddddd;
+  color: #475569;
   font-weight: 600;
 }
 
 .submitBtn {
   width: 100%;
-  background: linear-gradient(135deg, #ff2a3d 0%, #b80d1d 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #E11D48 0%, #BE123C 100%);
+  color: #FFFFFF;
   border: none;
   padding: 16px;
   border-radius: 12px;
@@ -161,7 +164,7 @@
   cursor: pointer;
   margin-top: 10px;
   transition: all 0.25s ease;
-  box-shadow: 0 4px 20px rgba(255, 42, 61, 0.4);
+  box-shadow: 0 4px 20px rgba(225, 29, 72, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -170,7 +173,7 @@
 
 .submitBtn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(255, 42, 61, 0.55);
+  box-shadow: 0 6px 25px rgba(225, 29, 72, 0.45);
 }
 
 .submitBtn:disabled {
@@ -179,9 +182,9 @@
 }
 
 .error {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
   padding: 14px 16px;
   border-radius: 10px;
   margin-bottom: 20px;
@@ -190,15 +193,14 @@
 
 /* Right Summary Area */
 .summarySection {
-  background: rgba(18, 18, 24, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: 20px;
   padding: 28px;
   height: fit-content;
   position: sticky;
   top: 100px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
 }
 
 .courseImage {
@@ -207,8 +209,8 @@
   object-fit: cover;
   border-radius: 12px;
   margin-bottom: 20px;
-  background: #111;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
 }
 
 .courseTitle {
@@ -216,6 +218,7 @@
   font-size: 1.5rem;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
+  color: #0F172A;
 }
 
 .priceRow {
@@ -223,28 +226,28 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid #E2E8F0;
+  border-bottom: 1px solid #E2E8F0;
   margin: 20px 0;
 }
 
 .priceLabel {
-  color: #9999aa;
-  font-weight: 500;
+  color: #64748B;
+  font-weight: 600;
 }
 
 .priceValue {
   font-family: var(--font-display, 'Oswald', sans-serif);
   font-size: 1.8rem;
   font-weight: 700;
-  color: #ff2a3d;
+  color: #E11D48;
 }
 
 .secureNotice {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #888899;
+  color: #475569;
   font-size: 0.85rem;
   justify-content: center;
 }

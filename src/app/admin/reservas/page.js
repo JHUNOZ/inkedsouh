@@ -120,14 +120,26 @@ export default function ReservasPage() {
           <button 
             onClick={() => setActiveTab('bookings')}
             className={styles.submitBtn}
-            style={{ background: activeTab === 'bookings' ? 'var(--color-red)' : 'rgba(255,255,255,0.05)', padding: '10px 20px' }}
+            style={{ 
+              background: activeTab === 'bookings' ? '#E11D48' : '#F1F5F9', 
+              color: activeTab === 'bookings' ? '#FFFFFF' : '#334155',
+              borderColor: activeTab === 'bookings' ? '#E11D48' : '#E2E8F0',
+              boxShadow: activeTab === 'bookings' ? '0 4px 14px rgba(225, 29, 72, 0.25)' : 'none',
+              padding: '10px 20px' 
+            }}
           >
             Reservas ({bookings.length})
           </button>
           <button 
             onClick={() => setActiveTab('blocks')}
             className={styles.submitBtn}
-            style={{ background: activeTab === 'blocks' ? 'var(--color-red)' : 'rgba(255,255,255,0.05)', padding: '10px 20px' }}
+            style={{ 
+              background: activeTab === 'blocks' ? '#E11D48' : '#F1F5F9', 
+              color: activeTab === 'blocks' ? '#FFFFFF' : '#334155',
+              borderColor: activeTab === 'blocks' ? '#E11D48' : '#E2E8F0',
+              boxShadow: activeTab === 'blocks' ? '0 4px 14px rgba(225, 29, 72, 0.25)' : 'none',
+              padding: '10px 20px' 
+            }}
           >
             Bloqueos de Agenda ({blocks.length})
           </button>
@@ -163,32 +175,32 @@ export default function ReservasPage() {
                       </div>
                     </td>
                     <td>
-                      <strong>{new Date(booking.requested_date).toLocaleDateString()}</strong>
-                      {booking.requested_time && <div style={{ fontSize: '0.8rem', color: 'var(--color-gray-400)' }}>{booking.requested_time} hrs</div>}
+                      <strong style={{ color: '#0F172A' }}>{new Date(booking.requested_date).toLocaleDateString()}</strong>
+                      {booking.requested_time && <div style={{ fontSize: '0.8rem', color: '#64748B' }}>{booking.requested_time} hrs</div>}
                     </td>
                     <td>
-                      <div style={{ fontWeight: '600', color: 'var(--color-white)', marginBottom: '4px' }}>{booking.service_type}</div>
+                      <div style={{ fontWeight: '600', color: '#0F172A', marginBottom: '4px' }}>{booking.service_type}</div>
                       <p className={styles.details}>{booking.tattoo_details}</p>
                     </td>
                     <td>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         {booking.reference_url ? (
-                          <a href={booking.reference_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-red)', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <a href={booking.reference_url} target="_blank" rel="noopener noreferrer" style={{ color: '#E11D48', fontWeight: 600, fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                             <ExternalLink size={14} /> Ver Referencia
                           </a>
                         ) : (
-                          <span style={{ fontSize: '0.8rem', color: '#666' }}>Sin referencia</span>
+                          <span style={{ fontSize: '0.8rem', color: '#64748B' }}>Sin referencia</span>
                         )}
 
                         {booking.consent_data ? (
                           <button 
                             onClick={() => setConsentModal({ open: true, data: booking.consent_data })}
-                            style={{ background: 'none', border: 'none', color: '#22c55e', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer', textAlign: 'left' }}
+                            style={{ background: 'none', border: 'none', color: '#15803D', fontWeight: 600, fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer', textAlign: 'left', padding: 0 }}
                           >
                             <ShieldCheck size={14} /> Ver Firma / Ficha
                           </button>
                         ) : (
-                          <span style={{ fontSize: '0.8rem', color: '#666' }}>Sin firma</span>
+                          <span style={{ fontSize: '0.8rem', color: '#64748B' }}>Sin firma</span>
                         )}
                       </div>
                     </td>
@@ -254,9 +266,9 @@ export default function ReservasPage() {
                 ) : (
                   blocks.map(block => (
                     <tr key={block.id}>
-                      <td><strong>{new Date(block.block_date).toLocaleDateString()}</strong></td>
+                      <td><strong style={{ color: '#0F172A' }}>{new Date(block.block_date).toLocaleDateString()}</strong></td>
                       <td>
-                        {block.start_time ? `${block.start_time} - ${block.end_time}` : <span style={{ color: 'var(--color-red)' }}>Día entero bloqueado</span>}
+                        {block.start_time ? `${block.start_time} - ${block.end_time}` : <span style={{ color: '#E11D48', fontWeight: 600 }}>Día entero bloqueado</span>}
                       </td>
                       <td>{block.reason}</td>
                       <td>
@@ -371,13 +383,13 @@ export default function ReservasPage() {
             </button>
             <h2 className={styles.modalTitle}>Consentimiento y Firma Digital</h2>
             
-            <div style={{ color: 'var(--color-gray-300)', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div><strong>Nombre:</strong> {consentModal.data.fullName}</div>
-              <div><strong>RUT/ID:</strong> {consentModal.data.rut} | <strong>Edad:</strong> {consentModal.data.age}</div>
-              <div><strong>Teléfono:</strong> {consentModal.data.phone}</div>
+            <div style={{ color: '#334155', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div><strong style={{ color: '#0F172A' }}>Nombre:</strong> {consentModal.data.fullName}</div>
+              <div><strong style={{ color: '#0F172A' }}>RUT/ID:</strong> {consentModal.data.rut} | <strong style={{ color: '#0F172A' }}>Edad:</strong> {consentModal.data.age}</div>
+              <div><strong style={{ color: '#0F172A' }}>Teléfono:</strong> {consentModal.data.phone}</div>
               
-              <div style={{ marginTop: '12px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
-                <strong style={{ color: 'var(--color-red)' }}>Condiciones Médicas Seleccionadas:</strong>
+              <div style={{ marginTop: '12px', borderTop: '1px solid #E2E8F0', paddingTop: '12px' }}>
+                <strong style={{ color: '#E11D48' }}>Condiciones Médicas Seleccionadas:</strong>
                 <ul style={{ listStyle: 'disc', paddingLeft: '20px', marginTop: '6px' }}>
                   {Object.entries(consentModal.data.medicalConditions || {}).filter(([_, v]) => v).map(([k]) => (
                     <li key={k}>{k}</li>
@@ -390,8 +402,8 @@ export default function ReservasPage() {
 
               {consentModal.data.signature && (
                 <div style={{ marginTop: '16px' }}>
-                  <strong>Firma Digital:</strong>
-                  <div style={{ background: '#fff', borderRadius: '8px', padding: '10px', marginTop: '6px' }}>
+                  <strong style={{ color: '#0F172A' }}>Firma Digital:</strong>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px', marginTop: '6px' }}>
                     <img src={consentModal.data.signature} alt="Firma Digital" style={{ maxWidth: '100%', height: 'auto' }} />
                   </div>
                 </div>

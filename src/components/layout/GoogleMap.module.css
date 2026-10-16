@@ -1,12 +1,13 @@
-/* Ubicación — Dark Tech Layout */
+/* Ubicación — Clean Editorial Layout */
 .section {
   padding: 120px 0;
-  background-color: var(--color-bg);
-  background-image: linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-color: #F8FAFC;
+  background-image: linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
   position: relative;
-  border-bottom: 1px solid rgba(232, 36, 40, 0.1);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .inner {
@@ -17,7 +18,7 @@
 
 .content {
   display: grid;
-  grid-template-columns: 1fr 2fr; /* Columna info y columna mapa (más ancha) */
+  grid-template-columns: 1fr 2fr;
   gap: 50px;
   align-items: start;
 }
@@ -30,17 +31,21 @@
 }
 
 .infoCard {
-  background: var(--color-bg-card);
+  background: #FFFFFF;
   border: 1px solid var(--color-border);
+  border-radius: 16px;
   padding: 24px;
   display: flex;
   align-items: flex-start;
   gap: 20px;
-  transition: border-color var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
 }
 
 .infoCard:hover {
-  border-color: var(--color-red-dark);
+  border-color: var(--color-red);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .icon {
@@ -65,9 +70,9 @@
 
 .value {
   font-size: 0.95rem;
-  color: var(--color-white);
-  font-weight: 500;
-  letter-spacing: 0.5px;
+  color: #0F172A;
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 /* Botón Cómo Llegar */
@@ -77,19 +82,23 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 16px 24px;
-  background: transparent;
-  color: var(--color-white);
+  padding: 14px 24px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  color: #0F172A;
   font-family: var(--font-display);
   font-size: 1rem;
   letter-spacing: 4px;
   text-transform: uppercase;
+  box-shadow: var(--shadow-sm);
   transition: all var(--transition-base);
 }
 
 .directionsBtn:hover {
   color: var(--color-red);
-  text-shadow: 0 0 10px var(--color-red-glow);
+  border-color: var(--color-red);
+  box-shadow: var(--shadow-md);
 }
 
 /* Columna Derecha (Mapa) */
@@ -101,28 +110,28 @@
   aspect-ratio: 16/9;
   width: 100%;
   border: 1px solid var(--color-border);
-  padding: 4px; 
-  background: var(--color-bg-elevated); 
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+  border-radius: 20px;
+  padding: 6px; 
+  background: #FFFFFF; 
+  box-shadow: var(--shadow-md);
   position: relative;
-  transition: border-color var(--transition-base);
+  overflow: hidden;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .mapContainer:hover {
-  border-color: var(--color-gray-500);
+  border-color: var(--color-red);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Filtros para mapa oscuro */
+/* Mapa limpio y luminoso */
 .mapContainer iframe {
   width: 100%;
   height: 100%;
   border: none;
-  filter: grayscale(100%) invert(100%) contrast(1.2) hue-rotate(180deg) brightness(0.6);
+  border-radius: 14px;
+  filter: contrast(1.02) saturate(1.05);
   transition: filter var(--transition-smooth);
-}
-
-.mapContainer:hover iframe {
-  filter: grayscale(80%) invert(100%) contrast(1.2) hue-rotate(180deg) brightness(0.8);
 }
 
 @media (max-width: 900px) {

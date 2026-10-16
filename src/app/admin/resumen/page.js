@@ -209,7 +209,7 @@ export default function ResumenPage() {
 
             {recentBookings.length === 0 ? (
               <div className={styles.emptyState}>
-                <Calendar size={36} style={{ color: '#ff2a3d', opacity: 0.6 }} />
+                <Calendar size={36} style={{ color: '#E11D48', opacity: 0.7 }} />
                 <p>No hay solicitudes de reserva recientes.</p>
               </div>
             ) : (
@@ -227,10 +227,10 @@ export default function ResumenPage() {
                   <tbody>
                     {recentBookings.map((b) => (
                       <tr key={b.id}>
-                        <td><strong style={{ color: '#fff' }}>{b.client_name}</strong></td>
-                        <td style={{ color: '#8e8e9f' }}>{b.client_email}</td>
-                        <td style={{ color: '#c7c7cc' }}>{b.service_type || b.tattoo_details?.substring(0, 30) || 'Tatuaje'}</td>
-                        <td style={{ color: '#8e8e9f' }}>{b.requested_date}</td>
+                        <td><strong style={{ color: '#0F172A' }}>{b.client_name}</strong></td>
+                        <td style={{ color: '#64748B' }}>{b.client_email}</td>
+                        <td style={{ color: '#334155' }}>{b.service_type || b.tattoo_details?.substring(0, 30) || 'Tatuaje'}</td>
+                        <td style={{ color: '#64748B' }}>{b.requested_date}</td>
                         <td>
                           <span className={`${styles.statusBadge} ${b.status === 'accepted' ? styles.statusAccepted : b.status === 'rejected' ? styles.statusRejected : styles.statusPending}`}>
                             {(b.status || 'pendiente').toUpperCase()}

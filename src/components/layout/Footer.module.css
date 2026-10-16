@@ -1,20 +1,20 @@
-/* Footer — Premium con 3 columnas y neón */
+/* Footer — Editorial White con 3 columnas */
 .footer {
-  background: var(--color-bg-elevated);
+  background: #FFFFFF;
   position: relative;
   overflow: hidden;
+  border-top: 1px solid var(--color-border);
 }
 
-/* Línea neón superior */
+/* Línea superior de acento */
 .footer::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 1px;
+  height: 2px;
   background: linear-gradient(90deg, transparent 5%, var(--color-red) 50%, transparent 95%);
-  box-shadow: 0 0 15px var(--color-red-glow);
 }
 
 .inner {
@@ -39,11 +39,11 @@
 
 .logo {
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: 1.35rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 5px;
-  color: var(--color-white);
+  color: #0F172A;
 }
 
 .logoAccent {
@@ -52,7 +52,7 @@
 
 .description {
   font-size: 0.9rem;
-  color: var(--color-gray-500);
+  color: #475569;
   line-height: 1.8;
   max-width: 320px;
 }
@@ -70,14 +70,16 @@
   align-items: center;
   justify-content: center;
   border: 1px solid var(--color-border);
-  color: var(--color-gray-500);
+  border-radius: 10px;
+  background: #F8FAFC;
+  color: #475569;
   transition: all var(--transition-base);
 }
 
 .socialLink:hover {
   border-color: var(--color-red);
+  background: var(--color-red-subtle);
   color: var(--color-red);
-  box-shadow: var(--shadow-neon-sm);
   transform: translateY(-2px);
 }
 
@@ -89,9 +91,9 @@
 
 .columnTitle {
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 1.05rem;
   letter-spacing: 4px;
-  color: var(--color-white);
+  color: #0F172A;
   margin-bottom: 20px;
   position: relative;
   padding-bottom: 14px;
