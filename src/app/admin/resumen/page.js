@@ -410,38 +410,28 @@ export default function ResumenPage() {
             </div>
           </div>
 
-          {/* SECCIÓN 1: TABLA DE VENTAS Y PEDIDOS DE LA TIENDA WEB */}
-          <div id="ventas-web" className={styles.recentSection}>
+          {/* SECCIÓN 1: ÚLTIMOS PEDIDOS */}
+          <div id="ultimos-pedidos" className={styles.recentSection}>
             <div className={styles.recentHeader}>
               <div>
                 <h3 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <ShoppingBag size={20} style={{ color: '#E11D48' }} />
-                  <span>Pedidos & Ventas de la Tienda Online</span>
+                  <span>Últimos Pedidos</span>
                 </h3>
                 <p className={styles.sectionDesc}>
-                  Listado de compras realizadas por clientes en la web. Confirma los pagos recibidos por Transferencia o WhatsApp.
+                  Ventas recientes registradas a través de la tienda web oficial.
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                <Link 
-                  href="/admin/pedidos" 
-                  className={styles.btnSecondary} 
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none', fontSize: '0.82rem', padding: '6px 12px' }}
-                >
-                  <ExternalLink size={14} />
-                  <span>Gestionar en Pedidos & Envíos</span>
-                </Link>
-                <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>
-                  ({recentOrders.length} recientes)
-                </span>
-              </div>
+              <Link href="/admin/pedidos" className={styles.btnViewAll}>
+                Ver Todos los Pedidos
+              </Link>
             </div>
 
             {recentOrders.length === 0 ? (
               <div className={styles.emptyState}>
                 <ShoppingBag size={36} style={{ color: '#E11D48', opacity: 0.7 }} />
-                <p>No hay pedidos registrados en la tienda aún.</p>
+                <p>No hay pedidos recientes registrados.</p>
               </div>
             ) : (
               <div className={styles.tableResponsive}>
@@ -451,24 +441,18 @@ export default function ResumenPage() {
                       <th>Orden</th>
                       <th>Fecha</th>
                       <th>Cliente</th>
-                      <th>Método de Pago</th>
-                      <th>Despacho</th>
                       <th>Total</th>
-                      <th>Estado Pago</th>
+                      <th>Despacho</th>
+                      <th>Estado</th>
                       <th style={{ textAlign: 'right' }}>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {recentOrders.map((order) => {
+                    {recentOrders.slice(0, 5).map((order) => {
                       const isPaid = order.payment_status === 'pagado' || order.status === 'pagado' || order.status === 'completada'
                       const isPending = !isPaid
                       const dateStr = order.created_at ? new Date(order.created_at).toLocaleDateString('es-CL') : 'Reciente'
                       const isExpress = order.delivery_type === 'santiago' || order.delivery_type === 'express'
-                      
-                      let paymentMethodLabel = 'Flow Webpay'
-                      if (order.payment_method === 'transfer') paymentMethodLabel = 'Transferencia'
-                      if (order.payment_method === 'whatsapp') paymentMethodLabel = 'WhatsApp'
-                      if (order.payment_method === 'bancame') paymentMethodLabel = 'Banca.me'
 
                       return (
                         <tr key={order.id || order.order_number}>
@@ -495,19 +479,14 @@ export default function ResumenPage() {
                             )}
                           </td>
                           <td>
-                            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155' }}>
-                              {paymentMethodLabel}
-                            </span>
-                          </td>
-                          <td>
-                            <span style={{ fontSize: '0.78rem', padding: '2px 8px', borderRadius: '4px', background: isExpress ? '#FFF1F2' : '#F1F5F9', color: isExpress ? '#E11D48' : '#475569', fontWeight: 600 }}>
-                              {isExpress ? 'Express Rancagua/RM' : 'Regiones Por Pagar'}
-                            </span>
-                          </td>
-                          <td>
                             <strong style={{ color: '#0F172A' }}>
                               {formatPrice(order.total_amount)}
                             </strong>
+                          </td>
+                          <td>
+                            <span style={{ fontSize: '0.78rem', padding: '2px 8px', borderRadius: '4px', background: isExpress ? '#FFF1F2' : '#F1F5F9', color: isExpress ? '#E11D48' : '#475569', fontWeight: 600 }}>
+                              {isExpress ? 'Express Rancagua/RM' : 'Regiones Starken'}
+                            </span>
                           </td>
                           <td>
                             {isPaid ? (

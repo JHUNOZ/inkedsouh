@@ -246,11 +246,11 @@ export default function CheckoutPage() {
                   <span className={styles.flowBadge}>Flow Chile</span>
                 </div>
                 <div className={styles.paymentLogos}>
-                  <span className={styles.paymentPill}>💳 Webpay Plus</span>
-                  <span className={styles.paymentPill}>🟣 Mach</span>
-                  <span className={styles.paymentPill}>🟦 Redcompra</span>
-                  <span className={styles.paymentPill}>🟡 Servipag</span>
-                  <span className={styles.paymentPill}>⚡ Klap</span>
+                  <span className={styles.paymentPill}>Webpay Plus</span>
+                  <span className={styles.paymentPill}>Mach</span>
+                  <span className={styles.paymentPill}>Redcompra</span>
+                  <span className={styles.paymentPill}>Servipag</span>
+                  <span className={styles.paymentPill}>Klap</span>
                 </div>
               </div>
 

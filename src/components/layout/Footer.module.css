@@ -1,9 +1,9 @@
-/* Footer — Editorial White con 3 columnas */
+/* Footer — Dark Obsidian Editorial Theme */
 .footer {
-  background: #FFFFFF;
+  background: radial-gradient(circle at 75% 20%, rgba(225, 29, 72, 0.08) 0%, transparent 60%), linear-gradient(180deg, #07070B 0%, #0D0D14 50%, #07070B 100%);
   position: relative;
   overflow: hidden;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Línea superior de acento */
@@ -43,7 +43,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 5px;
-  color: #0F172A;
+  color: #FFFFFF;
 }
 
 .logoAccent {
@@ -52,7 +52,7 @@
 
 .description {
   font-size: 0.9rem;
-  color: #475569;
+  color: #94A3B8;
   line-height: 1.8;
   max-width: 320px;
 }
@@ -69,17 +69,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--color-border);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
-  background: #F8FAFC;
-  color: #475569;
+  background: #111119;
+  color: #94A3B8;
   transition: all var(--transition-base);
 }
 
 .socialLink:hover {
   border-color: var(--color-red);
-  background: var(--color-red-subtle);
-  color: var(--color-red);
+  background: rgba(225, 29, 72, 0.18);
+  color: #FFFFFF;
   transform: translateY(-2px);
 }
 
@@ -93,7 +93,7 @@
   font-family: var(--font-display);
   font-size: 1.05rem;
   letter-spacing: 4px;
-  color: #0F172A;
+  color: #FFFFFF;
   margin-bottom: 20px;
   position: relative;
   padding-bottom: 14px;
@@ -114,7 +114,7 @@
   display: block;
   padding: 8px 0;
   font-size: 0.9rem;
-  color: var(--color-gray-500);
+  color: #94A3B8;
   transition: all var(--transition-base);
 }
 
@@ -130,7 +130,7 @@
   gap: 12px;
   padding: 10px 0;
   font-size: 0.9rem;
-  color: var(--color-gray-500);
+  color: #94A3B8;
 }
 
 .addressIcon {
@@ -141,7 +141,7 @@
 /* Divider */
 .divider {
   height: 1px;
-  background: var(--color-border);
+  background: rgba(255, 255, 255, 0.08);
   margin-top: 50px;
 }
 
@@ -155,7 +155,7 @@
 
 .copyright {
   font-size: 0.78rem;
-  color: var(--color-gray-600);
+  color: #64748B;
 }
 
 .bottomLinks {
@@ -165,12 +165,12 @@
 
 .bottomLink {
   font-size: 0.78rem;
-  color: var(--color-gray-600);
+  color: #64748B;
   transition: color var(--transition-base);
 }
 
 .bottomLink:hover {
-  color: var(--color-red);
+  color: #FFFFFF;
 }
 
 @media (max-width: 768px) {

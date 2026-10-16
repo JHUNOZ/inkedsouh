@@ -1479,10 +1479,10 @@ export default function ProductosPage() {
                               Serás redirigido a la pasarela Flow para pagar en un entorno encriptado 100% seguro:
                             </div>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                              <span style={{ fontSize: '0.72rem', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '4px', color: '#334155', fontWeight: 600 }}>💳 Webpay Plus</span>
-                              <span style={{ fontSize: '0.72rem', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '4px', color: '#334155', fontWeight: 600 }}>🟣 Mach</span>
-                              <span style={{ fontSize: '0.72rem', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '4px', color: '#334155', fontWeight: 600 }}>🟦 Redcompra</span>
-                              <span style={{ fontSize: '0.72rem', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '4px', color: '#334155', fontWeight: 600 }}>🟡 Servipag</span>
+                              <span style={{ fontSize: '0.72rem', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '4px', color: '#334155', fontWeight: 600 }}>Webpay Plus</span>
+                              <span style={{ fontSize: '0.72rem', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '4px', color: '#334155', fontWeight: 600 }}>Mach</span>
+                              <span style={{ fontSize: '0.72rem', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '4px', color: '#334155', fontWeight: 600 }}>Redcompra</span>
+                              <span style={{ fontSize: '0.72rem', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '4px', color: '#334155', fontWeight: 600 }}>Servipag</span>
                             </div>
                           </div>
                         )}

@@ -162,7 +162,7 @@ export async function POST(request) {
                       </table>
                       <div style="margin-top: 24px; padding: 14px; background: rgba(225, 29, 72, 0.08); border: 1px solid rgba(225, 29, 72, 0.25); border-radius: 8px;">
                         <p style="margin: 0; color: #fecdd3; font-size: 13px; line-height: 1.5;">
-                          📦 <strong>Preparación de Despacho:</strong> Tu pedido está siendo preparado desde nuestro estudio en Rancagua. Te enviaremos tu código de seguimiento por correo y WhatsApp apenas sea entregado al transportista.
+                          <strong>Preparación de Despacho:</strong> Tu pedido está siendo preparado desde nuestro estudio en Rancagua. Te enviaremos tu código de seguimiento por correo y WhatsApp apenas sea entregado al transportista.
                         </p>
                       </div>
                     `}

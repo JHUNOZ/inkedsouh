@@ -141,7 +141,7 @@ export default function ProductsPreview() {
 
                       {hasVariants && (
                         <span style={{ display: 'inline-block', fontSize: '0.72rem', color: '#ff8591', background: 'rgba(255,42,61,0.12)', padding: '2px 6px', borderRadius: '4px', width: 'fit-content', fontWeight: 600 }}>
-                          ⚡ {variantConfig.variants.length} Medidas ({variantConfig.name || 'Calibre'})
+                          {variantConfig.variants.length} Medidas ({variantConfig.name || 'Calibre'})
                         </span>
                       )}
 
