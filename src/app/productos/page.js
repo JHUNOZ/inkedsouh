@@ -1217,12 +1217,13 @@ export default function ProductosPage() {
                         </div>
 
                         <div className={styles.formField}>
-                          <label>Correo Electrónico</label>
+                          <label>Correo Electrónico *</label>
                           <input 
                             type="email" 
                             placeholder="correo@ejemplo.com" 
                             value={customerInfo.email}
                             onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
+                            required
                           />
                         </div>
 
@@ -1306,6 +1307,10 @@ export default function ProductosPage() {
                             }
                             if (!customerInfo.phone.trim()) {
                               alert('Por favor ingresa tu WhatsApp de contacto')
+                              return
+                            }
+                            if (!customerInfo.email.trim() || !customerInfo.email.includes('@')) {
+                              alert('Por favor ingresa un correo electrónico válido para enviarte el comprobante de compra')
                               return
                             }
                             if (!customerInfo.address.trim()) {

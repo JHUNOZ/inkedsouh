@@ -1,14 +1,16 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { ShieldCheck, BookOpen, ArrowLeft, CreditCard, Lock, ArrowRight } from 'lucide-react'
 import styles from './checkout.module.css'
 
-export default function CheckoutPage({ params }) {
+export default function CheckoutPage() {
+  const params = useParams()
+  const courseIdParam = params?.id
   const [course, setCourse] = useState(null)
   const [loadingCourse, setLoadingCourse] = useState(true)
   
@@ -22,13 +24,24 @@ export default function CheckoutPage({ params }) {
   const supabase = createClient()
 
   useEffect(() => {
-    fetchCourse()
-  }, [])
+    if (courseIdParam) {
+      fetchCourse(courseIdParam)
+    }
+    loadCurrentUser()
+  }, [courseIdParam])
 
-  const fetchCourse = async () => {
+  const loadCurrentUser = async () => {
     try {
-      const resolvedParams = await params
-      const id = resolvedParams.id
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        if (user.email) setEmail(user.email)
+        if (user.user_metadata?.name) setName(user.user_metadata.name)
+      }
+    } catch {}
+  }
+
+  const fetchCourse = async (id) => {
+    try {
       const { data } = await supabase
         .from('courses')
         .select('*')
@@ -43,45 +56,60 @@ export default function CheckoutPage({ params }) {
     }
   }
 
+  const getFinalCoursePrice = (c) => {
+    if (!c) return 0
+    const basePrice = Number(c.price) || 0
+    const disc = Number(c.discount) || 0
+    if (disc > 0 && disc < 100) {
+      return Math.round(basePrice * (1 - disc / 100))
+    }
+    return basePrice
+  }
+
   const handleCheckout = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
     try {
-      // 1. Create or verify Supabase student account
+      // 1. Create or verify Supabase student account (non-blocking if rate limited)
       let userId = null
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name: name
-          }
-        }
-      })
-
-      if (authError) {
-        // If user already registered, attempt login with entered password
-        if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          })
-          if (signInError) {
-            setError('Este correo ya está registrado. Por favor ingresa tu contraseña correcta para continuar.')
-            setLoading(false)
-            return
-          }
-          userId = signInData.user?.id
+      try {
+        const { data: { user: existingSessionUser } } = await supabase.auth.getUser()
+        if (existingSessionUser && existingSessionUser.email?.toLowerCase() === email.trim().toLowerCase()) {
+          userId = existingSessionUser.id
         } else {
-          setError('Error al registrar cuenta: ' + authError.message)
-          setLoading(false)
-          return
+          const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: email.trim(),
+            password,
+            options: {
+              data: {
+                name: name.trim()
+              }
+            }
+          })
+
+          if (authError) {
+            if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
+              const { data: signInData } = await supabase.auth.signInWithPassword({
+                email: email.trim(),
+                password
+              })
+              if (signInData?.user?.id) {
+                userId = signInData.user.id
+              }
+            } else {
+              console.warn('Aviso al crear cuenta de estudiante en checkout:', authError.message)
+            }
+          } else {
+            userId = authData?.user?.id || null
+          }
         }
-      } else {
-        userId = authData.user?.id
+      } catch (authEx) {
+        console.warn('Excepción no bloqueante en Auth:', authEx)
       }
+
+      const finalAmount = getFinalCoursePrice(course)
 
       // 2. Generate Flow Payment Order
       const res = await fetch('/api/flow/create-payment', {
@@ -91,10 +119,10 @@ export default function CheckoutPage({ params }) {
           type: 'course',
           courseId: course.id,
           courseTitle: course.title,
-          amount: course.price,
+          amount: finalAmount,
           customer: {
-            name,
-            email
+            name: name.trim(),
+            email: email.trim()
           },
           userId
         })
@@ -121,6 +149,7 @@ export default function CheckoutPage({ params }) {
   }
 
   const formatPrice = (price) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price || 0)
+  const finalPrice = getFinalCoursePrice(course)
 
   if (loadingCourse) {
     return (
@@ -228,7 +257,7 @@ export default function CheckoutPage({ params }) {
               <button type="submit" className={styles.submitBtn} disabled={loading}>
                 {loading ? 'Conectando con Flow...' : (
                   <>
-                    <span>Pagar con Flow ({formatPrice(course.price)})</span>
+                    <span>Pagar con Flow ({formatPrice(finalPrice)})</span>
                     <ArrowRight size={18} />
                   </>
                 )}
@@ -255,7 +284,7 @@ export default function CheckoutPage({ params }) {
 
             <div className={styles.priceRow}>
               <span className={styles.priceLabel}>Total a pagar</span>
-              <span className={styles.priceValue}>{formatPrice(course.price)}</span>
+              <span className={styles.priceValue}>{formatPrice(finalPrice)}</span>
             </div>
 
             <div className={styles.secureNotice}>

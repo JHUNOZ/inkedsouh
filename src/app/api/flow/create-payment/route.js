@@ -30,15 +30,14 @@ export async function POST(request) {
       )
     }
 
-    if (!customer.email || !customer.email.includes('@')) {
-      return NextResponse.json(
-        { error: 'Debes proporcionar un correo electrónico válido.' },
-        { status: 400 }
-      )
-    }
+    const customerEmail = (customer.email && customer.email.includes('@'))
+      ? customer.email.trim().toLowerCase()
+      : 'inkedsouhtattoo@gmail.com'
 
     const orderNum = orderNumber || (type === 'course' 
       ? `CUR-${Math.floor(100000 + Math.random() * 900000)}`
+      : type === 'booking'
+      ? `RES-${Math.floor(100000 + Math.random() * 900000)}`
       : `INK-${Math.floor(100000 + Math.random() * 900000)}`)
 
     const supabase = createServerClient()
@@ -47,6 +46,8 @@ export async function POST(request) {
     let subject = 'Compra en INKEDSOUH Tattoo Studio'
     if (type === 'course') {
       subject = `Curso: ${courseTitle || 'Masterclass de Tatuaje'}`
+    } else if (type === 'booking') {
+      subject = `Reserva Cita Tatuaje: ${courseTitle || orderNum}`
     } else if (items.length > 0) {
       subject = `Pedido ${orderNum}: ${items[0]?.name || 'Insumos de Tatuaje'}${items.length > 1 ? ` (+${items.length - 1} más)` : ''}`
     }
@@ -55,7 +56,7 @@ export async function POST(request) {
     const orderRecord = {
       order_number: orderNum,
       customer_name: customer.name || 'Cliente Web',
-      customer_email: customer.email,
+      customer_email: customerEmail,
       customer_phone: customer.phone || null,
       delivery_type: deliveryType,
       delivery_address: deliveryAddress,
@@ -88,7 +89,7 @@ export async function POST(request) {
     const flowResult = await createFlowOrder({
       orderNumber: orderNum,
       amount: Math.round(Number(amount)),
-      email: customer.email,
+      email: customerEmail,
       subject,
       originUrl,
       optional: {

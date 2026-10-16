@@ -197,9 +197,12 @@ export default function ReservarPage() {
   const handleConsentComplete = (consent) => {
     updateForm('consentData', consent)
     setStep(5)
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 150, behavior: 'smooth' })
+    }
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (payWithFlow = false) => {
     if (form.referenceType === 'link' && !validateLink(form.referenceLink)) {
       return
     }
@@ -208,33 +211,42 @@ export default function ReservarPage() {
     let finalReferenceUrl = ''
 
     try {
-      // Subida real a Supabase Storage bucket 'admin_uploads'
+      // Subida a Supabase Storage bucket 'admin_uploads' (tolerante a fallos de permisos)
       if (form.referenceType === 'file' && form.referenceFile) {
-        const fileExt = form.referenceFile.name.split('.').pop()
-        const fileName = `references/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`
-        
-        const { error: uploadError } = await supabase.storage
-          .from('admin_uploads')
-          .upload(fileName, form.referenceFile)
+        try {
+          const fileExt = form.referenceFile.name.split('.').pop()
+          const fileName = `references/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`
+          
+          const { error: uploadError } = await supabase.storage
+            .from('admin_uploads')
+            .upload(fileName, form.referenceFile)
 
-        if (uploadError) throw uploadError
-
-        const { data: urlData } = supabase.storage
-          .from('admin_uploads')
-          .getPublicUrl(fileName)
-
-        finalReferenceUrl = urlData.publicUrl
+          if (!uploadError) {
+            const { data: urlData } = supabase.storage
+              .from('admin_uploads')
+              .getPublicUrl(fileName)
+            finalReferenceUrl = urlData?.publicUrl || ''
+          } else {
+            console.warn('Aviso al subir archivo de referencia:', uploadError.message)
+          }
+        } catch (storageErr) {
+          console.warn('No se pudo subir imagen de referencia:', storageErr)
+        }
       } else if (form.referenceType === 'link') {
         finalReferenceUrl = form.referenceLink
       }
+
+      const dateIso = form.date instanceof Date
+        ? `${form.date.getFullYear()}-${String(form.date.getMonth() + 1).padStart(2, '0')}-${String(form.date.getDate()).padStart(2, '0')}`
+        : new Date().toISOString().split('T')[0]
 
       const payload = {
         client_name: form.name,
         client_email: form.email,
         client_phone: form.phone,
-        appointment_date: form.date.toISOString().split('T')[0],
+        appointment_date: dateIso,
         appointment_time: form.time,
-        service_type: form.serviceId,
+        service_type: selectedService?.title || form.serviceId,
         notes: form.notes,
         reference_url: finalReferenceUrl,
         consent_data: form.consentData || null
@@ -246,11 +258,43 @@ export default function ReservarPage() {
         body: JSON.stringify(payload)
       })
 
-      if (!res.ok) throw new Error('Error al enviar la reserva')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Error al enviar la reserva')
+      }
+
+      if (payWithFlow && selectedService?.price) {
+        const flowRes = await fetch('/api/flow/create-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'booking',
+            amount: selectedService.price,
+            courseTitle: `${selectedService.title} (${dateIso} ${form.time} hrs)`,
+            customer: {
+              name: form.name,
+              email: form.email,
+              phone: form.phone
+            },
+            items: [{
+              id: selectedService.id,
+              name: `Reserva: ${selectedService.title} (${dateIso} ${form.time} hrs)`,
+              price: selectedService.price,
+              quantity: 1
+            }]
+          })
+        })
+        const flowData = await flowRes.json()
+        if (flowRes.ok && flowData.redirectUrl) {
+          window.location.href = flowData.redirectUrl
+          return
+        }
+      }
+
       setSubmitted(true)
     } catch (err) {
       console.error(err)
-      alert('Hubo un problema al procesar la reserva. Intenta de nuevo.')
+      alert(err.message || 'Hubo un problema al procesar la reserva. Intenta de nuevo.')
     } finally {
       setIsUploading(false)
     }
@@ -554,17 +598,26 @@ export default function ReservarPage() {
           {/* Paso 5: Consentimiento y Firma Digital */}
           {step === 5 && (
             <div className={styles.stepContent}>
-              <ConsentForm 
-                onSubmit={handleConsentComplete}
-                onCancel={() => setStep(4)}
-              />
-
-              {form.consentData && (
-                <div className={styles.summary} style={{ marginTop: '30px' }}>
-                  <h4>Resumen Final de Reserva</h4>
+              {!form.consentData ? (
+                <ConsentForm 
+                  initialData={{
+                    fullName: form.name,
+                    email: form.email,
+                    phone: form.phone
+                  }}
+                  onSubmit={handleConsentComplete}
+                  onCancel={() => setStep(4)}
+                />
+              ) : (
+                <div className={styles.summary}>
+                  <h4>Resumen Final de Reserva y Confirmación</h4>
                   <div className={styles.summaryRow}>
                     <span>Servicio:</span>
                     <strong>{selectedService?.title} ({selectedService?.timeStr})</strong>
+                  </div>
+                  <div className={styles.summaryRow}>
+                    <span>Valor Servicio:</span>
+                    <strong style={{ color: '#E11D48' }}>{selectedService?.priceStr}</strong>
                   </div>
                   <div className={styles.summaryRow}>
                     <span>Fecha y Hora:</span>
@@ -576,19 +629,30 @@ export default function ReservarPage() {
                   </div>
                   <div className={styles.summaryRow}>
                     <span>Consentimiento Digital:</span>
-                    <strong style={{ color: '#22c55e', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <strong style={{ color: '#15803D', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <ShieldCheck size={18} /> Firmado y Aceptado
                     </strong>
                   </div>
 
-                  <div className={styles.stepActions} style={{ marginTop: '24px' }}>
-                    <BubbleButton variant="ghost" onClick={() => setStep(4)}>Atrás</BubbleButton>
+                  <div className={styles.stepActions} style={{ marginTop: '28px', flexWrap: 'wrap', gap: '12px' }}>
+                    <BubbleButton variant="ghost" onClick={() => updateForm('consentData', null)} disabled={isUploading}>
+                      Editar Firma
+                    </BubbleButton>
                     <BubbleButton 
-                      onClick={handleSubmit} 
+                      variant="outline"
+                      onClick={() => handleSubmit(false)} 
                       disabled={isUploading}
                     >
-                      {isUploading ? 'Procesando Reserva...' : 'Finalizar y Confirmar Cita'}
+                      {isUploading ? 'Procesando...' : 'Confirmar Reserva (Pago en Estudio)'}
                     </BubbleButton>
+                    {selectedService?.price > 0 && (
+                      <BubbleButton 
+                        onClick={() => handleSubmit(true)} 
+                        disabled={isUploading}
+                      >
+                        {isUploading ? 'Conectando con Flow...' : `Pagar Reserva con Flow (${selectedService.priceStr})`}
+                      </BubbleButton>
+                    )}
                   </div>
                 </div>
               )}

@@ -21,6 +21,26 @@ export default function ReservasPage() {
     fetchData()
   }, [])
 
+  const hydrateBookingRow = (row) => {
+    if (!row || typeof row.tattoo_details !== 'string') return row
+    const match = row.tattoo_details.match(/<!--BOOKING_META:([\s\S]*?):END_META-->/)
+    if (!match) return row
+    try {
+      const meta = JSON.parse(match[1])
+      const cleanDetails = row.tattoo_details.replace(/<!--BOOKING_META:[\s\S]*?:END_META-->/, '').trim()
+      return {
+        ...row,
+        tattoo_details: cleanDetails,
+        requested_time: row.requested_time || meta.requested_time || null,
+        service_type: row.service_type || meta.service_type || null,
+        reference_url: row.reference_url || meta.reference_url || null,
+        consent_data: row.consent_data || meta.consent_data || null
+      }
+    } catch {
+      return row
+    }
+  }
+
   const fetchData = async () => {
     setLoading(true)
     const { data: bData } = await supabase
@@ -28,7 +48,45 @@ export default function ReservasPage() {
       .select('*')
       .order('created_at', { ascending: false })
     
-    if (bData) setBookings(bData)
+    let combined = (bData || []).map(hydrateBookingRow)
+
+    // Also fetch booking records stored in orders table
+    const { data: oData } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('payment_method', 'cita_directa')
+      .order('created_at', { ascending: false })
+
+    if (oData && oData.length > 0) {
+      const orderBookings = oData.map(o => {
+        const meta = o.metadata || {}
+        return {
+          id: o.id,
+          order_number: o.order_number,
+          client_name: o.customer_name,
+          client_email: o.customer_email,
+          client_phone: o.customer_phone,
+          requested_date: meta.appointment_date || o.created_at?.split('T')[0],
+          requested_time: meta.appointment_time || 'Por coordinar',
+          service_type: meta.service_type || 'Reserva Directa',
+          tattoo_details: meta.notes || 'Reserva web',
+          reference_url: meta.reference_url || null,
+          consent_data: meta.consent_data || null,
+          status: o.status === 'aprobado' ? 'accepted' : (o.status === 'rechazado' ? 'rejected' : 'pending'),
+          is_from_orders: true
+        }
+      })
+
+      // Merge avoiding duplicate emails on same date
+      const existingKeys = new Set(combined.map(b => `${b.client_email}_${b.requested_date}`))
+      for (const ob of orderBookings) {
+        if (!existingKeys.has(`${ob.client_email}_${ob.requested_date}`)) {
+          combined.push(ob)
+        }
+      }
+    }
+
+    setBookings(combined)
 
     const { data: mData } = await supabase
       .from('manual_blocks')
@@ -41,13 +99,40 @@ export default function ReservasPage() {
   }
 
   const updateBookingStatus = async (id, status, extraData = {}) => {
-    const { error } = await supabase
-      .from('bookings')
-      .update({ status, ...extraData })
-      .eq('id', id)
+    const booking = bookings.find(b => b.id === id)
+    let error = null
+
+    if (booking?.is_from_orders) {
+      const orderStatusMap = {
+        accepted: 'aprobado',
+        rejected: 'rechazado',
+        rescheduled: 'reprogramado',
+        pending: 'pendiente'
+      }
+      const orderRes = await supabase
+        .from('orders')
+        .update({
+          status: orderStatusMap[status] || status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+      error = orderRes.error
+    } else {
+      const bRes = await supabase
+        .from('bookings')
+        .update({ status, ...extraData })
+        .eq('id', id)
+      error = bRes.error
+
+      if (error && extraData.reschedule_reason) {
+        const fallbackUpdate = { status }
+        if (extraData.requested_date) fallbackUpdate.requested_date = extraData.requested_date
+        const retry = await supabase.from('bookings').update(fallbackUpdate).eq('id', id)
+        error = retry.error
+      }
+    }
 
     if (!error) {
-      const booking = bookings.find(b => b.id === id)
       await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -55,11 +140,11 @@ export default function ReservasPage() {
           type: status,
           booking: { ...booking, ...extraData }
         })
-      })
+      }).catch(() => {})
 
       fetchData()
     } else {
-      alert('Error actualizando reserva')
+      alert('Error actualizando reserva: ' + (error?.message || 'Error desconocido'))
     }
   }
 

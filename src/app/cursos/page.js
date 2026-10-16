@@ -94,7 +94,9 @@ export default function CursosPage() {
                       </div>
 
                       <div className={styles.cardFooter}>
-                        <span className={styles.price}>{formatPrice(course.price)}</span>
+                        <span className={styles.price}>
+                          {formatPrice(course.discount > 0 ? Math.round(course.price * (1 - course.discount / 100)) : course.price)}
+                        </span>
                         <Link href={`/checkout/${course.id}`} className={styles.btnComprar}>
                           Comprar Curso
                         </Link>

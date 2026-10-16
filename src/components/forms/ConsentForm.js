@@ -5,13 +5,13 @@ import { Check, X, ShieldAlert } from 'lucide-react'
 import { motion } from 'framer-motion'
 import styles from './ConsentForm.module.css'
 
-export default function ConsentForm({ onSubmit, onCancel }) {
+export default function ConsentForm({ onSubmit, onCancel, initialData = {} }) {
   const [formData, setFormData] = useState({
-    fullName: '',
-    rut: '',
-    age: '',
-    phone: '',
-    email: '',
+    fullName: initialData.fullName || '',
+    rut: initialData.rut || '',
+    age: initialData.age || '',
+    phone: initialData.phone || '',
+    email: initialData.email || '',
     medicalConditions: {
       pregnant: false,
       diabetes: false,
@@ -60,14 +60,14 @@ export default function ConsentForm({ onSubmit, onCancel }) {
   }
 
   const clearSignature = () => {
-    sigCanvas.current.clear()
+    sigCanvas.current?.clear?.()
     setSignatureError('')
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
     
-    if (sigCanvas.current.isEmpty()) {
+    if (!sigCanvas.current || sigCanvas.current.isEmpty()) {
       setSignatureError('La firma es obligatoria.')
       return
     }
@@ -79,7 +79,16 @@ export default function ConsentForm({ onSubmit, onCancel }) {
       return
     }
 
-    const signatureData = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png')
+    let signatureData = ''
+    try {
+      signatureData = sigCanvas.current.getCanvas().toDataURL('image/png')
+    } catch {
+      try {
+        signatureData = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png')
+      } catch {
+        signatureData = ''
+      }
+    }
     
     if (onSubmit) {
       onSubmit({
