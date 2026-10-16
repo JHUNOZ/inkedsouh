@@ -59,8 +59,8 @@ export default function SparklesBg({ count = 30 }) {
 
     let time = 0
 
-    // Adjusted particle count for mobile vs desktop
-    const actualCount = isMobile ? Math.min(15, count) : count
+    // Adjusted particle count for mobile vs desktop for high frame rates
+    const actualCount = isMobile ? Math.min(8, count) : count
     const sparkles = Array.from({ length: actualCount }, () => ({
       x: Math.random() * (canvas.width || 800),
       y: Math.random() * (canvas.height || 600),
@@ -131,12 +131,26 @@ export default function SparklesBg({ count = 30 }) {
       animId = requestAnimationFrame(animate)
     }
 
+    // Pause animation when tab is in background
+    const handleVisibility = () => {
+      if (document.hidden) {
+        if (animId) {
+          cancelAnimationFrame(animId)
+          animId = null
+        }
+      } else if (isVisible && !animId) {
+        animId = requestAnimationFrame(animate)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
     animId = requestAnimationFrame(animate)
 
     return () => {
       if (animId) cancelAnimationFrame(animId)
       observer.disconnect()
       window.removeEventListener('resize', resize)
+      document.removeEventListener('visibilitychange', handleVisibility)
       if (!isMobile) {
         window.removeEventListener('mousemove', handleMouseMove)
       }

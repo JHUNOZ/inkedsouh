@@ -1,9 +1,7 @@
 /* =============================================
    INKEDSOUH — Sistema de Diseño v3.5
-   ULTRA-OPTIMIZADO PARA PC LENTAS & HIGH-END
+   ULTRA-OPTIMIZADO PARA PC & MÓVIL
    ============================================= */
-
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
 
 :root {
   /* Fondo Base (Editorial White & Alabaster) */
@@ -41,9 +39,9 @@
   --color-border: #E2E8F0;
   --color-border-hover: #CBD5E1;
 
-  --font-display: 'Bebas Neue', sans-serif;
-  --font-body: 'Inter', sans-serif;
-  --font-accent: 'Playfair Display', serif;
+  --font-display: var(--font-display-next), 'Bebas Neue', sans-serif;
+  --font-body: var(--font-body-next), 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-accent: var(--font-accent-next), 'Playfair Display', serif;
 
   /* Bordes Orgánicos */
   --radius-none: 0px;

@@ -216,6 +216,7 @@ export default function GalleryPreview() {
                       src={post.mediaUrl} 
                       alt={post.caption || 'Galería de Tatuajes'} 
                       loading="lazy"
+                      decoding="async"
                       className={styles.igMedia}
                     />
                   )}

@@ -3,19 +3,24 @@
 import { useEffect } from 'react'
 import { useConfig } from '@/context/ConfigContext'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
-import GoogleMap from '@/components/layout/GoogleMap'
 import Hero from '@/components/home/Hero'
-import GalleryPreview from '@/components/home/GalleryPreview'
 import BookingCTA from '@/components/home/BookingCTA'
+import GalleryPreview from '@/components/home/GalleryPreview'
 import ProductsPreview from '@/components/home/ProductsPreview'
+
+// Lazy load below-the-fold interactive map for faster initial load
+const GoogleMap = dynamic(() => import('@/components/layout/GoogleMap'), {
+  ssr: true,
+  loading: () => <div style={{ height: '350px', background: '#07070B' }} />
+})
 
 export default function Home() {
   const { maintenance } = useConfig()
 
-  // Framer Motion will handle all the scroll reveals inside the individual components
-  // so we no longer need the global IntersectionObserver here.
+  // Framer Motion handles all scroll reveals inside the individual components
 
   if (maintenance) {
     return (
@@ -39,8 +44,8 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
-        <GalleryPreview />
         <BookingCTA />
+        <GalleryPreview />
         <ProductsPreview />
         <GoogleMap />
       </main>

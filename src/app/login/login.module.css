@@ -1,30 +1,41 @@
-/* Login — Editorial Light Theme */
+/* =============================================
+   INKEDSOUH — Acceso / Login (Split Dark/Light)
+   Lado Izquierdo: Dark Obsidian #07070B
+   Lado Derecho: Light Editorial #FAFAFC & White Card
+   ============================================= */
+
 .page {
   display: flex;
   min-height: 100vh;
   background: #FAFAFC;
-  color: #0F172A;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
-/* ── Lado izquierdo: Formulario de Login ── */
+/* ── LADO IZQUIERDO: Formulario de Login (OSCURO) ── */
 .formSide {
   width: 45%;
-  min-width: 450px;
+  min-width: 460px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px;
-  background: #FFFFFF;
+  padding: 48px;
+  background: radial-gradient(circle at 20% 25%, rgba(225, 29, 72, 0.08) 0%, transparent 60%), #07070B;
   position: relative;
   z-index: 10;
-  border-right: 1px solid #E2E8F0;
-  box-shadow: 10px 0 40px rgba(15, 23, 42, 0.04);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 20px 0 60px rgba(0, 0, 0, 0.55);
+  color: #FFFFFF;
 }
 
 .formInner {
   width: 100%;
   max-width: 380px;
+}
+
+.backLinkWrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .backLink {
@@ -34,39 +45,33 @@
   gap: 8px;
   font-size: 0.82rem;
   font-weight: 700;
-  color: #E11D48;
+  color: #FDA4AF;
   letter-spacing: 1px;
-  margin: 0 auto 44px auto;
+  margin: 0 auto 40px auto;
   transition: all 0.25s ease;
   padding: 10px 22px;
   border-radius: 30px;
-  background: #FFF1F2;
-  border: 1px solid #FECDD3;
+  background: rgba(225, 29, 72, 0.12);
+  border: 1px solid rgba(225, 29, 72, 0.3);
   width: fit-content;
   text-transform: uppercase;
   text-decoration: none;
-}
-
-.backLinkWrap {
-  display: flex;
-  justify-content: center;
-  width: 100%;
 }
 
 .backLink:hover {
   background: #E11D48;
   border-color: #E11D48;
   color: #FFFFFF;
-  box-shadow: 0 6px 20px rgba(225, 29, 72, 0.28);
+  box-shadow: 0 0 24px rgba(225, 29, 72, 0.45);
   transform: translateY(-2px);
 }
 
 .logo {
   font-family: var(--font-display);
-  font-size: 2.2rem;
+  font-size: 2.3rem;
   letter-spacing: 5px;
-  color: #0F172A;
-  margin-bottom: 8px;
+  color: #FFFFFF;
+  margin-bottom: 6px;
   display: flex;
   align-items: center;
 }
@@ -77,19 +82,19 @@
 
 .title {
   font-family: var(--font-display);
-  font-size: 1.8rem;
+  font-size: 1.85rem;
   letter-spacing: 2px;
-  color: #0F172A;
+  color: #FFFFFF;
   margin-bottom: 6px;
   font-weight: 700;
 }
 
 .subtitle {
   font-size: 0.8rem;
-  color: #64748B;
+  color: #94A3B8;
   letter-spacing: 2px;
   text-transform: uppercase;
-  margin-bottom: 40px;
+  margin-bottom: 36px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -99,13 +104,13 @@
   content: '';
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, #E2E8F0, transparent);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.18), transparent);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22px;
 }
 
 .fieldGroup {
@@ -116,7 +121,7 @@
 
 .label {
   font-size: 0.75rem;
-  color: #475569;
+  color: #94A3B8;
   letter-spacing: 2px;
   text-transform: uppercase;
   font-weight: 700;
@@ -128,16 +133,16 @@
   align-items: center;
   gap: 12px;
   padding: 14px 18px;
-  border: 1px solid #CBD5E1;
-  background: #F8FAFC;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #111118;
   border-radius: 12px;
   transition: all 0.25s ease;
 }
 
 .inputWrap:focus-within {
   border-color: #E11D48;
-  background: #FFFFFF;
-  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
+  background: #161622;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.28);
 }
 
 .inputIcon {
@@ -154,7 +159,7 @@
 .input {
   flex: 1;
   font-size: 0.92rem;
-  color: #0F172A;
+  color: #FFFFFF;
   background: transparent;
   outline: none;
   border: none;
@@ -162,7 +167,7 @@
 }
 
 .input::placeholder {
-  color: #94A3B8;
+  color: #525266;
 }
 
 .togglePass {
@@ -178,15 +183,15 @@
 }
 
 .togglePass:hover {
-  color: #0F172A;
+  color: #FFFFFF;
 }
 
 .error {
   font-size: 0.85rem;
-  color: #DC2626;
+  color: #FCA5A5;
   padding: 12px 16px;
-  border: 1px solid #FECACA;
-  background: #FEF2F2;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -212,19 +217,20 @@
   margin-top: 8px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(225, 29, 72, 0.28);
+  box-shadow: 0 8px 24px rgba(225, 29, 72, 0.35);
 }
 
 .submitBtn:hover {
-  box-shadow: 0 12px 32px rgba(225, 29, 72, 0.4);
+  box-shadow: 0 12px 32px rgba(225, 29, 72, 0.55);
   transform: translateY(-2px);
 }
 
 .submitBtn:disabled {
-  background: #E2E8F0;
-  border: 1px solid #CBD5E1;
-  color: #94A3B8;
+  background: #1E293B;
+  border: 1px solid #334155;
+  color: #64748B;
   box-shadow: none;
+  cursor: not-allowed;
 }
 
 .btnLine {
@@ -238,26 +244,27 @@
 .credits {
   text-align: center;
   font-size: 0.75rem;
-  color: #94A3B8;
+  color: #475569;
   letter-spacing: 2px;
 }
 
-/* ── Lado derecho: Visual & Formulario de Registro ── */
+/* ── LADO DERECHO: Visual & Formulario de Registro (CLARO) ── */
 .visualSide {
   flex: 1;
   position: relative;
-  background: radial-gradient(circle at 50% 50%, rgba(225, 29, 72, 0.06) 0%, transparent 65%), #F8FAFC;
+  background: radial-gradient(circle at 60% 45%, rgba(225, 29, 72, 0.05) 0%, transparent 60%), #FAFAFC;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: 48px;
+  color: #0F172A;
 }
 
 .visualGlow {
   position: absolute;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(225, 29, 72, 0.08) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(225, 29, 72, 0.07) 0%, transparent 65%);
   border-radius: 50%;
   top: 50%;
   left: 50%;
@@ -267,17 +274,17 @@
   pointer-events: none;
 }
 
-/* ── Formulario de Registro Compacto ── */
+/* Tarjeta de Registro en Modo Claro */
 .registerCard {
   position: relative;
   z-index: 5;
   width: 100%;
-  max-width: 380px;
+  max-width: 390px;
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 24px;
-  padding: 36px 32px;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  padding: 38px 32px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
 }
 
 .registerHeader {
@@ -287,10 +294,11 @@
 
 .registerHeader h3 {
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: 1.55rem;
   letter-spacing: 2px;
   color: #0F172A;
   margin-bottom: 8px;
+  font-weight: 700;
 }
 
 .registerHeader p {
@@ -302,17 +310,17 @@
 .registerForm {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .inputWrapCompact {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
+  padding: 13px 16px;
   border: 1px solid #CBD5E1;
   background: #F8FAFC;
-  border-radius: 10px;
+  border-radius: 12px;
   transition: all 0.2s ease;
 }
 
@@ -320,6 +328,41 @@
   border-color: #E11D48;
   background: #FFFFFF;
   box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
+}
+
+.registerCard .input {
+  flex: 1;
+  font-size: 0.92rem;
+  color: #0F172A;
+  background: transparent;
+  outline: none;
+  border: none;
+  width: 100%;
+}
+
+.registerCard .input::placeholder {
+  color: #94A3B8;
+}
+
+.registerCard .inputIcon {
+  color: #64748B;
+  flex-shrink: 0;
+}
+
+.registerCard .togglePass {
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.registerCard .togglePass:hover {
+  color: #0F172A;
 }
 
 .registerBtn {
@@ -332,7 +375,7 @@
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
-  border-radius: 10px;
+  border-radius: 12px;
   margin-top: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -342,10 +385,12 @@
   background: #E11D48;
   color: #FFFFFF;
   box-shadow: 0 6px 20px rgba(225, 29, 72, 0.25);
+  transform: translateY(-1px);
 }
 
 .registerBtn:disabled {
   opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .errorCompact {
@@ -357,7 +402,7 @@
   margin-top: 4px;
 }
 
-/* ── Mobile Optimization ── */
+/* ── Optimización Responsive para Móviles ── */
 @media (max-width: 900px) {
   .page { 
     flex-direction: column; 
@@ -368,10 +413,10 @@
     width: 100%; 
     min-width: 100%;
     min-height: auto;
-    padding: 40px 20px; 
+    padding: 48px 24px; 
     border-right: none;
-    border-bottom: 1px solid #E2E8F0;
-    background: #FFFFFF;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: #07070B;
   }
 
   .formInner {
@@ -379,9 +424,10 @@
   }
   
   .visualSide { 
-    width: 100%;
+    width: 100%; 
     min-height: auto;
-    padding: 40px 20px;
+    padding: 48px 24px;
+    background: #FAFAFC;
   }
 
   .registerCard {

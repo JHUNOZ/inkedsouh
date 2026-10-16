@@ -111,7 +111,13 @@ export default function Hero() {
             whileHover={{ scale: 1.02 }}
           >
             {currentPhoto ? (
-              <img src={currentPhoto} alt="Artista InkedSouh" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img 
+                src={currentPhoto} 
+                alt="Artista InkedSouh" 
+                fetchPriority="high"
+                decoding="async"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              />
             ) : (
               <div className={styles.placeholder}>
                 <User size={64} />

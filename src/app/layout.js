@@ -1,22 +1,30 @@
 // Layout raíz de la aplicación
-import { Oswald, Montserrat } from 'next/font/google'
+import { Bebas_Neue, Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import CustomCursor from '@/components/ui/CustomCursor'
 import SmoothScroll from '@/components/layout/SmoothScroll'
 import ScrollProgress from '@/components/ui/ScrollProgress'
 import Providers from '@/components/layout/Providers'
 
-const displayFont = Oswald({
-  weight: ['400', '500', '700'],
+const bebasNeue = Bebas_Neue({
+  weight: '400',
   subsets: ['latin'],
-  variable: '--font-display-loaded',
+  variable: '--font-display-next',
   display: 'swap',
 })
 
-const bodyFont = Montserrat({
-  weight: ['300', '400', '500', '600'],
+const inter = Inter({
+  weight: ['300', '400', '500', '600', '700'],
   subsets: ['latin'],
-  variable: '--font-body-loaded',
+  variable: '--font-body-next',
+  display: 'swap',
+})
+
+const playfair = Playfair_Display({
+  weight: ['700'],
+  style: ['normal', 'italic'],
+  subsets: ['latin'],
+  variable: '--font-accent-next',
   display: 'swap',
 })
 
@@ -33,7 +41,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="es" className={`${displayFont.variable} ${bodyFont.variable}`}>
+    <html lang="es" className={`${bebasNeue.variable} ${inter.variable} ${playfair.variable}`}>
       <body>
         <Providers>
           <SmoothScroll>

@@ -19,7 +19,7 @@
   pointer-events: none;
 }
 
-/* Gradiente inferior */
+/* Gradiente inferior hacia sección oscura de Agendar */
 .hero::before {
   content: '';
   position: absolute;
@@ -27,7 +27,7 @@
   left: 0;
   right: 0;
   height: 250px;
-  background: linear-gradient(to top, var(--color-bg), transparent);
+  background: linear-gradient(to top, #07070B, transparent);
   z-index: 1;
   pointer-events: none;
 }
@@ -369,11 +369,11 @@
   .scrollArrow { display: none; }
 }
 
-/* Dynamic Scroll Soft Light Overlay */
+/* Dynamic Scroll Obsidian Overlay */
 .scrollDarkOverlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(250, 250, 252, 0.92) 0%, #FAFAFC 100%);
+  background: radial-gradient(circle at 50% 50%, rgba(7, 7, 11, 0.88) 0%, #07070B 100%);
   pointer-events: none;
   z-index: 5;
 }
@@ -384,7 +384,7 @@
   left: 0;
   right: 0;
   height: 180px;
-  background: linear-gradient(180deg, transparent 0%, #FAFAFC 100%);
+  background: linear-gradient(180deg, transparent 0%, #07070B 100%);
   pointer-events: none;
   z-index: 6;
 }
