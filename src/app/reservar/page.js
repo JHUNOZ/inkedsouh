@@ -45,7 +45,7 @@ export default function ReservarPage() {
   useEffect(() => {
     async function loadDynamicServices() {
       try {
-        const res = await fetch('/api/services')
+        const res = await fetch('/api/services', { cache: 'no-store' })
         if (res.ok) {
           const data = await res.json()
           if (data.services && Array.isArray(data.services) && data.services.length > 0) {

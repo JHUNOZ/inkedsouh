@@ -6,20 +6,28 @@ import {
   Calendar, Package, BookOpen, ArrowUpRight, 
   Users, Sparkles, Clock, CheckCircle2, AlertCircle, 
   TrendingUp, ArrowRight, ShieldCheck, Zap, ShoppingBag,
-  DollarSign, Check, Phone, Truck, X, Eye, ExternalLink
+  DollarSign, Check, Phone, Truck, X, Eye, ExternalLink,
+  Wallet, CreditCard
 } from 'lucide-react'
 import styles from './resumen.module.css'
 
 export default function ResumenPage() {
   const [stats, setStats] = useState({
-    reservasPendientes: 0,
-    productosActivos: 0,
-    cursosActivos: 0,
-    totalAlumnos: 0,
-    totalStock: 0,
+    totalGanancias: 0,
     totalVentas: 0,
     pedidosTotales: 0,
-    pedidosPendientes: 0
+    pedidosPagados: 0,
+    pedidosPendientes: 0,
+    montoPendiente: 0,
+    gananciasCursos: 0,
+    alumnosActivos: 0,
+    totalAlumnos: 0,
+    cursosActivos: 0,
+    gananciasAbonos: 0,
+    reservasConfirmadas: 0,
+    reservasPendientes: 0,
+    productosActivos: 0,
+    totalStock: 0
   })
   const [recentBookings, setRecentBookings] = useState([])
   const [recentOrders, setRecentOrders] = useState([])
@@ -42,12 +50,27 @@ export default function ResumenPage() {
     setLoading(true)
     
     try {
-      // 1. Reservas Pendientes
-      const { count: countReservas, data: bookingsData } = await supabase
+      // 1. Reservas y Abonos
+      const { data: bookingsData } = await supabase
         .from('bookings')
-        .select('*', { count: 'exact' })
+        .select('*')
         .order('created_at', { ascending: false })
-        .limit(5)
+
+      let depositEarnings = 0
+      let confirmedBookingsCount = 0
+      let pendingBookingsCount = 0
+
+      if (bookingsData && bookingsData.length > 0) {
+        bookingsData.forEach(b => {
+          const isConfirmed = b.status === 'confirmed' || b.status === 'confirmada' || b.status === 'completada' || b.status === 'completed'
+          if (isConfirmed) {
+            confirmedBookingsCount += 1
+            depositEarnings += parseInt(b.deposit_amount || b.deposit || 20000, 10)
+          } else {
+            pendingBookingsCount += 1
+          }
+        })
+      }
 
       // 2. Productos Activos & Stock
       const { data: prods } = await supabase
@@ -63,45 +86,72 @@ export default function ResumenPage() {
         .select('*', { count: 'exact', head: true })
         .eq('is_active', true)
 
-      // 4. Alumnos Totales
-      const { count: countAlumnos } = await supabase
+      // 4. Alumnos Totales & Ganancias de la Academia
+      const { data: studentsData } = await supabase
         .from('students')
-        .select('*', { count: 'exact', head: true })
+        .select('id, course_id, status, courses(price, title)')
+
+      let totalCourseEarnings = 0
+      let activeStudentsCount = 0
+
+      if (studentsData && studentsData.length > 0) {
+        studentsData.forEach(s => {
+          if (s.status === 'activo' || s.status === 'active') {
+            activeStudentsCount += 1
+            const coursePrice = s.courses?.price ? parseInt(s.courses.price, 10) : 0
+            totalCourseEarnings += coursePrice
+          }
+        })
+      }
 
       // 5. Órdenes y Ventas de la Tienda de Productos
-      const { data: ordersData, error: ordersErr } = await supabase
+      const { data: ordersData } = await supabase
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false })
 
       let totalSales = 0
       let pendingOrdersCount = 0
+      let paidOrdersCount = 0
+      let pendingOrdersAmount = 0
 
       if (ordersData && ordersData.length > 0) {
         ordersData.forEach(o => {
           const isPaid = o.payment_status === 'pagado' || o.status === 'pagado' || o.status === 'completada'
+          const amt = parseInt(o.total_amount || 0, 10)
           if (isPaid) {
-            totalSales += parseInt(o.total_amount || 0, 10)
+            totalSales += amt
+            paidOrdersCount += 1
           } else {
             pendingOrdersCount += 1
+            pendingOrdersAmount += amt
           }
         })
         setRecentOrders(ordersData.slice(0, 10))
       }
 
+      const totalGanancias = totalSales + totalCourseEarnings + depositEarnings
+
       setStats({
-        reservasPendientes: (bookingsData || []).filter(b => b.status === 'pending' || b.status === 'pendiente').length,
-        productosActivos: activeProds.length,
-        cursosActivos: countCursos || 0,
-        totalAlumnos: countAlumnos || 0,
-        totalStock: stockTotal,
+        totalGanancias,
         totalVentas: totalSales,
         pedidosTotales: (ordersData || []).length,
-        pedidosPendientes: pendingOrdersCount
+        pedidosPagados: paidOrdersCount,
+        pedidosPendientes: pendingOrdersCount,
+        montoPendiente: pendingOrdersAmount,
+        gananciasCursos: totalCourseEarnings,
+        alumnosActivos: activeStudentsCount,
+        totalAlumnos: (studentsData || []).length,
+        cursosActivos: countCursos || 0,
+        gananciasAbonos: depositEarnings,
+        reservasConfirmadas: confirmedBookingsCount,
+        reservasPendientes: pendingBookingsCount,
+        productosActivos: activeProds.length,
+        totalStock: stockTotal
       })
 
       if (bookingsData) {
-        setRecentBookings(bookingsData)
+        setRecentBookings(bookingsData.slice(0, 5))
       }
     } catch (error) {
       console.error('Error fetching stats:', error)
@@ -180,6 +230,74 @@ export default function ResumenPage() {
         </div>
       ) : (
         <>
+          {/* BANNER PRINCIPAL: RESUMEN DE VENTAS Y GANANCIAS */}
+          <div className={styles.financeBanner}>
+            <div className={styles.financeHeader}>
+              <div className={styles.financeTitleWrap}>
+                <div className={styles.financeBadge}>
+                  <TrendingUp size={15} />
+                  <span>BALANCE GENERAL & RENDIMIENTO COMERCIAL</span>
+                </div>
+                <h2 className={styles.financeTitle}>Resumen de Ventas y Ganancias</h2>
+                <p className={styles.financeSubtitle}>
+                  Ingresos consolidados por venta de productos en tienda web, cursos de la academia y abonos de citas de tatuajes.
+                </p>
+              </div>
+
+              <div className={styles.financeTotalBox}>
+                <span className={styles.financeTotalLabel}>Ganancias Totales Acumuladas</span>
+                <span className={styles.financeTotalAmount}>{formatPrice(stats.totalGanancias)} CLP</span>
+                {stats.montoPendiente > 0 && (
+                  <span style={{ fontSize: '0.78rem', color: '#B45309', fontWeight: 600 }}>
+                    +{formatPrice(stats.montoPendiente)} CLP por confirmar en pedidos web pendientes
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Desglose de ingresos en 3 áreas */}
+            <div className={styles.financeBreakdownGrid}>
+              <div className={styles.financeSubCard}>
+                <div className={styles.financeSubTop}>
+                  <span className={styles.financeSubLabel}>Ventas Tienda Web</span>
+                  <div className={`${styles.statIcon} ${styles.iconRed}`} style={{ width: '30px', height: '30px' }}>
+                    <ShoppingBag size={15} />
+                  </div>
+                </div>
+                <span className={styles.financeSubAmount}>{formatPrice(stats.totalVentas)}</span>
+                <span className={styles.financeSubDetails}>
+                  {stats.pedidosPagados} pedidos pagados • {stats.pedidosPendientes} pendientes
+                </span>
+              </div>
+
+              <div className={styles.financeSubCard}>
+                <div className={styles.financeSubTop}>
+                  <span className={styles.financeSubLabel}>Academia & Cursos</span>
+                  <div className={`${styles.statIcon} ${styles.iconGreen}`} style={{ width: '30px', height: '30px' }}>
+                    <BookOpen size={15} />
+                  </div>
+                </div>
+                <span className={styles.financeSubAmount}>{formatPrice(stats.gananciasCursos)}</span>
+                <span className={styles.financeSubDetails}>
+                  {stats.alumnosActivos} alumnos activos • {stats.cursosActivos} cursos
+                </span>
+              </div>
+
+              <div className={styles.financeSubCard}>
+                <div className={styles.financeSubTop}>
+                  <span className={styles.financeSubLabel}>Abonos de Tatuaje</span>
+                  <div className={`${styles.statIcon} ${styles.iconPurple}`} style={{ width: '30px', height: '30px' }}>
+                    <Calendar size={15} />
+                  </div>
+                </div>
+                <span className={styles.financeSubAmount}>{formatPrice(stats.gananciasAbonos)}</span>
+                <span className={styles.financeSubDetails}>
+                  {stats.reservasConfirmadas} citas confirmadas • {stats.reservasPendientes} por revisar
+                </span>
+              </div>
+            </div>
+          </div>
+
           {/* Stats Grid: 4 Cards */}
           <div className={styles.statsGrid}>
             

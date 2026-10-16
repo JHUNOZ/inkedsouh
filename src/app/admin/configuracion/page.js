@@ -1,31 +1,32 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useConfig } from '@/context/ConfigContext'
 import { 
   Save, RefreshCw, Check, AlertCircle, 
-  User, MessageSquare, Sparkles, FileText,
-  UploadCloud, ExternalLink, MapPin, X
+  User, MessageSquare, FileText,
+  UploadCloud, ExternalLink, Calendar, X, Eye, Video
 } from 'lucide-react'
 import styles from './configuracion.module.css'
 
 const DEFAULT_CONFIGS = {
-  // Artista & Estudio
-  hero_bio: 'Artista del tatuaje especializado en Blackwork y Lettering en Rancagua. Con años de experiencia transformando tus ideas en obras maestras permanentes y personalizadas.',
+  // Artista & Estudio / Hero (Foto 1)
   artist_photo: '',
+  hero_bio: 'Artista del tatuaje especializado en crear obras únicas sobre la piel. Cada diseño es una expresión personal de arte y pasión. Con años de experiencia, fusiono creatividad y técnica para transformar tus ideas en arte permanente.',
+  hero_badge: 'TATTOO STUDIO & TATTOO SUPPLIES',
+  hero_title: 'INKEDSOUH',
+  contact_instagram_handle: '@inked.tto',
+  contact_instagram_url: 'https://www.instagram.com/inked.tto/',
   contact_address: 'Almarza 552, Rancagua, Región de O\'Higgins, Chile',
+
+  // Sección Agendar Cita (Foto 2)
+  cta_title: 'AGENDAR TU CITA',
+  cta_subtitle: 'Reserva tu sesión de tatuaje de forma rápida y sencilla. Selecciona el servicio, elige la fecha y prepárate para llevar arte único en tu piel.',
+  cta_button_text: 'RESERVAR AHORA',
+  cta_media_url: '',
 
   // Contacto & Redes
   contact_whatsapp: '+56 9 3025 4425',
-  contact_instagram_handle: '@inked.tto',
-  contact_instagram_url: 'https://www.instagram.com/inked.tto/',
-
-  // Inicio & Citas
-  hero_badge: 'TATTOO STUDIO & TATTOO SUPPLIES',
-  hero_title: 'ARTE EN TU PIEL',
-  hero_subtitle: 'Cada tatuaje es una historia única, creada con pasión, higiene y precisión quirúrgica.',
-  cta_title: 'AGENDA TU CITA EXCLUSIVA',
-  cta_subtitle: 'Reserva tu sesión de tatuaje de forma rápida y sencilla. Selecciona el estilo, elige la fecha en nuestro calendario y prepárate para llevar arte único en tu piel.',
-  cta_button_text: 'RESERVAR SESIÓN AHORA',
 
   // Footer & Legal
   footer_description: 'Estudio profesional de tatuajes y academia de formación artística en Rancagua. Calidad premium y bioseguridad certificada.',
@@ -34,16 +35,19 @@ const DEFAULT_CONFIGS = {
 }
 
 export default function ConfiguracionPage() {
+  const { refreshConfig } = useConfig()
   const [formData, setFormData] = useState(DEFAULT_CONFIGS)
   const [originalData, setOriginalData] = useState(DEFAULT_CONFIGS)
-  const [activeTab, setActiveTab] = useState('artista') // 'artista' | 'contacto' | 'inicio' | 'legal'
+  const [activeTab, setActiveTab] = useState('artista') // 'artista' | 'agendar' | 'contacto' | 'legal'
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [uploadingCtaMedia, setUploadingCtaMedia] = useState(false)
   const [uploadingTerms, setUploadingTerms] = useState(false)
   const [toast, setToast] = useState(null)
 
   const photoInputRef = useRef(null)
+  const ctaMediaInputRef = useRef(null)
   const termsInputRef = useRef(null)
   const supabase = createClient()
 
@@ -90,15 +94,15 @@ export default function ConfiguracionPage() {
     setFormData(prev => ({ ...prev, [key]: value }))
   }
 
-  // Guardar todo
+  // Guardar todo y sincronizar en tiempo real
   const handleSaveAll = async () => {
     setSaving(true)
     try {
       const rows = Object.keys(formData).map(key => {
         let section = 'General'
-        if (['hero_bio', 'artist_photo', 'contact_address'].includes(key)) section = 'Biografía & Artista'
+        if (['hero_bio', 'artist_photo', 'hero_badge', 'hero_title', 'contact_address'].includes(key)) section = 'Artista & Estudio'
+        if (['cta_title', 'cta_subtitle', 'cta_button_text', 'cta_media_url'].includes(key)) section = 'Agendar Cita'
         if (['contact_whatsapp', 'contact_instagram_handle', 'contact_instagram_url'].includes(key)) section = 'Contacto & Redes'
-        if (['hero_badge', 'hero_title', 'hero_subtitle', 'cta_title', 'cta_subtitle', 'cta_button_text'].includes(key)) section = 'Inicio & Hero'
         if (['footer_description', 'footer_copyright', 'terms_url'].includes(key)) section = 'Footer & Legal'
 
         return {
@@ -116,7 +120,10 @@ export default function ConfiguracionPage() {
       if (error) throw error
 
       setOriginalData({ ...formData })
-      showToast('Configuraciones guardadas y sincronizadas exitosamente')
+      if (typeof refreshConfig === 'function') {
+        await refreshConfig()
+      }
+      showToast('Configuraciones guardadas y sincronizadas en tiempo real con la web')
     } catch (err) {
       console.error('Error al guardar configuración:', err)
       showToast('Error al guardar: ' + err.message, 'error')
@@ -147,12 +154,43 @@ export default function ConfiguracionPage() {
         .getPublicUrl(filePath)
 
       handleChange('artist_photo', publicUrl)
-      showToast('Foto del artista cargada correctamente')
+      showToast('Foto del artista cargada. Recuerda guardar cambios para sincronizar.')
     } catch (err) {
       showToast('Error al subir foto: ' + err.message, 'error')
     } finally {
       setUploadingPhoto(false)
       if (photoInputRef.current) photoInputRef.current.value = ''
+    }
+  }
+
+  // Subir media para la sección Agendar Cita
+  const handleUploadCtaMedia = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingCtaMedia(true)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `agendar_${Date.now()}.${fileExt}`
+      const filePath = `agendar/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('admin_uploads')
+        .upload(filePath, file, { cacheControl: '3600', upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('admin_uploads')
+        .getPublicUrl(filePath)
+
+      handleChange('cta_media_url', publicUrl)
+      showToast('Contenido multimedia para Agendar cargado. Guarda cambios para sincronizar.')
+    } catch (err) {
+      showToast('Error al subir archivo: ' + err.message, 'error')
+    } finally {
+      setUploadingCtaMedia(false)
+      if (ctaMediaInputRef.current) ctaMediaInputRef.current.value = ''
     }
   }
 
@@ -206,7 +244,7 @@ export default function ConfiguracionPage() {
           </div>
           <h1 className={styles.title}>Configuración del Sitio Web</h1>
           <p className={styles.subtitle}>
-            Edita de forma simple y rápida la biografía del artista, datos de contacto, enlaces y textos de la página.
+            Edita de forma simple y rápida la foto, descripción del artista, datos del hero, agendamiento y redes. Sincronización automática con la página web.
           </p>
         </div>
 
@@ -233,7 +271,7 @@ export default function ConfiguracionPage() {
         </div>
       </div>
 
-      {/* Tabs Selector */}
+      {/* Tabs Selector: 1. Artista & Estudio / Hero, 2. Agendar Cita (Reemplaza Textos de Inicio), 3. Contacto & Redes, 4. Footer & Legal */}
       <div className={styles.sectionTabs}>
         <button 
           type="button" 
@@ -242,6 +280,15 @@ export default function ConfiguracionPage() {
         >
           <User size={16} />
           <span>Artista & Estudio</span>
+        </button>
+
+        <button 
+          type="button" 
+          className={`${styles.tabBtn} ${activeTab === 'agendar' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('agendar')}
+        >
+          <Calendar size={16} />
+          <span>Agendar Cita</span>
         </button>
 
         <button 
@@ -255,15 +302,6 @@ export default function ConfiguracionPage() {
 
         <button 
           type="button" 
-          className={`${styles.tabBtn} ${activeTab === 'inicio' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('inicio')}
-        >
-          <Sparkles size={16} />
-          <span>Textos de Inicio</span>
-        </button>
-
-        <button 
-          type="button" 
           className={`${styles.tabBtn} ${activeTab === 'legal' ? styles.tabBtnActive : ''}`}
           onClick={() => setActiveTab('legal')}
         >
@@ -272,35 +310,23 @@ export default function ConfiguracionPage() {
         </button>
       </div>
 
-      {/* TAB 1: ARTISTA & ESTUDIO */}
+      {/* TAB 1: ARTISTA & ESTUDIO (FOTO 1: Foto del artista, descripción, badge superior, título e Instagram) */}
       {activeTab === 'artista' && (
-        <div className={styles.card} style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
-          <div className={styles.formGroup}>
-            <div className={styles.labelRow}>
-              <label>Biografía Oficial del Artista</label>
-              <span className={styles.charCount}>{formData.hero_bio?.length || 0} caracteres</span>
-            </div>
-            <textarea 
-              rows={4}
-              className={styles.textarea}
-              value={formData.hero_bio}
-              onChange={(e) => handleChange('hero_bio', e.target.value)}
-              placeholder="Describe tu trayectoria, estilos principales y propuesta artística..."
-            />
-          </div>
-
+        <div className={styles.card} style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          {/* FOTOGRAFÍA OFICIAL DEL ARTISTA */}
           <div className={styles.formGroup}>
             <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
-              Fotografía Oficial del Artista
+              Fotografía Oficial del Artista (Hero Inicio)
             </label>
             <div className={styles.photoControlGroup}>
               {formData.artist_photo ? (
-                <div className={styles.photoPreviewThumb} style={{ width: '90px', height: '90px' }}>
-                  <img src={formData.artist_photo} alt="Foto del artista" />
+                <div className={styles.photoPreviewThumb} style={{ width: '100px', height: '100px', borderRadius: '16px' }}>
+                  <img src={formData.artist_photo} alt="Foto del artista" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               ) : (
-                <div className={styles.photoPreviewThumb} style={{ width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
-                  <User size={32} />
+                <div className={styles.photoPreviewThumb} style={{ width: '100px', height: '100px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
+                  <User size={36} />
                 </div>
               )}
 
@@ -310,7 +336,7 @@ export default function ConfiguracionPage() {
                   className={styles.input}
                   value={formData.artist_photo}
                   onChange={(e) => handleChange('artist_photo', e.target.value)}
-                  placeholder="URL de la imagen (o sube un archivo directamente)"
+                  placeholder="URL de la imagen (o presiona Subir Nueva Foto)"
                 />
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <input 
@@ -343,27 +369,226 @@ export default function ConfiguracionPage() {
                 </div>
               </div>
             </div>
+            <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '6px', display: 'block' }}>
+              Esta imagen se muestra en el contenedor orgánico izquierdo del inicio (Hero).
+            </span>
           </div>
 
+          {/* DESCRIPCIÓN OFICIAL DEL ARTISTA (LO MARCADO EN FOTO 1) */}
           <div className={styles.formGroup}>
-            <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
-              Dirección o Ubicación del Estudio
-            </label>
-            <input 
-              type="text" 
-              className={styles.input}
-              value={formData.contact_address}
-              onChange={(e) => handleChange('contact_address', e.target.value)}
-              placeholder="Almarza 552, Rancagua, Chile"
+            <div className={styles.labelRow}>
+              <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A' }}>
+                Descripción Oficial del Artista (Hero Inicio)
+              </label>
+              <span className={styles.charCount}>{formData.hero_bio?.length || 0} caracteres</span>
+            </div>
+            <textarea 
+              rows={4}
+              className={styles.textarea}
+              value={formData.hero_bio}
+              onChange={(e) => handleChange('hero_bio', e.target.value)}
+              placeholder="Artista del tatuaje especializado en crear obras únicas sobre la piel. Cada diseño es una expresión personal de arte y pasión..."
             />
             <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '4px', display: 'block' }}>
-              Se muestra en el pie de página, detalles de despacho y mapa de contacto.
+              Párrafo principal visible al lado de la foto del artista en el inicio de la web.
+            </span>
+          </div>
+
+          {/* BADGE SUPERIOR DEL HERO & TÍTULO */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+            <div className={styles.formGroup}>
+              <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
+                Badge Superior del Hero (Artista y Estudio)
+              </label>
+              <input 
+                type="text" 
+                className={styles.input}
+                value={formData.hero_badge}
+                onChange={(e) => handleChange('hero_badge', e.target.value)}
+                placeholder="TATTOO STUDIO & TATTOO SUPPLIES"
+              />
+              <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '4px', display: 'block' }}>
+                Insignia superior roja ubicada sobre la descripción del artista.
+              </span>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
+                Título Principal del Hero
+              </label>
+              <input 
+                type="text" 
+                className={styles.input}
+                value={formData.hero_title}
+                onChange={(e) => handleChange('hero_title', e.target.value)}
+                placeholder="INKEDSOUH"
+              />
+              <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '4px', display: 'block' }}>
+                Nombre principal o tipografía artística del encabezado.
+              </span>
+            </div>
+          </div>
+
+          {/* INSTAGRAM & DIRECCIÓN DEL ESTUDIO */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+            <div className={styles.formGroup}>
+              <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
+                Usuario de Instagram (Hero)
+              </label>
+              <input 
+                type="text" 
+                className={styles.input}
+                value={formData.contact_instagram_handle}
+                onChange={(e) => handleChange('contact_instagram_handle', e.target.value)}
+                placeholder="@inked.tto"
+              />
+              <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '4px', display: 'block' }}>
+                Botón magnético de Instagram que acompaña la descripción.
+              </span>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
+                Ubicación / Dirección del Estudio
+              </label>
+              <input 
+                type="text" 
+                className={styles.input}
+                value={formData.contact_address}
+                onChange={(e) => handleChange('contact_address', e.target.value)}
+                placeholder="Almarza 552, Rancagua, Región de O'Higgins, Chile"
+              />
+              <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '4px', display: 'block' }}>
+                Estudio base para citas, envíos prioritarios y pie de página.
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: AGENDAR CITA (FOTO 2: Reemplaza Textos de Inicio) */}
+      {activeTab === 'agendar' && (
+        <div className={styles.card} style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', padding: '14px 18px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Calendar size={20} style={{ color: '#E11D48', flexShrink: 0 }} />
+            <div style={{ fontSize: '0.88rem', color: '#881337' }}>
+              <strong>Sección Agendar Cita (Inicio):</strong> Modifica aquí el título destacado, la descripción, el botón de reserva y el contenido multimedia que los clientes ven antes de reservar su sesión de tatuaje.
+            </div>
+          </div>
+
+          {/* TÍTULO DE AGENDAMIENTO & TEXTO BOTÓN */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+            <div className={styles.formGroup}>
+              <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
+                Título Principal de la Sección (Foto 2)
+              </label>
+              <input 
+                type="text" 
+                className={styles.input}
+                value={formData.cta_title}
+                onChange={(e) => handleChange('cta_title', e.target.value)}
+                placeholder="AGENDAR TU CITA"
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
+                Texto del Botón de Reserva (Foto 2)
+              </label>
+              <input 
+                type="text" 
+                className={styles.input}
+                value={formData.cta_button_text}
+                onChange={(e) => handleChange('cta_button_text', e.target.value)}
+                placeholder="RESERVAR AHORA"
+              />
+            </div>
+          </div>
+
+          {/* DESCRIPCIÓN DE AGENDAMIENTO */}
+          <div className={styles.formGroup}>
+            <div className={styles.labelRow}>
+              <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A' }}>
+                Descripción de la Cita (Foto 2)
+              </label>
+              <span className={styles.charCount}>{formData.cta_subtitle?.length || 0} caracteres</span>
+            </div>
+            <textarea 
+              rows={3}
+              className={styles.textarea}
+              value={formData.cta_subtitle}
+              onChange={(e) => handleChange('cta_subtitle', e.target.value)}
+              placeholder="Reserva tu sesión de tatuaje de forma rápida y sencilla. Selecciona el servicio, elige la fecha y prepárate para llevar arte único en tu piel."
+            />
+          </div>
+
+          {/* FOTO O VIDEO DE AGENDAMIENTO */}
+          <div className={styles.formGroup}>
+            <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
+              Imagen o Video de la Sección Agendar (Marco Orgánico)
+            </label>
+            <div className={styles.photoControlGroup}>
+              {formData.cta_media_url ? (
+                <div className={styles.photoPreviewThumb} style={{ width: '100px', height: '100px', borderRadius: '16px', overflow: 'hidden' }}>
+                  {formData.cta_media_url.endsWith('.mp4') || formData.cta_media_url.endsWith('.webm') ? (
+                    <video src={formData.cta_media_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} autoPlay loop muted playsInline />
+                  ) : (
+                    <img src={formData.cta_media_url} alt="Media agendar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  )}
+                </div>
+              ) : (
+                <div className={styles.photoPreviewThumb} style={{ width: '100px', height: '100px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
+                  <Video size={36} />
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                <input 
+                  type="text" 
+                  className={styles.input}
+                  value={formData.cta_media_url}
+                  onChange={(e) => handleChange('cta_media_url', e.target.value)}
+                  placeholder="URL de imagen o video mp4 (o deja vacío para usar el video por defecto)"
+                />
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input 
+                    ref={ctaMediaInputRef}
+                    type="file" 
+                    accept="image/*,video/mp4,video/webm" 
+                    style={{ display: 'none' }}
+                    onChange={handleUploadCtaMedia}
+                  />
+                  <button 
+                    type="button" 
+                    className={styles.btnUploadPhoto}
+                    onClick={() => ctaMediaInputRef.current?.click()}
+                    disabled={uploadingCtaMedia}
+                  >
+                    <UploadCloud size={16} />
+                    <span>{uploadingCtaMedia ? 'Subiendo...' : 'Subir Imagen o Video'}</span>
+                  </button>
+
+                  {formData.cta_media_url && (
+                    <button 
+                      type="button" 
+                      className={styles.btnSecondary}
+                      onClick={() => handleChange('cta_media_url', '')}
+                    >
+                      <X size={15} />
+                      <span>Restablecer Video Por Defecto</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '6px', display: 'block' }}>
+              Si no especificas un archivo personalizado, la web mostrará el video cinemático oficial de tatuaje.
             </span>
           </div>
         </div>
       )}
 
-      {/* TAB 2: CONTACTO & REDES */}
+      {/* TAB 3: CONTACTO & REDES */}
       {activeTab === 'contacto' && (
         <div className={styles.card} style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
           <div className={styles.formGroup}>
@@ -378,7 +603,7 @@ export default function ConfiguracionPage() {
               placeholder="+56 9 3025 4425"
             />
             <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '4px', display: 'block' }}>
-              Se utiliza para el botón flotante de WhatsApp y confirmación de pedidos.
+              Se utiliza para el botón flotante de WhatsApp, confirmación de pedidos y contacto directo.
             </span>
           </div>
 
@@ -408,95 +633,6 @@ export default function ConfiguracionPage() {
                 placeholder="https://www.instagram.com/inked.tto/"
               />
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 3: TEXTOS DE INICIO & CITAS */}
-      {activeTab === 'inicio' && (
-        <div className={styles.card} style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-            <div className={styles.formGroup}>
-              <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
-                Insignia / Badge Superior del Hero
-              </label>
-              <input 
-                type="text" 
-                className={styles.input}
-                value={formData.hero_badge}
-                onChange={(e) => handleChange('hero_badge', e.target.value)}
-                placeholder="TATTOO STUDIO & TATTOO SUPPLIES"
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
-                Título Principal del Hero
-              </label>
-              <input 
-                type="text" 
-                className={styles.input}
-                value={formData.hero_title}
-                onChange={(e) => handleChange('hero_title', e.target.value)}
-                placeholder="ARTE EN TU PIEL"
-              />
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
-              Subtítulo del Hero
-            </label>
-            <input 
-              type="text" 
-              className={styles.input}
-              value={formData.hero_subtitle}
-              onChange={(e) => handleChange('hero_subtitle', e.target.value)}
-              placeholder="Cada tatuaje es una historia única..."
-            />
-          </div>
-
-          <hr style={{ border: 'none', borderTop: '1px solid #E2E8F0', margin: '6px 0' }} />
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-            <div className={styles.formGroup}>
-              <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
-                Título del Banner de Agendamiento
-              </label>
-              <input 
-                type="text" 
-                className={styles.input}
-                value={formData.cta_title}
-                onChange={(e) => handleChange('cta_title', e.target.value)}
-                placeholder="AGENDA TU CITA EXCLUSIVA"
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
-                Texto del Botón de Reserva
-              </label>
-              <input 
-                type="text" 
-                className={styles.input}
-                value={formData.cta_button_text}
-                onChange={(e) => handleChange('cta_button_text', e.target.value)}
-                placeholder="RESERVAR SESIÓN AHORA"
-              />
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'block' }}>
-              Subtítulo del Banner de Agendamiento
-            </label>
-            <textarea 
-              rows={3}
-              className={styles.textarea}
-              value={formData.cta_subtitle}
-              onChange={(e) => handleChange('cta_subtitle', e.target.value)}
-              placeholder="Reserva tu sesión de forma rápida y sencilla..."
-            />
           </div>
         </div>
       )}

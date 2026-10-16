@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { 
   Calendar, Package, Image as ImageIcon, Settings, LogOut, 
   Menu, X, LayoutDashboard, BookOpen, User, ExternalLink,
-  ChevronRight, Shield, Flame, Sparkles
+  ChevronRight, Shield, Flame, Sparkles, Layers
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import styles from './layout.module.css'
@@ -38,7 +38,7 @@ export default function AdminLayout({ children }) {
   const navItems = [
     { href: '/admin/resumen', label: 'Resumen General', icon: LayoutDashboard },
     { href: '/admin/reservas', label: 'Agenda & Citas', icon: Calendar },
-    { href: '/admin/servicios', label: 'Servicios', icon: Sparkles },
+    { href: '/admin/servicios', label: 'Servicios', icon: Layers },
     { 
       href: '/admin/productos', 
       label: 'HONE CATALOG', 

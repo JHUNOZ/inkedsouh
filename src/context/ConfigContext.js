@@ -27,6 +27,9 @@ const DEFAULT_TEXTS = {
   ctaButton: 'RESERVAR AHORA',
   cta_button: 'RESERVAR AHORA',
   cta_button_text: 'RESERVAR AHORA',
+  ctaMedia: '',
+  cta_media_url: '',
+  cta_image: '',
   artistPhoto: '',
   artist_photo: '',
   footerDescription: 'Estudio especializado en Blackwork y Lettering en Rancagua.',
@@ -79,6 +82,14 @@ export function ConfigProvider({ children }) {
             if (item.key_name === 'hero_bio') mapped.heroBio = item.value
             if (item.key_name === 'hero_ig') mapped.heroIg = item.value
             if (item.key_name === 'hero_ig_link') mapped.heroIgLink = item.value
+            if (item.key_name === 'contact_instagram_handle') {
+              mapped.heroIg = item.value
+              mapped.hero_ig = item.value
+            }
+            if (item.key_name === 'contact_instagram_url') {
+              mapped.heroIgLink = item.value
+              mapped.hero_ig_link = item.value
+            }
             if (item.key_name === 'cta_title') mapped.ctaTitle = item.value
             if (item.key_name === 'cta_subtitle' || item.key_name === 'cta_text') {
               mapped.ctaText = item.value
@@ -90,6 +101,11 @@ export function ConfigProvider({ children }) {
               mapped.ctaButton = item.value
               mapped.cta_button = item.value
               mapped.cta_button_text = item.value
+            }
+            if (item.key_name === 'cta_media_url' || item.key_name === 'cta_image') {
+              mapped.ctaMedia = item.value
+              mapped.cta_media_url = item.value
+              mapped.cta_image = item.value
             }
             if (item.key_name === 'artist_photo') mapped.artistPhoto = item.value
             if (item.key_name === 'footer_description') mapped.footerDescription = item.value
@@ -112,6 +128,19 @@ export function ConfigProvider({ children }) {
 
   useEffect(() => {
     fetchDynamicConfig()
+
+    // Realtime listener for immediate synchronization across pages/tabs
+    const supabase = createClient()
+    const channel = supabase
+      .channel('site_config_realtime_provider')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_config' }, () => {
+        fetchDynamicConfig()
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [fetchDynamicConfig])
 
   const value = {

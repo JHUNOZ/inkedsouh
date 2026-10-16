@@ -53,6 +53,10 @@ export async function GET() {
       expressShippingCost,
       deliveryTimeframe,
       deliveryOrigin: DEFAULT_ORIGIN
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'
+      }
     })
   } catch (err) {
     console.error('Error fetching services config:', err)
@@ -63,6 +67,10 @@ export async function GET() {
       deliveryTimeframe: DEFAULT_DELIVERY_TIMEFRAME,
       deliveryOrigin: DEFAULT_ORIGIN,
       fallback: true
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'
+      }
     })
   }
 }

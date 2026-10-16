@@ -132,12 +132,12 @@ export default function Hero() {
 
             <motion.div variants={itemVars}>
               <div className={styles.redBadge}>
-                {textos.heroBadge || textos.hero_badge || "ESPECIALISTA EN BLACKWORK"}
+                {textos.heroBadge || textos.hero_badge || "TATTOO STUDIO & TATTOO SUPPLIES"}
               </div>
             </motion.div>
             
             <motion.p variants={itemVars} className={styles.bio}>
-              {textos.heroBio || textos.hero_bio || "Creando arte permanente en la piel. Cada diseño es único y personalizado a la medida de tu historia."}
+              {textos.heroBio || textos.hero_bio || "Artista del tatuaje especializado en crear obras únicas sobre la piel. Cada diseño es una expresión personal de arte y pasión. Con años de experiencia, fusiono creatividad y técnica para transformar tus ideas en arte permanente."}
             </motion.p>
 
             <motion.div variants={itemVars}>

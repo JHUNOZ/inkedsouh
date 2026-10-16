@@ -492,3 +492,130 @@
   .statsGrid { grid-template-columns: 1fr; }
   .hubGrid { grid-template-columns: 1fr; }
 }
+
+/* Resumen Financiero & Ganancias Totales */
+.financeBanner {
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF5F6 100%);
+  border: 1px solid #FECDD3;
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-shadow: 0 10px 30px rgba(225, 29, 72, 0.05);
+}
+
+.financeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.financeTitleWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.financeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #E11D48;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.financeTitle {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.financeSubtitle {
+  font-size: 0.85rem;
+  color: #64748B;
+  margin: 0;
+}
+
+.financeTotalBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.financeTotalLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #64748B;
+}
+
+.financeTotalAmount {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #E11D48;
+  font-family: var(--font-display, inherit);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.financeBreakdownGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.financeSubCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.financeSubCard:hover {
+  transform: translateY(-2px);
+  border-color: #CBD5E1;
+}
+
+.financeSubTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.financeSubLabel {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.financeSubAmount {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.financeSubDetails {
+  font-size: 0.78rem;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.iconBlue {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #2563EB;
+}

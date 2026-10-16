@@ -90,7 +90,7 @@ export default function ProductosPage() {
 
         // Load services and express shipping fee from /api/services
         try {
-          const svcRes = await fetch('/api/services')
+          const svcRes = await fetch('/api/services', { cache: 'no-store' })
           if (svcRes.ok) {
             const svcData = await svcRes.json()
             if (svcData.expressShippingCost) {

@@ -1,9 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { 
-  Sparkles, Plus, Edit2, Trash2, Save, RefreshCw, 
+  Layers, Plus, Edit2, Trash2, Save, RefreshCw, 
   Truck, MapPin, Clock, DollarSign, Check, AlertCircle, X,
-  Layers, ChevronRight, ShieldCheck
+  ShieldCheck, ArrowUpRight
 } from 'lucide-react'
 import styles from './servicios.module.css'
 
@@ -17,7 +17,7 @@ export default function AdminServiciosPage() {
 
   // Service Modal State (Add / Edit)
   const [modalOpen, setModalOpen] = useState(false)
-  const [editingService, setEditingService] = useState(null) // null for new, object for edit
+  const [editingService, setEditingService] = useState(null)
   const [targetCategory, setTargetCategory] = useState('')
   const [serviceFormData, setServiceFormData] = useState({
     id: '',
@@ -34,10 +34,11 @@ export default function AdminServiciosPage() {
     setTimeout(() => setToast(null), 3500)
   }
 
+  // Cargar servicios desde la API
   const fetchServicesData = async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/services')
+      const res = await fetch('/api/services', { cache: 'no-store' })
       const data = await res.json()
       if (data.success) {
         setCategories(data.services || [])
@@ -60,34 +61,40 @@ export default function AdminServiciosPage() {
     fetchServicesData()
   }, [])
 
-  const handleSaveAll = async () => {
+  // Sincronización persistente en tiempo real con la web
+  const persistChanges = async (newCats, newShipping = expressShippingCost, newTimeframe = deliveryTimeframe) => {
     try {
       setSaving(true)
       const res = await fetch('/api/services', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          services: categories,
-          expressShippingCost: parseInt(expressShippingCost, 10) || 3990,
-          deliveryTimeframe
+          services: newCats,
+          expressShippingCost: parseInt(newShipping, 10) || 3990,
+          deliveryTimeframe: newTimeframe
         })
       })
 
       const result = await res.json()
       if (res.ok && result.success) {
-        showToast('Servicios, abonos y tarifa de despacho guardados correctamente')
+        showToast('Cambios guardados y sincronizados en vivo con la web')
       } else {
         throw new Error(result.error || 'Error al guardar')
       }
     } catch (err) {
       console.error('Error saving services:', err)
-      showToast(err.message || 'Error al guardar los cambios', 'error')
+      showToast(err.message || 'Error al guardar cambios', 'error')
     } finally {
       setSaving(false)
     }
   }
 
-  // Open Modal to Add
+  // Guardar todo manualmente
+  const handleSaveAll = async () => {
+    await persistChanges(categories, expressShippingCost, deliveryTimeframe)
+  }
+
+  // Abrir Modal para Crear
   const handleOpenAdd = (catId) => {
     setEditingService(null)
     setTargetCategory(catId)
@@ -103,7 +110,7 @@ export default function AdminServiciosPage() {
     setModalOpen(true)
   }
 
-  // Open Modal to Edit
+  // Abrir Modal para Editar
   const handleOpenEdit = (catId, service) => {
     setEditingService(service)
     setTargetCategory(catId)
@@ -119,8 +126,8 @@ export default function AdminServiciosPage() {
     setModalOpen(true)
   }
 
-  // Save Service from Modal
-  const handleSaveModalService = (e) => {
+  // Guardar servicio desde el Modal (sincroniza en tiempo real)
+  const handleSaveModalService = async (e) => {
     e.preventDefault()
     if (!serviceFormData.title.trim()) {
       alert('Por favor ingresa el título del servicio')
@@ -141,11 +148,11 @@ export default function AdminServiciosPage() {
 
     setCategories(updatedCategories)
     setModalOpen(false)
-    showToast(editingService ? 'Servicio actualizado' : 'Servicio agregado')
+    await persistChanges(updatedCategories)
   }
 
-  // Delete Service
-  const handleDeleteService = (catId, serviceId) => {
+  // Eliminar Servicio (sincroniza en tiempo real)
+  const handleDeleteService = async (catId, serviceId) => {
     if (!confirm('¿Estás seguro de que deseas eliminar este servicio?')) return
 
     const updatedCategories = categories.map(cat => {
@@ -157,7 +164,7 @@ export default function AdminServiciosPage() {
     })
 
     setCategories(updatedCategories)
-    showToast('Servicio eliminado')
+    await persistChanges(updatedCategories)
   }
 
   return (
@@ -174,14 +181,14 @@ export default function AdminServiciosPage() {
       <div className={styles.header}>
         <div className={styles.titleWrap}>
           <div className={styles.badgeRow}>
-            <span className={styles.badgePill}>INKEDSOUH STUDIO</span>
+            <span className={styles.badgePill}>GESTIÓN DE SERVICIOS</span>
             <span className={styles.locationBadge}>
               <MapPin size={13} style={{ color: '#E11D48' }} /> Rancagua, Chile
             </span>
           </div>
           <h1 className={styles.title}>Servicios, Tarifas y Despacho</h1>
           <p className={styles.subtitle}>
-            Administra los tipos de tatuajes y servicios que ofreces, sus tiempos y abonos de reserva, y define el precio fijo de despacho express desde Rancagua.
+            Administra los tipos de tatuajes, tiempos, valores de abono y el precio fijo de despacho express desde Rancagua. Todo cambio se sincroniza en vivo con la web.
           </p>
         </div>
 
@@ -203,7 +210,7 @@ export default function AdminServiciosPage() {
             disabled={loading || saving}
           >
             <Save size={16} />
-            <span>{saving ? 'Guardando...' : 'Guardar Todo'}</span>
+            <span>{saving ? 'Sincronizando...' : 'Guardar Todo'}</span>
           </button>
         </div>
       </div>
@@ -212,18 +219,18 @@ export default function AdminServiciosPage() {
       <div className={styles.shippingCard}>
         <div className={styles.shippingCardHeader}>
           <h2 className={styles.shippingCardTitle}>
-            <Truck size={22} style={{ color: '#E11D48' }} />
+            <Truck size={20} style={{ color: '#E11D48' }} />
             <span>Tarifa de Despacho Express & Origen</span>
           </h2>
           <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>
-            Aplicable en la tienda online de insumos y productos
+            Configuración para la tienda online de insumos y productos
           </span>
         </div>
 
         <div className={styles.shippingInfoBanner}>
-          <MapPin size={20} style={{ color: '#E11D48', flexShrink: 0 }} />
+          <MapPin size={18} style={{ color: '#E11D48', flexShrink: 0 }} />
           <div>
-            <strong>Estudio Base en Rancagua (Almarza 552):</strong> Los envíos dentro de Rancagua y Machalí se procesan de forma inmediata con entrega prioritaria en 24 horas hábiles. Para la Región Metropolitana el plazo es de 24 a 48 horas. A otras regiones se envía por pagar vía Starken o Chilexpress.
+            <strong>Estudio Base en Rancagua (Almarza 552):</strong> Los envíos dentro de Rancagua y Machalí se procesan de forma inmediata en 24 horas hábiles. Para la RM el plazo es 24 a 48 horas. A Regiones se envía por pagar vía Starken o Chilexpress.
           </div>
         </div>
 
@@ -239,7 +246,7 @@ export default function AdminServiciosPage() {
               step="100"
             />
             <span className={styles.fieldHelper}>
-              Monto exacto que se sumará al total de la compra si el cliente selecciona Envío Express.
+              Monto que se suma al total del pedido si el cliente selecciona Envío Express.
             </span>
           </div>
 
@@ -252,7 +259,7 @@ export default function AdminServiciosPage() {
               placeholder="24h Rancagua / Machalí • 24-48h RM • 2 a 4 días Regiones"
             />
             <span className={styles.fieldHelper}>
-              Se mostrará a los clientes durante el proceso de compra y en el resumen de entrega.
+              Se mostrará en la tienda de productos y en el resumen de entrega al pagar.
             </span>
           </div>
         </div>
@@ -264,7 +271,7 @@ export default function AdminServiciosPage() {
           <div key={category.id} className={styles.categoryGroup}>
             <div className={styles.categoryHeader}>
               <div className={styles.categoryTitle}>
-                <Sparkles size={20} style={{ color: '#E11D48' }} />
+                <Layers size={18} style={{ color: '#E11D48' }} />
                 <span>{category.title}</span>
                 <span className={styles.categoryCountBadge}>
                   {category.services?.length || 0} servicios
@@ -276,7 +283,7 @@ export default function AdminServiciosPage() {
                 className={styles.btnSecondary}
                 onClick={() => handleOpenAdd(category.id)}
               >
-                <Plus size={16} />
+                <Plus size={15} />
                 <span>Agregar a {category.title}</span>
               </button>
             </div>
@@ -424,7 +431,7 @@ export default function AdminServiciosPage() {
                       onChange={(e) => setServiceFormData({ ...serviceFormData, priceStr: e.target.value })}
                       placeholder="Ej: 70.000 a 120.000"
                     />
-                    <span className={styles.fieldHelper}>Visible al cliente en la selección</span>
+                    <span className={styles.fieldHelper}>Visible al cliente en la selección de reserva</span>
                   </div>
 
                   <div className={styles.formField}>
@@ -455,7 +462,7 @@ export default function AdminServiciosPage() {
                   className={styles.btnPrimary}
                 >
                   <Save size={16} />
-                  <span>Guardar en Lista</span>
+                  <span>Guardar y Sincronizar</span>
                 </button>
               </div>
             </form>
