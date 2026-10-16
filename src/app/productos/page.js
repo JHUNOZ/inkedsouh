@@ -50,12 +50,13 @@ export default function ProductosPage() {
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [checkoutStep, setCheckoutStep] = useState('details') // 'details' | 'payment' | 'success'
   const [paymentMethod, setPaymentMethod] = useState('flow') // 'flow' | 'transfer' | 'whatsapp' | 'bancame'
-  const [deliveryTimeframe, setDeliveryTimeframe] = useState('24 a 48 horas hábiles en RM y 2 a 4 días hábiles a Regiones')
+  const [deliveryTimeframe, setDeliveryTimeframe] = useState('24h hábiles Rancagua / Machalí • 24 a 48h RM • 2 a 4 días Regiones')
+  const [expressShippingCost, setExpressShippingCost] = useState(3990)
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
     phone: '',
-    deliveryType: 'santiago', // 'santiago' | 'starken'
+    deliveryType: 'santiago', // 'santiago' (express) | 'starken' (por pagar)
     address: '',
     city: 'Santiago',
     notes: ''
@@ -87,14 +88,20 @@ export default function ProductosPage() {
           setWhatsappNumber(profile.whatsapp_number)
         }
 
-        // Load estimated delivery timeframe from site_config
-        const { data: configData } = await supabase
-          .from('site_config')
-          .select('value')
-          .eq('key_name', 'delivery_timeframe')
-          .maybeSingle()
-        if (configData?.value) {
-          setDeliveryTimeframe(configData.value)
+        // Load services and express shipping fee from /api/services
+        try {
+          const svcRes = await fetch('/api/services')
+          if (svcRes.ok) {
+            const svcData = await svcRes.json()
+            if (svcData.expressShippingCost) {
+              setExpressShippingCost(svcData.expressShippingCost)
+            }
+            if (svcData.deliveryTimeframe) {
+              setDeliveryTimeframe(svcData.deliveryTimeframe)
+            }
+          }
+        } catch (e) {
+          console.warn('Error fetching /api/services in products:', e)
         }
       } catch (err) {
         console.error('Error al cargar productos:', err)
@@ -205,6 +212,10 @@ export default function ProductosPage() {
     return sum + price * item.quantity
   }, 0)
 
+  const isExpressShipping = customerInfo.deliveryType === 'santiago'
+  const shippingFee = isExpressShipping ? expressShippingCost : 0
+  const finalCheckoutTotal = cartTotal + shippingFee
+
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
   // Categories extraction
@@ -247,7 +258,7 @@ export default function ProductosPage() {
       `Titular: InkedSouh Tattoo Studio\n` +
       `RUT: 19.823.419-5\n` +
       `Correo: pagos@inkedsouh.com\n` +
-      `Monto a Transferir: ${formatPrice(cartTotal)} CLP`
+      `Monto a Transferir: ${formatPrice(finalCheckoutTotal)} CLP`
     
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(bankText)
@@ -273,7 +284,8 @@ export default function ProductosPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type: 'product',
-            amount: cartTotal,
+            amount: finalCheckoutTotal,
+            shippingCost: shippingFee,
             orderNumber,
             customer: {
               name: customerInfo.name,
@@ -308,7 +320,8 @@ export default function ProductosPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            amount: cartTotal,
+            amount: finalCheckoutTotal,
+            shippingCost: shippingFee,
             orderNumber,
             customer: {
               name: customerInfo.name,
@@ -422,7 +435,8 @@ export default function ProductosPage() {
             phone: customerInfo.phone
           },
           items: cart,
-          totalAmount: cartTotal,
+          totalAmount: finalCheckoutTotal,
+          shippingCost: shippingFee,
           paymentMethod,
           deliveryType: customerInfo.deliveryType,
           deliveryAddress: customerInfo.address,
@@ -438,7 +452,8 @@ export default function ProductosPage() {
       setSubmittedOrder({
         orderNumber: effectiveOrderNumber,
         date: new Date().toLocaleDateString('es-CL'),
-        total: cartTotal,
+        total: finalCheckoutTotal,
+        shippingCost: shippingFee,
         items: [...cart],
         paymentMethod,
         deliveryType: customerInfo.deliveryType
@@ -810,19 +825,9 @@ export default function ProductosPage() {
                 <div className={styles.modalInfoCol}>
                   <div>
                     <span className={styles.categoryTopBadge}>{selectedProduct.category}</span>
-                    <h2 className={styles.modalTitle}>{selectedProduct.name}</h2>
-                    
-                    {/* Star ratings */}
-                    <div className={styles.ratingRow} style={{ marginTop: '4px', marginBottom: '12px' }}>
-                      <div style={{ display: 'flex', gap: '2px' }}>
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={15} fill="#F59E0B" color="#F59E0B" />
-                        ))}
-                      </div>
-                      <span className={styles.ratingReviews}>(1 Reseña)</span>
-                    </div>
+                    <h2 className={styles.modalTitle} style={{ marginBottom: '12px' }}>{selectedProduct.name}</h2>
 
-                    {/* SKU & Stock Box (Exact Match to Photo 1) */}
+                    {/* SKU & Stock Box */}
                     <div className={styles.skuStockBox}>
                       <div className={styles.skuCell}>
                         SKU: <span style={{ color: '#0F172A', fontFamily: 'monospace' }}>{activeSku || 'N/A'}</span>
@@ -960,14 +965,8 @@ export default function ProductosPage() {
                       </div>
                     </div>
 
-                    {/* Quick Delivery Notice */}
-                    <div className={styles.quickDeliveryNotice}>
-                      <Truck size={15} style={{ color: '#2563EB', flexShrink: 0 }} />
-                      <span><strong>Envíos a todo Chile</strong> • RM Express y Regiones por pagar</span>
-                    </div>
-
                     {/* Dual Action Buttons: Comprar Ahora & Añadir al Carro */}
-                    <div className={styles.modalActionButtonsRow}>
+                    <div className={styles.modalActionButtonsRow} style={{ marginTop: '14px' }}>
                       <button
                         type="button"
                         onClick={() => handleBuyNow(selectedProduct, selectedVariant, selectedQuantity)}
@@ -990,6 +989,12 @@ export default function ProductosPage() {
                         <ShoppingCart size={18} />
                         <span>Añadir al Carro</span>
                       </button>
+                    </div>
+
+                    {/* Clean Dispatch Note below action buttons */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 12px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '0.8rem', color: '#475569', marginTop: '12px' }}>
+                      <Truck size={15} style={{ color: '#E11D48', flexShrink: 0 }} />
+                      <span><strong>Despacho desde Rancagua:</strong> 24h Rancagua / Machalí • 24-48h RM • Starken a Regiones</span>
                     </div>
 
                     {/* Collapsible Ficha Técnica */}
@@ -1172,9 +1177,10 @@ export default function ProductosPage() {
                 {/* PASO 1: DATOS DEL CLIENTE Y ENTREGA */}
                 {checkoutStep === 'details' && (
                   <div className={styles.checkoutGrid}>
+                    {/* Columna Izquierda: Datos del Cliente */}
                     <div>
                       <h4 className={styles.checkoutSectionTitle}>
-                        <User size={18} style={{ color: '#E11D48' }} /> Datos de Contacto
+                        <User size={18} style={{ color: '#E11D48' }} /> Datos de Contacto y Entrega
                       </h4>
 
                       <div className={styles.formGrid}>
@@ -1212,43 +1218,6 @@ export default function ProductosPage() {
                         </div>
 
                         <div className={`${styles.formField} ${styles.fullCol}`}>
-                          <label>Modalidad de Envío *</label>
-                          <div className={styles.shippingCardsGrid}>
-                            <div 
-                              className={`${styles.shippingCard} ${customerInfo.deliveryType === 'santiago' ? styles.shippingCardActive : ''}`}
-                              onClick={() => setCustomerInfo({ ...customerInfo, deliveryType: 'santiago' })}
-                            >
-                              <div className={styles.shippingCardIcon}><Truck size={20} style={{ color: '#E11D48' }} /></div>
-                              <div className={styles.shippingCardText}>
-                                <strong>Envío Express RM</strong>
-                                <small>Santiago y comunas aledañas</small>
-                              </div>
-                              {customerInfo.deliveryType === 'santiago' && <span className={styles.shippingCheck}>✓</span>}
-                            </div>
-
-                            <div 
-                              className={`${styles.shippingCard} ${customerInfo.deliveryType === 'starken' ? styles.shippingCardActive : ''}`}
-                              onClick={() => setCustomerInfo({ ...customerInfo, deliveryType: 'starken' })}
-                            >
-                              <div className={styles.shippingCardIcon}><Package size={20} style={{ color: '#E11D48' }} /></div>
-                              <div className={styles.shippingCardText}>
-                                <strong>Por Pagar Regiones</strong>
-                                <small>Starken / Chilexpress a todo Chile</small>
-                              </div>
-                              {customerInfo.deliveryType === 'starken' && <span className={styles.shippingCheck}>✓</span>}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Banner Plazo de Entrega */}
-                        <div className={styles.fullCol} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <Truck size={20} style={{ color: '#2563EB', flexShrink: 0 }} />
-                          <div style={{ fontSize: '0.8rem', color: '#1E40AF', lineHeight: 1.4 }}>
-                            <strong>Plazo de Entrega Estimado:</strong> <span style={{ color: '#0F172A', fontWeight: 600 }}>{deliveryTimeframe}</span>. Todos los pedidos cuentan con código de seguimiento.
-                          </div>
-                        </div>
-
-                        <div className={`${styles.formField} ${styles.fullCol}`}>
                           <label>Dirección de Envío (Calle, número, depto / sucursal) *</label>
                           <input 
                             type="text" 
@@ -1263,7 +1232,7 @@ export default function ProductosPage() {
                           <label>Comuna / Ciudad *</label>
                           <input 
                             type="text" 
-                            placeholder="Ej: Providencia, Viña del Mar, Concepción..." 
+                            placeholder="Ej: Rancagua, Santiago, Machalí, Viña del Mar..." 
                             value={customerInfo.city}
                             onChange={(e) => setCustomerInfo({ ...customerInfo, city: e.target.value })}
                             required
@@ -1274,64 +1243,150 @@ export default function ProductosPage() {
                           <label>Notas adicionales de despacho (opcional)</label>
                           <textarea 
                             rows={2} 
-                            placeholder="Instrucciones para el repartidor, horarios de preferencia..." 
+                            placeholder="Instrucciones para el repartidor, horarios de entrega..." 
                             value={customerInfo.notes}
                             onChange={(e) => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
                           />
                         </div>
                       </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                        <button 
-                          type="button" 
-                          onClick={() => {
-                            if (!customerInfo.name.trim()) {
-                              alert('Por favor ingresa tu nombre completo')
-                              return
-                            }
-                            if (!customerInfo.phone.trim()) {
-                              alert('Por favor ingresa tu WhatsApp de contacto')
-                              return
-                            }
-                            if (!customerInfo.email.trim() || !customerInfo.email.includes('@')) {
-                              alert('Por favor ingresa un correo electrónico válido para enviarte el comprobante de compra')
-                              return
-                            }
-                            if (!customerInfo.address.trim()) {
-                              alert('Por favor ingresa tu dirección de envío')
-                              return
-                            }
-                            setCheckoutStep('payment')
-                          }}
-                          className={styles.btnAddToCartLarge}
-                          style={{ width: 'auto', padding: '12px 28px', fontSize: '0.95rem' }}
-                        >
-                          <span>Continuar al Pago</span>
-                          <ChevronRight size={18} />
-                        </button>
-                      </div>
                     </div>
 
-                    {/* Summary Col */}
+                    {/* Columna Derecha: Resumen de Compra + Selección de Envío */}
                     <div className={styles.checkoutOrderSummary}>
                       <h4 className={styles.checkoutSectionTitle}>
                         <ShoppingBag size={18} style={{ color: '#E11D48' }} /> Resumen ({cartCount})
                       </h4>
-                      {cart.map((item) => (
-                        <div key={item.id} className={styles.summaryItemRow}>
-                          <div className={styles.summaryItemName}>
-                            <span>{item.name} {item.variantName ? `(${item.variantName})` : ''}</span>
-                            <small style={{ color: '#64748B' }}>{item.quantity} un. x {formatPrice(item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price)}</small>
+
+                      {/* Lista de productos */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+                        {cart.map((item) => (
+                          <div key={item.id} className={styles.summaryItemRow}>
+                            <div className={styles.summaryItemName}>
+                              <span>{item.name} {item.variantName ? `(${item.variantName})` : ''}</span>
+                              <small style={{ color: '#64748B' }}>{item.quantity} un. x {formatPrice(item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price)}</small>
+                            </div>
+                            <span style={{ color: '#0F172A', fontWeight: 700 }}>
+                              {formatPrice((item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price) * item.quantity)}
+                            </span>
                           </div>
-                          <span style={{ color: '#0F172A', fontWeight: 700 }}>
-                            {formatPrice((item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price) * item.quantity)}
+                        ))}
+                      </div>
+
+                      {/* SELECCIÓN DE ENVÍO DIRECTAMENTE ABAJO DEL RESUMEN */}
+                      <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '12px', marginTop: '4px' }}>
+                        <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Truck size={15} style={{ color: '#E11D48' }} /> Modalidad de Envío
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {/* Opción 1: Envío Express Rancagua & RM */}
+                          <div 
+                            onClick={() => setCustomerInfo({ ...customerInfo, deliveryType: 'santiago' })}
+                            style={{
+                              border: isExpressShipping ? '2px solid #E11D48' : '1px solid #CBD5E1',
+                              background: isExpressShipping ? '#FFF1F2' : '#FFFFFF',
+                              borderRadius: '10px',
+                              padding: '10px 12px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: isExpressShipping ? '5px solid #E11D48' : '2px solid #94A3B8', background: '#FFFFFF', flexShrink: 0 }} />
+                              <div>
+                                <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A' }}>Envío Express (Rancagua / RM)</div>
+                                <div style={{ fontSize: '0.72rem', color: '#64748B' }}>24h Rancagua / Machalí • 24-48h RM</div>
+                              </div>
+                            </div>
+                            <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#E11D48' }}>
+                              +{formatPrice(expressShippingCost)}
+                            </span>
+                          </div>
+
+                          {/* Opción 2: Starken / Chilexpress Regiones Por Pagar */}
+                          <div 
+                            onClick={() => setCustomerInfo({ ...customerInfo, deliveryType: 'starken' })}
+                            style={{
+                              border: !isExpressShipping ? '2px solid #E11D48' : '1px solid #CBD5E1',
+                              background: !isExpressShipping ? '#FFF1F2' : '#FFFFFF',
+                              borderRadius: '10px',
+                              padding: '10px 12px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: !isExpressShipping ? '5px solid #E11D48' : '2px solid #94A3B8', background: '#FFFFFF', flexShrink: 0 }} />
+                              <div>
+                                <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A' }}>Por Pagar Regiones</div>
+                                <div style={{ fontSize: '0.72rem', color: '#64748B' }}>Starken / Chilexpress a todo Chile</div>
+                              </div>
+                            </div>
+                            <span style={{ fontSize: '0.76rem', fontWeight: 700, color: '#059669', background: '#DCFCE7', padding: '2px 6px', borderRadius: '4px' }}>
+                              Por Pagar ($0)
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Origen Rancagua */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.72rem', color: '#64748B', marginTop: '8px' }}>
+                          <MapPin size={12} style={{ color: '#E11D48', flexShrink: 0 }} />
+                          <span>Despacho prioritario desde nuestro estudio en Rancagua.</span>
+                        </div>
+                      </div>
+
+                      {/* Desglose de Totales */}
+                      <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '10px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', color: '#64748B' }}>
+                          <span>Subtotal</span>
+                          <span>{formatPrice(cartTotal)} CLP</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', color: '#64748B' }}>
+                          <span>Envío</span>
+                          <span style={{ fontWeight: 600, color: isExpressShipping ? '#E11D48' : '#059669' }}>
+                            {isExpressShipping ? `+${formatPrice(expressShippingCost)} CLP` : 'Por Pagar ($0)'}
                           </span>
                         </div>
-                      ))}
-                      <div className={styles.summaryTotalRow}>
-                        <span>Total</span>
-                        <span style={{ color: '#E11D48' }}>{formatPrice(cartTotal)} CLP</span>
+                        <div className={styles.summaryTotalRow} style={{ marginTop: '2px', paddingTop: '8px' }}>
+                          <span>Total</span>
+                          <span style={{ color: '#E11D48' }}>{formatPrice(finalCheckoutTotal)} CLP</span>
+                        </div>
                       </div>
+
+                      {/* Botón Continuar */}
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          if (!customerInfo.name.trim()) {
+                            alert('Por favor ingresa tu nombre completo')
+                            return
+                          }
+                          if (!customerInfo.phone.trim()) {
+                            alert('Por favor ingresa tu WhatsApp de contacto')
+                            return
+                          }
+                          if (!customerInfo.email.trim() || !customerInfo.email.includes('@')) {
+                            alert('Por favor ingresa un correo electrónico válido para enviarte el comprobante de compra')
+                            return
+                          }
+                          if (!customerInfo.address.trim()) {
+                            alert('Por favor ingresa tu dirección de envío')
+                            return
+                          }
+                          setCheckoutStep('payment')
+                        }}
+                        className={styles.btnAddToCartLarge}
+                        style={{ fontSize: '0.95rem', marginTop: '10px', padding: '12px' }}
+                      >
+                        <span>Continuar al Pago</span>
+                        <ChevronRight size={18} />
+                      </button>
                     </div>
                   </div>
                 )}
@@ -1536,7 +1591,7 @@ export default function ProductosPage() {
                           ) : (
                             <>
                               <span>
-                                {paymentMethod === 'flow' && `Pagar con Webpay Plus (${formatPrice(cartTotal)} CLP)`}
+                                {paymentMethod === 'flow' && `Pagar con Webpay Plus (${formatPrice(finalCheckoutTotal)} CLP)`}
                                 {paymentMethod === 'whatsapp' && 'Finalizar por WhatsApp'}
                                 {paymentMethod === 'transfer' && 'Confirmar Pedido por Transferencia'}
                                 {paymentMethod === 'bancame' && 'Pagar en Cuotas con Banca.me'}
@@ -1570,9 +1625,21 @@ export default function ProductosPage() {
                           </span>
                         </div>
                       ))}
-                      <div className={styles.summaryTotalRow}>
-                        <span>Total Final</span>
-                        <span style={{ color: '#E11D48' }}>{formatPrice(cartTotal)} CLP</span>
+                      <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '10px', marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', color: '#64748B' }}>
+                          <span>Subtotal</span>
+                          <span>{formatPrice(cartTotal)} CLP</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', color: '#64748B' }}>
+                          <span>Envío</span>
+                          <span style={{ fontWeight: 600, color: isExpressShipping ? '#E11D48' : '#059669' }}>
+                            {isExpressShipping ? `Express (+${formatPrice(expressShippingCost)} CLP)` : 'Por Pagar ($0)'}
+                          </span>
+                        </div>
+                        <div className={styles.summaryTotalRow} style={{ marginTop: '2px', paddingTop: '8px' }}>
+                          <span>Total Final</span>
+                          <span style={{ color: '#E11D48' }}>{formatPrice(finalCheckoutTotal)} CLP</span>
+                        </div>
                       </div>
                     </div>
                   </div>

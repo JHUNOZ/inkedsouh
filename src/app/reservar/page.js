@@ -30,6 +30,7 @@ export default function ReservarPage() {
     consentData: null
   })
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [categories, setCategories] = useState(SERVICE_CATEGORIES)
   const [dbBookings, setDbBookings] = useState([])
   const [dbBlocks, setDbBlocks] = useState([])
   const [submitted, setSubmitted] = useState(false)
@@ -37,7 +38,26 @@ export default function ReservarPage() {
   const [linkError, setLinkError] = useState('')
 
   const supabase = createClient()
-  const selectedService = useMemo(() => SERVICE_TYPES.find(s => s.id === form.serviceId), [form.serviceId])
+  const allServices = useMemo(() => categories.flatMap(c => c.services || []), [categories])
+  const selectedService = useMemo(() => allServices.find(s => s.id === form.serviceId), [allServices, form.serviceId])
+
+  // Cargar servicios dinámicos configurados por el tatuador
+  useEffect(() => {
+    async function loadDynamicServices() {
+      try {
+        const res = await fetch('/api/services')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.services && Array.isArray(data.services) && data.services.length > 0) {
+            setCategories(data.services)
+          }
+        }
+      } catch (e) {
+        console.warn('Error loading dynamic services:', e)
+      }
+    }
+    loadDynamicServices()
+  }, [])
 
   // Cargar disponibilidad en tiempo real desde la API (Feature Vice)
   useEffect(() => {
@@ -263,23 +283,24 @@ export default function ReservarPage() {
         throw new Error(errData.error || 'Error al enviar la reserva')
       }
 
-      if (payWithFlow && selectedService?.price) {
+      const bookingAmount = selectedService?.deposit || selectedService?.price || 20000
+      if (payWithFlow && bookingAmount) {
         const flowRes = await fetch('/api/flow/create-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type: 'booking',
-            amount: selectedService.price,
-            courseTitle: `${selectedService.title} (${dateIso} ${form.time} hrs)`,
+            amount: bookingAmount,
+            courseTitle: `${selectedService?.title || 'Servicio de Tatuaje'} (${dateIso} ${form.time} hrs)`,
             customer: {
               name: form.name,
               email: form.email,
               phone: form.phone
             },
             items: [{
-              id: selectedService.id,
-              name: `Reserva: ${selectedService.title} (${dateIso} ${form.time} hrs)`,
-              price: selectedService.price,
+              id: selectedService?.id || 'reserva',
+              name: `Reserva: ${selectedService?.title || 'Servicio de Tatuaje'} (${dateIso} ${form.time} hrs)`,
+              price: bookingAmount,
               quantity: 1
             }]
           })
@@ -323,7 +344,7 @@ export default function ReservarPage() {
     )
   }
 
-  const currentCategoryObj = SERVICE_CATEGORIES.find(c => c.id === selectedCategory)
+  const currentCategoryObj = categories.find(c => c.id === selectedCategory)
 
   return (
     <>
@@ -355,14 +376,14 @@ export default function ReservarPage() {
                 <>
                   <h3 className={styles.stepTitle}>Selecciona una categoría</h3>
                   <div className={styles.categoryGrid}>
-                    {SERVICE_CATEGORIES.map((cat) => (
+                    {categories.map((cat) => (
                       <button 
                         key={cat.id} 
                         className={styles.categoryCard}
                         onClick={() => setSelectedCategory(cat.id)}
                       >
                         <span className={styles.categoryTitle}>{cat.title}</span>
-                        <span className={styles.categoryCount}>{cat.services.length} servicios</span>
+                        <span className={styles.categoryCount}>{(cat.services || []).length} servicios</span>
                       </button>
                     ))}
                   </div>
@@ -377,16 +398,23 @@ export default function ReservarPage() {
                   </div>
                   
                   <div className={styles.serviceGrid}>
-                    {currentCategoryObj?.services.map((svc) => (
+                    {(currentCategoryObj?.services || []).map((svc) => (
                       <div key={svc.id} className={`${styles.serviceCard} ${form.serviceId === svc.id ? styles.serviceActive : ''}`}>
                         <div className={styles.serviceInfo}>
                           <h4 className={styles.serviceTitle}>{svc.title}</h4>
                           {svc.desc && <p className={styles.serviceDesc}>{svc.desc}</p>}
                         </div>
                         <div className={styles.serviceFooter}>
-                          <div className={styles.serviceMeta}>
-                            <span>{svc.timeStr} |</span>
-                            <span className={styles.servicePrice}>{svc.priceStr}</span>
+                          <div className={styles.serviceMeta} style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span>{svc.timeStr} |</span>
+                              <span className={styles.servicePrice}>{svc.priceStr ? `$${svc.priceStr}` : ''}</span>
+                            </div>
+                            {svc.deposit ? (
+                              <div style={{ fontSize: '0.78rem', color: '#E11D48', fontWeight: 700 }}>
+                                Abono: ${Number(svc.deposit).toLocaleString('es-CL')} CLP
+                              </div>
+                            ) : null}
                           </div>
                           <button 
                             className={styles.selectBtn}
