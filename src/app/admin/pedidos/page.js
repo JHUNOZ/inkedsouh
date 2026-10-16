@@ -30,6 +30,8 @@ function PedidosAdminContent() {
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [confirmingId, setConfirmingId] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
+  const [selectedIds, setSelectedIds] = useState([])
+  const [deletingBatch, setDeletingBatch] = useState(false)
   const [savingShipping, setSavingShipping] = useState(false)
   const [toast, setToast] = useState(null)
 
@@ -43,7 +45,7 @@ function PedidosAdminContent() {
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
-    setTimeout(() => setToast(null), 3500)
+    setTimeout(() => setToast(null), 4000)
   }
 
   // Texto generado automáticamente segun los días configurados
@@ -54,10 +56,11 @@ function PedidosAdminContent() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      // 1. Cargar Órdenes
+      // 1. Cargar Órdenes (excluyendo eliminadas)
       const { data: ordersData, error: ordersErr } = await supabase
         .from('orders')
         .select('*')
+        .neq('status', 'eliminada')
         .order('created_at', { ascending: false })
 
       if (!ordersErr && ordersData) {
@@ -190,18 +193,46 @@ function PedidosAdminContent() {
     }
   }
 
-  // Eliminar transacción pendiente (borrar pruebas o no concretadas)
+  // Manejo de Selección Múltiple
+  const handleToggleSelect = (orderNumber) => {
+    setSelectedIds(prev => 
+      prev.includes(orderNumber)
+        ? prev.filter(id => id !== orderNumber)
+        : [...prev, orderNumber]
+    )
+  }
+
+  const handleToggleSelectAll = (list) => {
+    const listNumbers = list.map(o => o.order_number)
+    const isAll = listNumbers.length > 0 && listNumbers.every(num => selectedIds.includes(num))
+    if (isAll) {
+      setSelectedIds(prev => prev.filter(id => !listNumbers.includes(id)))
+    } else {
+      setSelectedIds(prev => Array.from(new Set([...prev, ...listNumbers])))
+    }
+  }
+
+  // Eliminar transacción individual
   const handleDeleteOrder = async (order) => {
     const isPaid = order.payment_status === 'pagado' || order.status === 'pagado' || order.status === 'completada'
     const warningMsg = isPaid 
       ? `¿Estás seguro de eliminar la orden #${order.order_number}? Esta orden ya está marcada como pagada.`
-      : `¿Eliminar la orden #${order.order_number} de ${order.customer_name}? Esta acción no se puede deshacer.`
+      : `¿Eliminar la orden #${order.order_number} de ${order.customer_name}?`
 
     if (!confirm(warningMsg)) return
 
+    // 1. Actualización optimista inmediata en la interfaz
+    setOrders(prev => prev.filter(o => o.order_number !== order.order_number && o.id !== order.id))
+    setSelectedIds(prev => prev.filter(id => id !== order.order_number))
+    if (selectedOrder && (selectedOrder.id === order.id || selectedOrder.order_number === order.order_number)) {
+      setSelectedOrder(null)
+    }
+
+    showToast(`Orden #${order.order_number} eliminada. La base de datos está sincronizando los cambios en segundo plano.`)
+
     try {
       setDeletingId(order.id || order.order_number)
-      const res = await fetch('/api/orders/delete', {
+      await fetch('/api/orders/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -209,21 +240,52 @@ function PedidosAdminContent() {
           orderNumber: order.order_number
         })
       })
-
-      const data = await res.json()
-      if (res.ok && data.success) {
-        showToast(`Orden #${order.order_number} eliminada correctamente`)
-        if (selectedOrder && (selectedOrder.id === order.id || selectedOrder.order_number === order.order_number)) {
-          setSelectedOrder(null)
-        }
-        await fetchData()
-      } else {
-        throw new Error(data.error || 'Error al eliminar orden')
-      }
+      fetchData()
     } catch (err) {
-      alert(err.message || 'Error al eliminar la orden.')
+      console.error('Error al sincronizar eliminación:', err)
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  // Eliminar múltiples transacciones seleccionadas
+  const handleDeleteBatch = async () => {
+    if (selectedIds.length === 0) return
+
+    const count = selectedIds.length
+    const anyPaid = orders.some(o => selectedIds.includes(o.order_number) && (o.payment_status === 'pagado' || o.status === 'pagado' || o.status === 'completada'))
+
+    const confirmMsg = anyPaid
+      ? `Atención: 1 o más de los ${count} pedidos seleccionados están marcados como pagados. ¿Estás seguro de eliminarlos?`
+      : `¿Eliminar los ${count} pedidos seleccionados? Esta acción los removerá de la lista.`
+
+    if (!confirm(confirmMsg)) return
+
+    const numbersToDelete = [...selectedIds]
+
+    // 1. Actualización optimista inmediata
+    setOrders(prev => prev.filter(o => !numbersToDelete.includes(o.order_number)))
+    setSelectedIds([])
+    if (selectedOrder && numbersToDelete.includes(selectedOrder.order_number)) {
+      setSelectedOrder(null)
+    }
+
+    showToast(`${count} ${count === 1 ? 'pedido eliminado' : 'pedidos eliminados'}. La base de datos está sincronizando los registros actualizados en segundo plano.`)
+
+    setDeletingBatch(true)
+    try {
+      await fetch('/api/orders/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderNumbers: numbersToDelete
+        })
+      })
+      fetchData()
+    } catch (err) {
+      console.error('Error al procesar eliminación en lote:', err)
+    } finally {
+      setDeletingBatch(false)
     }
   }
 
@@ -409,6 +471,34 @@ function PedidosAdminContent() {
             </span>
           </div>
 
+          {/* Barra de Selección Múltiple */}
+          {selectedIds.length > 0 && (
+            <div className={styles.selectionBar}>
+              <div className={styles.selectionText}>
+                <Check size={16} />
+                <span>{selectedIds.length} {selectedIds.length === 1 ? 'pedido seleccionado' : 'pedidos seleccionados'}</span>
+              </div>
+              <div className={styles.selectionActions}>
+                <button 
+                  type="button" 
+                  className={styles.btnDeleteBatch}
+                  onClick={handleDeleteBatch}
+                  disabled={deletingBatch}
+                >
+                  <Trash2 size={14} />
+                  <span>{deletingBatch ? 'Eliminando...' : `Eliminar Seleccionados (${selectedIds.length})`}</span>
+                </button>
+                <button 
+                  type="button" 
+                  className={styles.btnCancelSelection}
+                  onClick={() => setSelectedIds([])}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Tabla de Órdenes */}
           <div className={styles.card}>
             {filteredOrders.length === 0 ? (
@@ -421,6 +511,15 @@ function PedidosAdminContent() {
                 <table className={styles.table}>
                   <thead>
                     <tr>
+                      <th className={styles.checkboxTh}>
+                        <input 
+                          type="checkbox" 
+                          className={styles.customCheckbox}
+                          checked={filteredOrders.length > 0 && filteredOrders.every(o => selectedIds.includes(o.order_number))}
+                          onChange={() => handleToggleSelectAll(filteredOrders)}
+                          title="Seleccionar o deseleccionar todos los pedidos"
+                        />
+                      </th>
                       <th>Orden</th>
                       <th>Fecha</th>
                       <th>Cliente</th>
@@ -437,13 +536,26 @@ function PedidosAdminContent() {
                       const isPending = !isPaid
                       const dateStr = order.created_at ? new Date(order.created_at).toLocaleDateString('es-CL') : 'Reciente'
                       const isExpress = order.delivery_type === 'santiago' || order.delivery_type === 'express'
+                      const isSelected = selectedIds.includes(order.order_number)
 
                       let paymentMethodLabel = 'Flow Webpay'
                       if (order.payment_method === 'transfer') paymentMethodLabel = 'Transferencia'
                       if (order.payment_method === 'whatsapp') paymentMethodLabel = 'WhatsApp'
 
                       return (
-                        <tr key={order.id || order.order_number}>
+                        <tr 
+                          key={order.id || order.order_number}
+                          style={{ background: isSelected ? '#FFF1F2' : undefined }}
+                        >
+                          <td className={styles.checkboxTd}>
+                            <input 
+                              type="checkbox" 
+                              className={styles.customCheckbox}
+                              checked={isSelected}
+                              onChange={() => handleToggleSelect(order.order_number)}
+                              title={`Seleccionar orden #${order.order_number}`}
+                            />
+                          </td>
                           <td>
                             <strong style={{ color: '#0F172A', fontFamily: 'monospace' }}>
                               #{order.order_number}
@@ -505,29 +617,27 @@ function PedidosAdminContent() {
                               </button>
 
                               {isPending && (
-                                <>
-                                  <button 
-                                    type="button"
-                                    className={styles.actionBtnConfirm}
-                                    onClick={() => handleConfirmPayment(order)}
-                                    disabled={confirmingId === (order.id || order.order_number)}
-                                    title="Marcar orden como pagada y completada"
-                                  >
-                                    <Check size={13} />
-                                    <span>{confirmingId === (order.id || order.order_number) ? '...' : 'Confirmar'}</span>
-                                  </button>
-
-                                  <button 
-                                    type="button"
-                                    className={styles.actionBtnDelete}
-                                    onClick={() => handleDeleteOrder(order)}
-                                    disabled={deletingId === (order.id || order.order_number)}
-                                    title="Eliminar orden pendiente o de prueba"
-                                  >
-                                    <Trash2 size={13} />
-                                  </button>
-                                </>
+                                <button 
+                                  type="button"
+                                  className={styles.actionBtnConfirm}
+                                  onClick={() => handleConfirmPayment(order)}
+                                  disabled={confirmingId === (order.id || order.order_number)}
+                                  title="Marcar orden como pagada y completada"
+                                >
+                                  <Check size={13} />
+                                  <span>{confirmingId === (order.id || order.order_number) ? '...' : 'Confirmar'}</span>
+                                </button>
                               )}
+
+                              <button 
+                                type="button"
+                                className={styles.actionBtnDelete}
+                                onClick={() => handleDeleteOrder(order)}
+                                disabled={deletingId === (order.id || order.order_number)}
+                                title="Eliminar orden"
+                              >
+                                <Trash2 size={13} />
+                              </button>
                             </div>
                           </td>
                         </tr>

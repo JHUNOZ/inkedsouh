@@ -9,8 +9,8 @@
 /* Sidebar */
 .sidebar {
   width: 270px;
-  background: #FFFFFF;
-  border-right: 1px solid #E2E8F0;
+  background: #07070B;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -19,7 +19,7 @@
   left: 0;
   z-index: 1000;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
 }
 
 .sidebarHeader {
@@ -28,7 +28,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  border-bottom: 1px solid #E2E8F0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #07070B;
 }
 
 .logoLink {
@@ -43,7 +44,7 @@
   font-size: 1.45rem;
   font-weight: 700;
   letter-spacing: 3px;
-  color: #0F172A;
+  color: #FFFFFF;
 }
 
 .logoAccent {
@@ -55,19 +56,20 @@
   height: 6px;
   border-radius: 50%;
   background: #E11D48;
-  box-shadow: 0 0 8px rgba(225, 29, 72, 0.35);
+  box-shadow: 0 0 8px rgba(225, 29, 72, 0.6);
 }
 
 .closeBtn {
   display: none;
-  color: #64748B;
+  color: #94A3B8;
   background: none;
   border: none;
   cursor: pointer;
+  transition: color 0.2s ease;
 }
 
 .closeBtn:hover {
-  color: #0F172A;
+  color: #FFFFFF;
 }
 
 /* Navigation */
@@ -83,7 +85,7 @@
 .navSectionLabel {
   font-size: 0.68rem;
   font-weight: 700;
-  color: #94A3B8;
+  color: #64748B;
   letter-spacing: 1.2px;
   padding: 4px 12px 8px;
   text-transform: uppercase;
@@ -95,7 +97,7 @@
   gap: 12px;
   padding: 10px 14px;
   border-radius: 12px;
-  color: #475569;
+  color: #CBD5E1;
   font-size: 0.88rem;
   font-weight: 500;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -120,8 +122,8 @@
 }
 
 .navItem:hover {
-  background: #F1F5F9;
-  color: #0F172A;
+  background: rgba(255, 255, 255, 0.06);
+  color: #FFFFFF;
 }
 
 .navItem:hover .navIconWrapper {
@@ -129,10 +131,10 @@
 }
 
 .navItemActive {
-  background: #FFF1F2 !important;
-  color: #E11D48 !important;
+  background: rgba(225, 29, 72, 0.16) !important;
+  color: #FFFFFF !important;
   font-weight: 600;
-  border: 1px solid #FECDD3;
+  border: 1px solid rgba(225, 29, 72, 0.35);
 }
 
 .navItemActive .navIconWrapper {
@@ -147,26 +149,27 @@
   width: 3px;
   border-radius: 0 4px 4px 0;
   background: #E11D48;
+  box-shadow: 0 0 10px rgba(225, 29, 72, 0.6);
 }
 
 .navItemHighlight {
-  border: 1px solid #E2E8F0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .navBadge {
   font-size: 0.62rem;
   font-weight: 700;
-  background: #FFE4E6;
-  color: #E11D48;
+  background: rgba(225, 29, 72, 0.2);
+  color: #FF8591;
   padding: 2px 7px;
   border-radius: 6px;
-  border: 1px solid #FECDD3;
+  border: 1px solid rgba(225, 29, 72, 0.35);
   letter-spacing: 0.5px;
 }
 
 .navDivider {
   height: 1px;
-  background: #E2E8F0;
+  background: rgba(255, 255, 255, 0.08);
   margin: 14px 8px;
 }
 
@@ -176,7 +179,7 @@
   gap: 12px;
   padding: 10px 14px;
   border-radius: 12px;
-  color: #64748B;
+  color: #94A3B8;
   font-size: 0.84rem;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -184,15 +187,15 @@
 }
 
 .navItemExternal:hover {
-  background: #F1F5F9;
-  color: #0F172A;
+  background: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
 }
 
 /* Sidebar Footer */
 .sidebarFooter {
   padding: 16px;
-  border-top: 1px solid #E2E8F0;
-  background: #F8FAFC;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #07070B;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -204,16 +207,16 @@
   gap: 10px;
   padding: 8px 10px;
   border-radius: 10px;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background: #111118;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .adminAvatar {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: #FFF1F2;
-  border: 1px solid #FECDD3;
+  background: rgba(225, 29, 72, 0.15);
+  border: 1px solid rgba(225, 29, 72, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -229,12 +232,12 @@
 .adminName {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #0F172A;
+  color: #FFFFFF;
 }
 
 .adminEmail {
   font-size: 0.7rem;
-  color: #64748B;
+  color: #94A3B8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -247,9 +250,9 @@
   gap: 8px;
   width: 100%;
   padding: 9px;
-  color: #475569;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  color: #CBD5E1;
+  background: #111118;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   font-size: 0.82rem;
   font-weight: 500;
@@ -258,9 +261,9 @@
 }
 
 .logoutBtn:hover {
-  background: #FEF2F2;
-  border-color: #FCA5A5;
-  color: #DC2626;
+  background: rgba(220, 38, 38, 0.2);
+  border-color: #DC2626;
+  color: #EF4444;
 }
 
 /* Main Content */
@@ -279,12 +282,12 @@
   top: 18px;
   right: 18px;
   z-index: 990;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background: #07070B;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   padding: 10px;
   border-radius: 12px;
-  color: #0F172A;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
   cursor: pointer;
 }
 

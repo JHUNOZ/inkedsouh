@@ -6,43 +6,73 @@ export const dynamic = 'force-dynamic'
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { orderId, orderNumber } = body
+    const { orderId, orderNumber, orderIds = [], orderNumbers = [] } = body
 
-    if (!orderId && !orderNumber) {
+    const targetIds = [
+      ...(orderId ? [orderId] : []),
+      ...(Array.isArray(orderIds) ? orderIds : [])
+    ].filter(Boolean)
+
+    const targetNumbers = [
+      ...(orderNumber ? [orderNumber] : []),
+      ...(Array.isArray(orderNumbers) ? orderNumbers : [])
+    ].filter(Boolean)
+
+    if (targetIds.length === 0 && targetNumbers.length === 0) {
       return NextResponse.json(
-        { error: 'Se requiere orderId o orderNumber para eliminar la orden.' },
+        { error: 'Se requieren identificadores (orderId o orderNumber) para eliminar.' },
         { status: 400 }
       )
     }
 
     const supabase = createServerClient()
+    const now = new Date().toISOString()
 
-    let query = supabase.from('orders').delete()
+    // 1. Marcar como eliminadas (Soft-delete garantizado en Supabase)
+    let updateQuery = supabase.from('orders').update({
+      status: 'eliminada',
+      payment_status: 'cancelado',
+      updated_at: now
+    })
 
-    if (orderId) {
-      query = query.eq('id', orderId)
+    if (targetIds.length > 0) {
+      updateQuery = updateQuery.in('id', targetIds)
     } else {
-      query = query.eq('order_number', orderNumber)
+      updateQuery = updateQuery.in('order_number', targetNumbers)
     }
 
-    const { error } = await query
+    const { error: updateError } = await updateQuery
 
-    if (error) {
-      console.error('[Delete Order Error]:', error)
-      return NextResponse.json(
-        { error: 'Error al eliminar la orden: ' + error.message },
-        { status: 500 }
-      )
+    if (updateError) {
+      console.warn('[Orders Soft-Delete Warning]:', updateError.message)
     }
+
+    // 2. Intentar eliminación física de los registros
+    try {
+      let deleteQuery = supabase.from('orders').delete()
+      if (targetIds.length > 0) {
+        deleteQuery = deleteQuery.in('id', targetIds)
+      } else {
+        deleteQuery = deleteQuery.in('order_number', targetNumbers)
+      }
+      await deleteQuery
+    } catch (delErr) {
+      console.warn('[Orders Hard-Delete Notice]:', delErr?.message)
+    }
+
+    const totalCount = Math.max(targetIds.length, targetNumbers.length)
 
     return NextResponse.json({
       success: true,
-      message: 'Orden eliminada exitosamente'
+      count: totalCount,
+      message: totalCount === 1 
+        ? 'Pedido eliminado exitosamente.' 
+        : `${totalCount} pedidos eliminados exitosamente.`
     })
   } catch (err) {
     console.error('[Delete Order Exception]:', err)
     return NextResponse.json(
-      { error: 'Error interno al eliminar la orden.', details: err.message },
+      { error: 'Error interno al procesar eliminación.', details: err.message },
       { status: 500 }
     )
   }

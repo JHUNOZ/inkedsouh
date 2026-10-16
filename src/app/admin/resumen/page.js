@@ -104,10 +104,11 @@ export default function ResumenPage() {
         })
       }
 
-      // 5. Órdenes y Ventas de la Tienda de Productos
+      // 5. Órdenes y Ventas de la Tienda de Productos (excluyendo eliminadas)
       const { data: ordersData } = await supabase
         .from('orders')
         .select('*')
+        .neq('status', 'eliminada')
         .order('created_at', { ascending: false })
 
       let totalSales = 0
