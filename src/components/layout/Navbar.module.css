@@ -1,4 +1,4 @@
-/* Navbar — Premium, correctamente alineada */
+/* Navbar — Sólida, oscura y uniforme desde el principio */
 .nav {
   position: fixed;
   top: 0;
@@ -6,20 +6,18 @@
   right: 0;
   z-index: 10001; /* Mayor que ProductsPreview (10000) */
   height: var(--nav-height);
-  transition: all var(--transition-base);
+  background: #07070B;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  transition: transform var(--transition-base);
 }
 
-/* Estados de fondo */
-.navTransparent {
-  background: #050508;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
-}
-
+/* Sólido y oscuro desde el principio (sin translucidez ni cambios de color al deslizar) */
+.navTransparent,
 .navSolid {
-  background: #020204;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.85);
+  background: #07070B;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
 }
 
 /* Contenedor interno — FLEX HORIZONTAL */
