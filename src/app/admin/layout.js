@@ -47,7 +47,7 @@ export default function AdminLayout({ children }) {
       badge: 'WP-SYNC',
       highlight: true
     },
-    { href: '/admin/cursos', label: 'Academia & Alumnos', icon: BookOpen },
+    { href: '/admin/cursos', label: 'Cursos', icon: BookOpen },
     { href: '/admin/galeria', label: 'Portafolio & Galería', icon: ImageIcon },
     { href: '/admin/configuracion', label: 'Configuración Web', icon: Settings },
     { href: '/admin/perfil', label: 'Perfil de Artista', icon: User }

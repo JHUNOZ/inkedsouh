@@ -400,6 +400,48 @@ function PedidosAdminContent() {
       {/* SUB-PESTAÑA 1: PEDIDOS & VENTAS ONLINE */}
       {activeTab === 'pedidos' && (
         <>
+          {/* Mensaje informativo de configuración de envíos y plazos */}
+          <div style={{
+            background: '#EFF6FF',
+            border: '1px solid #BFDBFE',
+            borderRadius: '12px',
+            padding: '12px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#1E40AF', fontSize: '0.86rem' }}>
+              <Truck size={18} style={{ color: '#2563EB', flexShrink: 0 }} />
+              <span>
+                <strong>Aviso de Configuración:</strong> Puedes modificar las tarifas de envío express y los plazos de entrega automáticos por zona en la subpestaña <strong>Envíos y Entregas</strong>.
+              </span>
+            </div>
+            <button 
+              type="button" 
+              onClick={() => setActiveTab('envios')}
+              style={{
+                background: '#FFFFFF',
+                color: '#2563EB',
+                border: '1px solid #93C5FD',
+                padding: '6px 14px',
+                borderRadius: '8px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <span>Ir a Envíos y Entregas</span>
+              <Truck size={13} />
+            </button>
+          </div>
+
           {/* KPI Metrics */}
           <div className={styles.kpiGrid}>
             <div className={styles.kpiCard}>

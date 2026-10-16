@@ -185,9 +185,6 @@ export default function AdminServiciosPage() {
         <div className={styles.titleWrap}>
           <div className={styles.badgeRow}>
             <span className={styles.badgePill}>GESTIÓN DE SERVICIOS</span>
-            <span className={styles.locationBadge}>
-              <MapPin size={13} style={{ color: '#E11D48' }} /> Rancagua, Chile
-            </span>
           </div>
           <h1 className={styles.title}>Servicios y Tarifas de Tatuaje</h1>
           <p className={styles.subtitle}>

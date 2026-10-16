@@ -348,68 +348,6 @@ export default function ResumenPage() {
             </div>
           </div>
 
-          {/* Quick Action Hub - Mejorado y Profesional */}
-          <div className={styles.quickHub}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <h3 className={styles.hubTitle} style={{ margin: 0 }}>Accesos Rápidos</h3>
-              <span style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 600 }}>Atajos de Gestión Diaria</span>
-            </div>
-            <div className={styles.hubGrid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
-              <Link href="/admin/pedidos" className={styles.hubCard}>
-                <div className={styles.hubCardIcon} style={{ background: '#FFF1F2', color: '#E11D48', border: '1px solid #FECDD3' }}><ShoppingBag size={18} /></div>
-                <div>
-                  <strong>Ventas & Pedidos Online</strong>
-                  <p>Confirma transferencias y elimina pruebas</p>
-                </div>
-                <ArrowUpRight size={16} className={styles.hubArrow} />
-              </Link>
-
-              <Link href="/admin/pedidos?tab=envios" className={styles.hubCard}>
-                <div className={styles.hubCardIcon} style={{ background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE' }}><Truck size={18} /></div>
-                <div>
-                  <strong>Envíos y Entregas</strong>
-                  <p>Despachos Rancagua, RM y plazos automáticos</p>
-                </div>
-                <ArrowUpRight size={16} className={styles.hubArrow} />
-              </Link>
-
-              <Link href="/admin/servicios" className={styles.hubCard}>
-                <div className={styles.hubCardIcon} style={{ background: '#F8FAFC', color: '#0F172A', border: '1px solid #E2E8F0' }}><Layers size={18} /></div>
-                <div>
-                  <strong>Servicios & Tarifas</strong>
-                  <p>Configura abonos y tipos de tatuajes</p>
-                </div>
-                <ArrowUpRight size={16} className={styles.hubArrow} />
-              </Link>
-
-              <Link href="/admin/productos" className={styles.hubCard}>
-                <div className={styles.hubCardIcon} style={{ background: '#F5F3FF', color: '#7C3AED', border: '1px solid #DDD6FE' }}><Package size={18} /></div>
-                <div>
-                  <strong>HONE CATALOG</strong>
-                  <p>Administra stock y precios de insumos</p>
-                </div>
-                <ArrowUpRight size={16} className={styles.hubArrow} />
-              </Link>
-
-              <Link href="/admin/reservas" className={styles.hubCard}>
-                <div className={styles.hubCardIcon} style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}><Calendar size={18} /></div>
-                <div>
-                  <strong>Agenda & Cotizaciones</strong>
-                  <p>Acepta, agenda o reprograma clientes</p>
-                </div>
-                <ArrowUpRight size={16} className={styles.hubArrow} />
-              </Link>
-
-              <Link href="/admin/cursos" className={styles.hubCard}>
-                <div className={styles.hubCardIcon} style={{ background: '#FEF3C7', color: '#D97706', border: '1px solid #FDE68A' }}><BookOpen size={18} /></div>
-                <div>
-                  <strong>Academia & Cursos</strong>
-                  <p>Lecciones con video y alumnos activos</p>
-                </div>
-                <ArrowUpRight size={16} className={styles.hubArrow} />
-              </Link>
-            </div>
-          </div>
 
           {/* SECCIÓN 1: ÚLTIMOS PEDIDOS */}
           <div id="ultimos-pedidos" className={styles.recentSection}>

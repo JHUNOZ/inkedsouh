@@ -307,10 +307,9 @@ export default function AdminCursosPage() {
       <div className={styles.header}>
         <div>
           <div className={styles.badgeRow}>
-            <span className={styles.academyBrand}>ACADEMIA & CURSOS</span>
-            <span className={styles.versionBadge}>PORTAL EDUCATIVO PRO</span>
+            <span className={styles.academyBrand}>CURSOS</span>
           </div>
-          <h1 className={styles.title}>Gestor de Cursos y Alumnos</h1>
+          <h1 className={styles.title}>Cursos</h1>
           <p className={styles.subtitle}>
             Crea módulos interactivos, sube material audiovisual y gestiona los accesos y certificaciones de tus estudiantes.
           </p>
