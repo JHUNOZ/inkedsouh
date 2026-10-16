@@ -29,6 +29,44 @@ export async function GET(request) {
           .eq('order_number', flowStatus.commerceOrder)
           .maybeSingle()
         order = data
+
+        // If Flow confirms payment and order isn't updated yet, sync it immediately
+        if (flowStatus.isPaid && order && order.payment_status !== 'aprobado') {
+          const meta = order.metadata || flowStatus.optional || {}
+          const { data: updatedOrder } = await supabase
+            .from('orders')
+            .update({
+              status: meta.type === 'course' ? 'inscrito_pagado' : 'pagado',
+              payment_status: 'aprobado',
+              metadata: {
+                ...meta,
+                flow_status: flowStatus.statusName,
+                flow_order: flowStatus.flowOrder,
+                flow_payment_data: flowStatus.paymentData,
+                paid_at: new Date().toISOString()
+              },
+              updated_at: new Date().toISOString()
+            })
+            .eq('order_number', flowStatus.commerceOrder)
+            .select('*')
+            .maybeSingle()
+
+          if (updatedOrder) order = updatedOrder
+
+          if (meta.type === 'course' && meta.courseId) {
+            await supabase
+              .from('students')
+              .upsert([{
+                user_id: meta.userId || null,
+                course_id: meta.courseId,
+                name: order.customer_name || meta.customerName || 'Estudiante',
+                email: order.customer_email || flowStatus.payerEmail,
+                status: 'activo',
+                enrolled_at: new Date().toISOString()
+              }], { onConflict: 'user_id,course_id' })
+              .catch(() => {})
+          }
+        }
       }
 
       return NextResponse.json({

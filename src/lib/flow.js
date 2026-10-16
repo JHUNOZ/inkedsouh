@@ -8,14 +8,16 @@ import crypto from 'crypto'
 export function getFlowConfig() {
   const apiKey = process.env.FLOW_API_KEY?.trim() || ''
   const secretKey = process.env.FLOW_SECRET_KEY?.trim() || ''
-  const environment = (process.env.FLOW_ENVIRONMENT || process.env.NEXT_PUBLIC_FLOW_ENVIRONMENT || 'sandbox').toLowerCase()
+  // Auto-detect production if key has 'L' indicator or FLOW_ENVIRONMENT=production
+  const defaultEnv = apiKey.includes('L') ? 'production' : 'sandbox'
+  const environment = (process.env.FLOW_ENVIRONMENT || process.env.NEXT_PUBLIC_FLOW_ENVIRONMENT || defaultEnv).toLowerCase()
   
   // Base URLs according to Flow documentation
   const apiUrl = environment === 'production'
     ? 'https://www.flow.cl/api'
     : 'https://sandbox.flow.cl/api'
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://inkedsouh.cl'
 
   const isConfigured = Boolean(
     apiKey && 
@@ -70,13 +72,16 @@ export async function createFlowOrder({
   optional = {},
   paymentMethod = 9, // 9 = Todos los medios de pago (Webpay, Mach, Servipag, Crypto, etc.)
   urlConfirmation,
-  urlReturn
+  urlReturn,
+  originUrl
 }) {
   const config = getFlowConfig()
-  const siteUrl = config.siteUrl.replace(/\/$/, '')
+  const baseReturnSite = (originUrl || config.siteUrl).replace(/\/$/, '')
+  const isLocalhost = baseReturnSite.includes('localhost') || baseReturnSite.includes('127.0.0.1')
+  const baseConfirmSite = isLocalhost ? 'https://inkedsouh.cl' : baseReturnSite
 
-  const returnUrl = urlReturn || `${siteUrl}/checkout/flow-return`
-  const confirmUrl = urlConfirmation || `${siteUrl}/api/flow/confirm`
+  const returnUrl = urlReturn || `${baseReturnSite}/api/flow/return`
+  const confirmUrl = urlConfirmation || `${baseConfirmSite}/api/flow/confirm`
 
   const payload = {
     apiKey: config.apiKey,

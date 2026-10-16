@@ -84,11 +84,13 @@ export async function POST(request) {
     }
 
     // 3. Initiate payment request in Flow
+    const originUrl = new URL(request.url).origin
     const flowResult = await createFlowOrder({
       orderNumber: orderNum,
       amount: Math.round(Number(amount)),
       email: customer.email,
       subject,
+      originUrl,
       optional: {
         orderNumber: orderNum,
         type,
