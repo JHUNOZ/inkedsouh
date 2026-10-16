@@ -1394,182 +1394,145 @@ export default function ProductosPage() {
                 {/* PASO 2: SELECCIÓN DE MÉTODO DE PAGO */}
                 {checkoutStep === 'payment' && (
                   <div className={styles.checkoutGrid}>
-                    <div>
+                    {/* Columna Izquierda: Métodos de Pago */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                       <h4 className={styles.checkoutSectionTitle}>
                         <CreditCard size={18} style={{ color: '#E11D48' }} /> Selecciona tu Método de Pago
                       </h4>
 
-                      <div className={styles.paymentMethodsGrid} style={{ gridTemplateColumns: '1fr' }}>
-
-                        {/* 0. FLOW (WEBPAY PLUS / MACH / SERVIPAG / REDCOMPRA) - RECOMENDADO */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {/* 1. FLOW (WEBPAY PLUS / MACH / SERVIPAG / REDCOMPRA) */}
                         <div 
                           className={`${styles.paymentMethodCard} ${paymentMethod === 'flow' ? styles.paymentMethodCardActive : ''}`}
                           onClick={() => setPaymentMethod('flow')}
+                          style={{ padding: '12px 14px', cursor: 'pointer' }}
                         >
-                          <div className={styles.paymentMethodTop}>
-                            <div className={styles.paymentIconWrap} style={{ background: '#FFF1F2', color: '#E11D48' }}>
-                              <CreditCard size={18} />
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: paymentMethod === 'flow' ? '5px solid #E11D48' : '2px solid #CBD5E1', background: '#FFFFFF', flexShrink: 0 }} />
+                              <div className={styles.paymentIconWrap} style={{ background: '#FFF1F2', color: '#E11D48', width: '32px', height: '32px' }}>
+                                <CreditCard size={16} />
+                              </div>
+                              <div>
+                                <h5 className={styles.paymentMethodName} style={{ fontSize: '0.9rem', margin: 0 }}>Pago Online Seguro (Flow Webpay / Tarjetas)</h5>
+                                <p className={styles.paymentMethodDesc} style={{ fontSize: '0.74rem', margin: '2px 0 0 0' }}>Débito, Crédito, Redcompra, Mach y Servipag</p>
+                              </div>
                             </div>
-                            <span className={styles.paymentBadgePill} style={{ background: '#FFF1F2', color: '#E11D48', border: '1px solid #FECDD3' }}>
-                              Recomendado • Flow Chile
+                            <span className={styles.paymentBadgePill} style={{ background: '#FFF1F2', color: '#E11D48', border: '1px solid #FECDD3', fontSize: '0.65rem' }}>
+                              Recomendado
                             </span>
                           </div>
-                          <h5 className={styles.paymentMethodName}>Pago Online Seguro (Flow Webpay / Tarjetas)</h5>
-                          <p className={styles.paymentMethodDesc}>
-                            Paga de forma inmediata y 100% segura con Webpay Plus, Tarjetas de Débito, Crédito, Mach, Redcompra o Servipag.
-                          </p>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
-                            <span style={{ fontSize: '0.72rem', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '2px 8px', borderRadius: '4px', color: '#475569', fontWeight: 600 }}>💳 Webpay Plus</span>
-                            <span style={{ fontSize: '0.72rem', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '2px 8px', borderRadius: '4px', color: '#475569', fontWeight: 600 }}>🟣 Mach</span>
-                            <span style={{ fontSize: '0.72rem', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '2px 8px', borderRadius: '4px', color: '#475569', fontWeight: 600 }}>🟦 Redcompra</span>
-                            <span style={{ fontSize: '0.72rem', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '2px 8px', borderRadius: '4px', color: '#475569', fontWeight: 600 }}>🟡 Servipag</span>
-                          </div>
                         </div>
-
-                        {/* 1. BANCA.ME BNPL (Habilitado sólo si IS_BANCAME_ENABLED está en true) */}
-                        {IS_BANCAME_ENABLED && (
-                          <div 
-                            className={`${styles.paymentMethodCard} ${paymentMethod === 'bancame' ? styles.paymentMethodCardActive : ''}`}
-                            onClick={() => setPaymentMethod('bancame')}
-                          >
-                            <div className={styles.paymentMethodTop}>
-                              <div className={styles.paymentIconWrap} style={{ background: '#FFF7ED', color: '#EA580C' }}>
-                                <CreditCard size={18} />
-                              </div>
-                              <span className={styles.paymentBadgePill} style={{ background: '#FFF7ED', color: '#C2410C', border: '1px solid #FED7AA' }}>
-                                3 a 12 Cuotas con RUT
-                              </span>
-                            </div>
-                            <h5 className={styles.paymentMethodName}>Banca.me BNPL (Compra Ahora, Paga en Cuotas)</h5>
-                            <p className={styles.paymentMethodDesc}>
-                              Paga en 3, 6 o 12 cuotas mensuales con tu RUT y tarjeta de débito/transferencia. Sin tarjeta de crédito.
-                            </p>
-                          </div>
-                        )}
 
                         {/* 2. TRANSFERENCIA BANCARIA */}
                         <div 
                           className={`${styles.paymentMethodCard} ${paymentMethod === 'transfer' ? styles.paymentMethodCardActive : ''}`}
                           onClick={() => setPaymentMethod('transfer')}
+                          style={{ padding: '12px 14px', cursor: 'pointer' }}
                         >
-                          <div className={styles.paymentMethodTop}>
-                            <div className={styles.paymentIconWrap} style={{ background: '#EFF6FF', color: '#2563EB' }}>
-                              <Building2 size={18} />
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: paymentMethod === 'transfer' ? '5px solid #E11D48' : '2px solid #CBD5E1', background: '#FFFFFF', flexShrink: 0 }} />
+                              <div className={styles.paymentIconWrap} style={{ background: '#EFF6FF', color: '#2563EB', width: '32px', height: '32px' }}>
+                                <Building2 size={16} />
+                              </div>
+                              <div>
+                                <h5 className={styles.paymentMethodName} style={{ fontSize: '0.9rem', margin: 0 }}>Transferencia Bancaria Directa</h5>
+                                <p className={styles.paymentMethodDesc} style={{ fontSize: '0.74rem', margin: '2px 0 0 0' }}>Cuenta Vista / RUT BancoEstado</p>
+                              </div>
                             </div>
-                            <span className={styles.paymentBadgePill} style={{ background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE' }}>
-                              Transferencia Directa
+                            <span className={styles.paymentBadgePill} style={{ background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE', fontSize: '0.65rem' }}>
+                              Transferencia
                             </span>
                           </div>
-                          <h5 className={styles.paymentMethodName}>Transferencia Bancaria</h5>
-                          <p className={styles.paymentMethodDesc}>
-                            Transfiere directamente a nuestra Cuenta BancoEstado o Santander y envía tu comprobante por WhatsApp.
-                          </p>
                         </div>
 
                         {/* 3. WHATSAPP DIRECTO */}
                         <div 
                           className={`${styles.paymentMethodCard} ${paymentMethod === 'whatsapp' ? styles.paymentMethodCardActive : ''}`}
                           onClick={() => setPaymentMethod('whatsapp')}
+                          style={{ padding: '12px 14px', cursor: 'pointer' }}
                         >
-                          <div className={styles.paymentMethodTop}>
-                            <div className={styles.paymentIconWrap} style={{ background: '#ECFDF5', color: '#059669' }}>
-                              <MessageCircle size={18} />
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: paymentMethod === 'whatsapp' ? '5px solid #E11D48' : '2px solid #CBD5E1', background: '#FFFFFF', flexShrink: 0 }} />
+                              <div className={styles.paymentIconWrap} style={{ background: '#ECFDF5', color: '#059669', width: '32px', height: '32px' }}>
+                                <MessageCircle size={16} />
+                              </div>
+                              <div>
+                                <h5 className={styles.paymentMethodName} style={{ fontSize: '0.9rem', margin: 0 }}>Pedido Asistido por WhatsApp</h5>
+                                <p className={styles.paymentMethodDesc} style={{ fontSize: '0.74rem', margin: '2px 0 0 0' }}>Coordina el pago y entrega directamente con el artista</p>
+                              </div>
                             </div>
-                            <span className={styles.paymentBadgePill} style={{ background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0' }}>
+                            <span className={styles.paymentBadgePill} style={{ background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', fontSize: '0.65rem' }}>
                               Atención Directa
                             </span>
                           </div>
-                          <h5 className={styles.paymentMethodName}>Pedido Asistido por WhatsApp</h5>
-                          <p className={styles.paymentMethodDesc}>
-                            Coordina y confirma directamente con el artista tu pedido, datos de despacho y consultas técnicas.
-                          </p>
                         </div>
                       </div>
 
-                      {/* PAYMENT DETAILS BLOCK ACCORDING TO SELECTION */}
-
-                      {/* BANCA.ME BNPL DETAILS */}
-                      {IS_BANCAME_ENABLED && paymentMethod === 'bancame' && (
-                        <div className={styles.bnplDetailsBox} style={{ marginTop: '16px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <strong style={{ color: '#0F172A', fontSize: '0.9rem' }}>Simulador de Cuotas Banca.me</strong>
-                            <span style={{ fontSize: '0.75rem', color: '#C2410C', fontWeight: 600 }}>Aprobación con RUT en 1 min</span>
-                          </div>
-                          <p style={{ fontSize: '0.8rem', color: '#475569', margin: 0 }}>
-                            Paga tu primera cuota hoy y el resto en cuotas fijas mensuales con débito o transferencia:
-                          </p>
-                          <div className={styles.bnplInstallmentsRow}>
-                            <div className={styles.bnplInstallmentPill}>
-                              <span className={styles.bnplInstallmentCount}>3 cuotas de</span>
-                              <span className={styles.bnplInstallmentValue}>{formatPrice(calculateInstallmentAmount(cartTotal, 3))}</span>
+                      {/* SUB-PANEL COMPACTO INFORMATIVO SEGÚN EL MÉTODO */}
+                      <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px', fontSize: '0.82rem', color: '#475569' }}>
+                        {paymentMethod === 'flow' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ color: '#0F172A', fontWeight: 600 }}>
+                              Serás redirigido a la pasarela Flow para pagar en un entorno encriptado 100% seguro:
                             </div>
-                            <div className={styles.bnplInstallmentPill}>
-                              <span className={styles.bnplInstallmentCount}>6 cuotas de</span>
-                              <span className={styles.bnplInstallmentValue}>{formatPrice(calculateInstallmentAmount(cartTotal, 6))}</span>
-                            </div>
-                            <div className={styles.bnplInstallmentPill}>
-                              <span className={styles.bnplInstallmentCount}>12 cuotas de</span>
-                              <span className={styles.bnplInstallmentValue}>{formatPrice(calculateInstallmentAmount(cartTotal, 12))}</span>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                              <span style={{ fontSize: '0.72rem', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '4px', color: '#334155', fontWeight: 600 }}>💳 Webpay Plus</span>
+                              <span style={{ fontSize: '0.72rem', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '4px', color: '#334155', fontWeight: 600 }}>🟣 Mach</span>
+                              <span style={{ fontSize: '0.72rem', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '4px', color: '#334155', fontWeight: 600 }}>🟦 Redcompra</span>
+                              <span style={{ fontSize: '0.72rem', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '4px', color: '#334155', fontWeight: 600 }}>🟡 Servipag</span>
                             </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {/* TRANSFERENCIA BANCARIA DETAILS */}
-                      {paymentMethod === 'transfer' && (
-                        <div className={styles.bankDetailsBox} style={{ marginTop: '16px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <strong style={{ color: '#0F172A', fontSize: '0.9rem' }}>Datos para Transferencia</strong>
-                            <button type="button" onClick={handleCopyBankDetails} className={styles.copyBankBtn}>
-                              {copyFeedback ? <Check size={14} color="#059669" /> : <Copy size={14} />}
-                              <span>{copyFeedback ? '¡Copiado!' : 'Copiar Datos'}</span>
-                            </button>
+                        {paymentMethod === 'transfer' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <strong style={{ color: '#0F172A' }}>Datos de Cuenta BancoEstado:</strong>
+                              <button type="button" onClick={handleCopyBankDetails} className={styles.copyBankBtn} style={{ padding: '3px 8px', fontSize: '0.74rem' }}>
+                                {copyFeedback ? <Check size={12} color="#059669" /> : <Copy size={12} />}
+                                <span>{copyFeedback ? '¡Copiado!' : 'Copiar'}</span>
+                              </button>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 10px', fontSize: '0.78rem', color: '#334155' }}>
+                              <div><strong>Banco:</strong> Banco Estado</div>
+                              <div><strong>Tipo:</strong> Cuenta Vista / RUT</div>
+                              <div><strong>N° Cuenta:</strong> 19.823.419-5</div>
+                              <div><strong>RUT:</strong> 19.823.419-5</div>
+                              <div><strong>Titular:</strong> InkedSouh Studio</div>
+                              <div><strong>Correo:</strong> pagos@inkedsouh.com</div>
+                            </div>
+                            <div style={{ fontSize: '0.72rem', color: '#64748B', fontStyle: 'italic', borderTop: '1px solid #E2E8F0', paddingTop: '4px' }}>
+                              Tu pedido quedará guardado como pendiente hasta que envíes el comprobante.
+                            </div>
                           </div>
-                          <div className={styles.bankDetailRow}>
-                            <span className={styles.bankDetailLabel}>Banco:</span>
-                            <span className={styles.bankDetailValue}>Banco Estado</span>
-                          </div>
-                          <div className={styles.bankDetailRow}>
-                            <span className={styles.bankDetailLabel}>Tipo de Cuenta:</span>
-                            <span className={styles.bankDetailValue}>Cuenta Vista / RUT</span>
-                          </div>
-                          <div className={styles.bankDetailRow}>
-                            <span className={styles.bankDetailLabel}>N° de Cuenta:</span>
-                            <span className={styles.bankDetailValue}>19.823.419-5</span>
-                          </div>
-                          <div className={styles.bankDetailRow}>
-                            <span className={styles.bankDetailLabel}>Titular:</span>
-                            <span className={styles.bankDetailValue}>InkedSouh Tattoo Studio</span>
-                          </div>
-                          <div className={styles.bankDetailRow}>
-                            <span className={styles.bankDetailLabel}>RUT:</span>
-                            <span className={styles.bankDetailValue}>19.823.419-5</span>
-                          </div>
-                          <div className={styles.bankDetailRow}>
-                            <span className={styles.bankDetailLabel}>Correo comprobante:</span>
-                            <span className={styles.bankDetailValue}>pagos@inkedsouh.com</span>
-                          </div>
-                        </div>
-                      )}
+                        )}
 
-                      {/* ERROR BANNER */}
-                      {bancameError && (
-                        <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <AlertCircle size={16} color="#DC2626" style={{ flexShrink: 0 }} />
-                          <span>{bancameError}</span>
-                        </div>
-                      )}
+                        {paymentMethod === 'whatsapp' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#059669', fontWeight: 700 }}>
+                              <MessageCircle size={16} />
+                              <span>Coordinación Inmediata por WhatsApp</span>
+                            </div>
+                            <p style={{ margin: 0, fontSize: '0.78rem', lineHeight: 1.4 }}>
+                              Al presionar continuar, se generará tu orden en el sistema y se abrirá el chat oficial de WhatsApp con el tatuador para convenir el pago y resolver dudas sobre despacho.
+                            </p>
+                            <div style={{ fontSize: '0.72rem', color: '#64748B', fontStyle: 'italic', borderTop: '1px solid #E2E8F0', paddingTop: '4px' }}>
+                              El pedido quedará registrado en el sistema como pendiente de pago.
+                            </div>
+                          </div>
+                        )}
+                      </div>
 
-                      {/* BOTONES DE NAVEGACIÓN */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px' }}>
+                      {/* Botones de Navegación */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
                         <button 
                           type="button" 
-                          onClick={() => {
-                            setBancameError(null)
-                            setCheckoutStep('details')
-                          }}
+                          onClick={() => setCheckoutStep('details')}
                           className={styles.btnSecondary}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 18px' }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 16px', fontSize: '0.85rem' }}
                           disabled={orderProcessing}
                         >
                           <ArrowLeft size={16} />
@@ -1581,59 +1544,69 @@ export default function ProductosPage() {
                           onClick={handleProcessCheckout}
                           disabled={orderProcessing}
                           className={styles.btnAddToCartLarge}
-                          style={{ width: 'auto', padding: '12px 28px', fontSize: '0.95rem' }}
+                          style={{ width: 'auto', padding: '12px 24px', fontSize: '0.92rem' }}
                         >
                           {orderProcessing ? (
                             <>
                               <RefreshCw size={16} className={styles.spin} />
-                              <span>Conectando con pasarela...</span>
+                              <span>Procesando...</span>
                             </>
                           ) : (
                             <>
                               <span>
                                 {paymentMethod === 'flow' && `Pagar con Webpay Plus (${formatPrice(finalCheckoutTotal)} CLP)`}
-                                {paymentMethod === 'whatsapp' && 'Finalizar por WhatsApp'}
+                                {paymentMethod === 'whatsapp' && 'Generar Pedido por WhatsApp'}
                                 {paymentMethod === 'transfer' && 'Confirmar Pedido por Transferencia'}
-                                {paymentMethod === 'bancame' && 'Pagar en Cuotas con Banca.me'}
                               </span>
-                              <Check size={18} />
+                              <ChevronRight size={18} />
                             </>
                           )}
                         </button>
                       </div>
                     </div>
 
-                    {/* Summary Col */}
-                    <div className={styles.checkoutOrderSummary}>
+                    {/* Columna Derecha: Resumen del Pedido (Compacto y Equilibrado) */}
+                    <div className={styles.checkoutOrderSummary} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <h4 className={styles.checkoutSectionTitle}>
                         <ShoppingBag size={18} style={{ color: '#E11D48' }} /> Resumen del Pedido
                       </h4>
-                      <div style={{ fontSize: '0.8rem', color: '#475569', borderBottom: '1px solid #E2E8F0', paddingBottom: '8px' }}>
-                        <div><strong>Cliente:</strong> {customerInfo.name}</div>
+
+                      {/* Datos de Entrega */}
+                      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 12px', fontSize: '0.78rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        <div><strong>Destinatario:</strong> {customerInfo.name}</div>
                         <div><strong>Teléfono:</strong> {customerInfo.phone}</div>
                         <div><strong>Dirección:</strong> {customerInfo.address}, {customerInfo.city}</div>
-                        <div style={{ marginTop: '4px', color: '#2563EB' }}><strong>Plazo estimado:</strong> {deliveryTimeframe}</div>
-                      </div>
-                      {cart.map((item) => (
-                        <div key={item.id} className={styles.summaryItemRow}>
-                          <div className={styles.summaryItemName}>
-                            <span>{item.name} {item.variantName ? `(${item.variantName})` : ''}</span>
-                            <small style={{ color: '#64748B' }}>{item.quantity} un.</small>
-                          </div>
-                          <span style={{ color: '#0F172A', fontWeight: 700 }}>
-                            {formatPrice((item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price) * item.quantity)}
-                          </span>
+                        <div style={{ color: isExpressShipping ? '#E11D48' : '#2563EB', fontWeight: 600, marginTop: '2px' }}>
+                          <Truck size={12} style={{ display: 'inline', verticalAlign: '-1px', marginRight: '4px' }} />
+                          {isExpressShipping ? 'Envío Express Rancagua & RM' : 'Regiones Starken Por Pagar'}
                         </div>
-                      ))}
-                      <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '10px', marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', color: '#64748B' }}>
-                          <span>Subtotal</span>
+                      </div>
+
+                      {/* Items */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '160px', overflowY: 'auto' }}>
+                        {cart.map((item) => (
+                          <div key={item.id} className={styles.summaryItemRow} style={{ fontSize: '0.82rem' }}>
+                            <div className={styles.summaryItemName}>
+                              <span>{item.name} {item.variantName ? `(${item.variantName})` : ''}</span>
+                              <small style={{ color: '#64748B' }}>{item.quantity} un.</small>
+                            </div>
+                            <span style={{ color: '#0F172A', fontWeight: 700 }}>
+                              {formatPrice((item.discount > 0 ? getDiscountedPrice(item.price, item.discount) : item.price) * item.quantity)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Desglose de Totales */}
+                      <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#64748B' }}>
+                          <span>Subtotal Productos</span>
                           <span>{formatPrice(cartTotal)} CLP</span>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', color: '#64748B' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#64748B' }}>
                           <span>Envío</span>
                           <span style={{ fontWeight: 600, color: isExpressShipping ? '#E11D48' : '#059669' }}>
-                            {isExpressShipping ? `Express (+${formatPrice(expressShippingCost)} CLP)` : 'Por Pagar ($0)'}
+                            {isExpressShipping ? `+${formatPrice(expressShippingCost)} CLP` : 'Por Pagar ($0)'}
                           </span>
                         </div>
                         <div className={styles.summaryTotalRow} style={{ marginTop: '2px', paddingTop: '8px' }}>
@@ -1641,55 +1614,139 @@ export default function ProductosPage() {
                           <span style={{ color: '#E11D48' }}>{formatPrice(finalCheckoutTotal)} CLP</span>
                         </div>
                       </div>
+
+                      {/* Sello de Confianza y Despacho */}
+                      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 12px', fontSize: '0.74rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <MapPin size={13} style={{ color: '#E11D48', flexShrink: 0 }} />
+                        <span>Despacho directo desde estudio en <strong>Rancagua, Chile</strong>.</span>
+                      </div>
                     </div>
                   </div>
                 )}
 
-                {/* PASO 3: CONFIRMACIÓN EXITOSA */}
+                {/* PASO 3: CONFIRMACIÓN DE LA ORDEN (DIFERENCIADO POR MÉTODO) */}
                 {checkoutStep === 'success' && submittedOrder && (
                   <div className={styles.orderSuccessBox}>
-                    <div className={styles.successIconWrap}>
-                      <CheckCircle2 size={36} />
-                    </div>
+                    
+                    {/* Caso 1: FLOW (Pago Online Confirmado) */}
+                    {submittedOrder.paymentMethod === 'flow' && (
+                      <>
+                        <div className={styles.successIconWrap} style={{ background: '#DCFCE7', color: '#15803D' }}>
+                          <CheckCircle2 size={40} />
+                        </div>
+                        <span style={{ background: '#DCFCE7', color: '#15803D', border: '1px solid #86EFAC', padding: '4px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                          PAGO CONFIRMADO CON WEBPAY
+                        </span>
+                        <h3 style={{ color: '#0F172A', fontSize: '1.4rem', fontWeight: 800, margin: '4px 0 0 0' }}>
+                          ¡Pago y Pedido Confirmados con Éxito!
+                        </h3>
+                        <div className={styles.orderNumberBadge}>
+                          Orden #{submittedOrder.orderNumber}
+                        </div>
+                        <p style={{ color: '#475569', fontSize: '0.88rem', lineHeight: 1.5, margin: 0 }}>
+                          Hemos recibido tu pago en línea correctamente. Tu compra ya está confirmada y nuestro equipo en Rancagua está preparando tu paquete para despacho.
+                        </p>
+                      </>
+                    )}
 
-                    <h3 style={{ color: '#0F172A', fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>
-                      ¡Pedido Registrado con Éxito!
-                    </h3>
+                    {/* Caso 2: WHATSAPP (Pendiente de Pago) */}
+                    {submittedOrder.paymentMethod === 'whatsapp' && (
+                      <>
+                        <div className={styles.successIconWrap} style={{ background: '#FEF3C7', color: '#B45309' }}>
+                          <Clock size={40} />
+                        </div>
+                        <span style={{ background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A', padding: '4px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                          PEDIDO PENDIENTE DE PAGO
+                        </span>
+                        <h3 style={{ color: '#0F172A', fontSize: '1.4rem', fontWeight: 800, margin: '4px 0 0 0' }}>
+                          Pedido Registrado — Pendiente de Pago
+                        </h3>
+                        <div className={styles.orderNumberBadge}>
+                          Orden #{submittedOrder.orderNumber}
+                        </div>
+                        <p style={{ color: '#475569', fontSize: '0.88rem', lineHeight: 1.5, margin: 0, maxWidth: '500px' }}>
+                          Tu orden ha quedado registrada en el sistema, pero <strong>el pago aún no ha sido efectuado</strong>. Para completar tu compra y asegurar tu pedido, abre WhatsApp con el tatuador para coordinar la transferencia y despacho.
+                        </p>
+                        
+                        <div style={{ marginTop: '6px' }}>
+                          <a 
+                            href={`https://wa.me/56930254425?text=${encodeURIComponent(`Hola InkedSouh! Generé la orden #${submittedOrder.orderNumber} por un total de ${formatPrice(submittedOrder.total)} CLP en la tienda web. Deseo coordinar el pago y confirmar mi pedido.`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#25D366', color: '#FFFFFF', padding: '12px 26px', borderRadius: '10px', fontWeight: 700, fontSize: '0.95rem', textDecoration: 'none', boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)' }}
+                          >
+                            <MessageCircle size={18} />
+                            <span>Abrir WhatsApp con mi Pedido</span>
+                          </a>
+                        </div>
+                      </>
+                    )}
 
-                    <div className={styles.orderNumberBadge}>
-                      Orden #{submittedOrder.orderNumber}
-                    </div>
+                    {/* Caso 3: TRANSFERENCIA BANCARIA (Esperando Transferencia) */}
+                    {submittedOrder.paymentMethod === 'transfer' && (
+                      <>
+                        <div className={styles.successIconWrap} style={{ background: '#EFF6FF', color: '#2563EB' }}>
+                          <Building2 size={40} />
+                        </div>
+                        <span style={{ background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE', padding: '4px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                          TRANSFERENCIA PENDIENTE
+                        </span>
+                        <h3 style={{ color: '#0F172A', fontSize: '1.4rem', fontWeight: 800, margin: '4px 0 0 0' }}>
+                          Pedido Reservado — Esperando Transferencia
+                        </h3>
+                        <div className={styles.orderNumberBadge}>
+                          Orden #{submittedOrder.orderNumber}
+                        </div>
+                        <p style={{ color: '#475569', fontSize: '0.88rem', lineHeight: 1.5, margin: 0, maxWidth: '500px' }}>
+                          Tu orden está reservada a la espera de tu transferencia bancaria. Una vez realizada, envía el comprobante a nuestro WhatsApp para que el tatuador confirme el pago en el panel y despache tus productos.
+                        </p>
 
-                    <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: 1.5, margin: 0 }}>
-                      {submittedOrder.paymentMethod === 'whatsapp' && (
-                        'Se ha generado tu orden y abierto la conversación por WhatsApp para coordinar los detalles finales de tu entrega.'
-                      )}
-                      {submittedOrder.paymentMethod === 'transfer' && (
-                        'Tu orden ha sido registrada. Realiza la transferencia bancaria con el número de orden en el asunto y envíanos el comprobante para procesar tu despacho.'
-                      )}
-                      {submittedOrder.paymentMethod === 'bancame' && (
-                        submittedOrder.status?.includes('Aprobado')
-                          ? '¡Tu pago en cuotas con Banca.me ha sido aprobado exitosamente! Hemos recibido la confirmación y estamos preparando tu despacho.'
-                          : 'Tu solicitud de cuotas con Banca.me BNPL ha sido registrada. Recibirás las notificaciones de cuotas en tu correo electrónico.'
-                      )}
-                    </p>
+                        {/* Card Banco */}
+                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px 18px', width: '100%', maxWidth: '420px', textAlign: 'left', fontSize: '0.82rem', color: '#334155' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <strong style={{ color: '#0F172A' }}>Datos para Transferir:</strong>
+                            <button type="button" onClick={handleCopyBankDetails} className={styles.copyBankBtn} style={{ padding: '2px 8px', fontSize: '0.72rem' }}>
+                              {copyFeedback ? <Check size={12} color="#059669" /> : <Copy size={12} />}
+                              <span>{copyFeedback ? '¡Copiado!' : 'Copiar'}</span>
+                            </button>
+                          </div>
+                          <div><strong>Banco:</strong> Banco Estado (Cuenta Vista / RUT)</div>
+                          <div><strong>N° Cuenta:</strong> 19.823.419-5</div>
+                          <div><strong>Titular:</strong> InkedSouh Tattoo Studio (RUT: 19.823.419-5)</div>
+                          <div><strong>Monto:</strong> <span style={{ color: '#E11D48', fontWeight: 800 }}>{formatPrice(submittedOrder.total)} CLP</span></div>
+                        </div>
 
-                    <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '10px', padding: '10px 16px', fontSize: '0.82rem', color: '#1E40AF', maxWidth: '480px' }}>
+                        <div style={{ marginTop: '4px' }}>
+                          <a 
+                            href={`https://wa.me/56930254425?text=${encodeURIComponent(`Hola InkedSouh! Ya realicé la transferencia de la orden #${submittedOrder.orderNumber} por ${formatPrice(submittedOrder.total)} CLP. Adjunto comprobante para confirmar el pago.`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#25D366', color: '#FFFFFF', padding: '10px 20px', borderRadius: '10px', fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none' }}
+                          >
+                            <MessageCircle size={16} />
+                            <span>Enviar Comprobante por WhatsApp</span>
+                          </a>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Plazo de Entrega */}
+                    <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '10px', padding: '10px 16px', fontSize: '0.82rem', color: '#1E40AF', maxWidth: '480px', marginTop: '4px' }}>
                       <Truck size={15} style={{ display: 'inline', verticalAlign: '-2px', marginRight: '6px', color: '#2563EB' }} />
-                      <strong>Plazo estimado de entrega:</strong> {deliveryTimeframe}
+                      <strong>Plazo de entrega desde Rancagua:</strong> {deliveryTimeframe}
                     </div>
 
                     <div style={{ display: 'flex', gap: '12px', marginTop: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
                       <button 
                         type="button" 
                         className={styles.checkoutBtnNext} 
-                        style={{ background: '#0F172A', color: '#FFFFFF' }}
+                        style={{ background: '#0F172A', color: '#FFFFFF', padding: '10px 24px', fontSize: '0.9rem' }}
                         onClick={() => {
                           setCheckoutOpen(false)
                           setCheckoutStep('details')
                         }}
                       >
-                        Cerrar y seguir comprando
+                        Cerrar y seguir navegando
                       </button>
                     </div>
                   </div>
