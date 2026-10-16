@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { 
   ShoppingBag, ShoppingCart, Plus, Minus, X, Search, 
-  Check, ChevronRight, Sparkles, Tag, ShieldCheck, 
+  Check, ChevronRight, ChevronDown, Sparkles, Tag, ShieldCheck, 
   Star, MessageCircle, ArrowRight, CreditCard, Building2,
   Zap, Copy, CheckCircle2, Truck, MapPin, User, Mail, Phone,
   FileText, ExternalLink, RefreshCw, AlertCircle, ArrowLeft,
@@ -44,6 +44,7 @@ export default function ProductosPage() {
   const [selectedVariant, setSelectedVariant] = useState(null)
   const [selectedQuantity, setSelectedQuantity] = useState(1)
   const [activeImageIdx, setActiveImageIdx] = useState(0)
+  const [specsExpanded, setSpecsExpanded] = useState(false)
 
   // Multi-Step Checkout Modal
   const [checkoutOpen, setCheckoutOpen] = useState(false)
@@ -125,7 +126,7 @@ export default function ProductosPage() {
   }
 
   // Add item to Cart
-  const addToCart = (product, variant = null, quantity = 1, e = null) => {
+  const addToCart = (product, variant = null, quantity = 1, e = null, openDrawer = true) => {
     if (e) e.stopPropagation()
 
     const { variantConfig } = parseProductSpecifications(product.specifications)
@@ -173,7 +174,18 @@ export default function ProductosPage() {
       setCart([...cart, newItem])
     }
 
-    setCartOpen(true)
+    if (openDrawer) {
+      setCartOpen(true)
+    }
+  }
+
+  // Comprar Ahora (1-Click Express Checkout)
+  const handleBuyNow = (product, variant = null, quantity = 1) => {
+    addToCart(product, variant, quantity, null, false)
+    setSelectedProduct(null)
+    setCartOpen(false)
+    setCheckoutStep('details')
+    setCheckoutOpen(true)
   }
 
   const updateQuantity = (id, delta) => {
@@ -686,19 +698,16 @@ export default function ProductosPage() {
                           )}
                         </div>
                         <button
-                          className={styles.addBtn}
+                          className={styles.cardActionBtn}
                           onClick={(e) => {
-                            if (hasVariants) {
-                              e.stopPropagation()
-                              openDetailModal(product)
-                            } else {
-                              addToCart(product, null, 1, e)
-                            }
+                            e.stopPropagation()
+                            openDetailModal(product)
                           }}
                           disabled={totalStock <= 0}
-                          title={hasVariants ? "Elegir Medida / Calibre" : "Añadir al Carrito"}
+                          title={totalStock <= 0 ? "Sin stock disponible" : (hasVariants ? "Elegir Medida / Calibre" : "Ver detalles y comprar")}
                         >
-                          <Plus size={18} />
+                          <ShoppingCart size={14} />
+                          <span>{totalStock <= 0 ? 'Agotado' : (hasVariants ? 'Elegir' : 'Comprar')}</span>
                         </button>
                       </div>
 
@@ -873,14 +882,14 @@ export default function ProductosPage() {
                       </div>
                     )}
 
-                    {/* VARIANT SELECTOR (Exact Match to Photo 1 & 2) */}
+                    {/* VARIANT SELECTOR */}
                     {hasVariants && (
                       <div className={styles.variantSection}>
                         <label className={styles.variantLabel}>
-                          {modalVarConfig.name || 'Calibre de las agujas'}
+                          {modalVarConfig.name || 'Calibre / Medida'}
                         </label>
 
-                        {/* Interactive Buttons / Chips Grid (Photo 1) */}
+                        {/* Interactive Chips Grid */}
                         <div className={styles.variantButtonsGrid}>
                           {modalVarConfig.variants.map((v, vIdx) => {
                             const isSelected = selectedVariant?.id ? selectedVariant.id === v.id : selectedVariant?.name === v.name
@@ -908,134 +917,109 @@ export default function ProductosPage() {
                             )
                           })}
                         </div>
-
-                        {/* Optional Dropdown Select Menu (Photo 2) */}
-                        <div className={styles.variantDropdownWrap} style={{ marginTop: '8px' }}>
-                          <select 
-                            className={styles.variantSelectInput}
-                            value={selectedVariant?.id || selectedVariant?.name || ''}
-                            onChange={(e) => {
-                              const chosen = modalVarConfig.variants.find(v => (v.id || v.name) === e.target.value)
-                              if (chosen) {
-                                setSelectedVariant(chosen)
-                                setSelectedQuantity(1)
-                              }
-                            }}
-                          >
-                            <option value="" disabled>Elige una opción...</option>
-                            {modalVarConfig.variants.map((v, vIdx) => (
-                              <option key={v.id || vIdx} value={v.id || v.name} disabled={(parseInt(v.stock) || 0) <= 0}>
-                                {v.name} {(parseInt(v.stock) || 0) <= 0 ? '— (Agotado)' : `(Stock: ${v.stock})`}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
                       </div>
                     )}
 
-                    {/* Price Section */}
-                    <div className={styles.priceSection}>
-                      <span className={styles.priceLabel}>PRECIO</span>
-                      <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                        <span className={styles.priceDisplay}>
-                          {formatPrice(activeDiscountedPrice)} CLP
-                        </span>
-                        {selectedProduct.old_price > selectedProduct.price && (
-                          <span className={styles.priceOldDisplay}>
-                            {formatPrice(selectedProduct.old_price)}
+                    {/* Price & Quantity Row */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginTop: '10px', padding: '12px 0', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
+                      <div className={styles.priceSection} style={{ marginTop: 0 }}>
+                        <span className={styles.priceLabel}>Precio</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                          <span className={styles.priceDisplay}>
+                            {formatPrice(activeDiscountedPrice)} CLP
                           </span>
+                          {selectedProduct.old_price > selectedProduct.price && (
+                            <span className={styles.priceOldDisplay}>
+                              {formatPrice(selectedProduct.old_price)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className={styles.qtySection} style={{ marginTop: 0 }}>
+                        <span className={styles.qtySectionLabel}>Cant:</span>
+                        <div className={styles.qtyBox}>
+                          <button 
+                            type="button" 
+                            onClick={() => setSelectedQuantity(Math.max(1, selectedQuantity - 1))}
+                            disabled={selectedQuantity <= 1 || activeStock <= 0}
+                            className={styles.qtyButton}
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <span className={styles.qtyValue}>{activeStock <= 0 ? 0 : selectedQuantity}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => setSelectedQuantity(Math.min(activeStock, selectedQuantity + 1))}
+                            disabled={selectedQuantity >= activeStock || activeStock <= 0}
+                            className={styles.qtyButton}
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Delivery Notice */}
+                    <div className={styles.quickDeliveryNotice}>
+                      <Truck size={15} style={{ color: '#2563EB', flexShrink: 0 }} />
+                      <span><strong>Envíos a todo Chile</strong> • RM Express y Regiones por pagar</span>
+                    </div>
+
+                    {/* Dual Action Buttons: Comprar Ahora & Añadir al Carro */}
+                    <div className={styles.modalActionButtonsRow}>
+                      <button
+                        type="button"
+                        onClick={() => handleBuyNow(selectedProduct, selectedVariant, selectedQuantity)}
+                        disabled={activeStock <= 0}
+                        className={styles.btnBuyNow}
+                      >
+                        <CreditCard size={18} />
+                        <span>{activeStock > 0 ? 'COMPRAR AHORA' : 'AGOTADO'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          addToCart(selectedProduct, selectedVariant, selectedQuantity, null, true)
+                          setSelectedProduct(null)
+                        }}
+                        disabled={activeStock <= 0}
+                        className={styles.btnAddToCartSecondary}
+                      >
+                        <ShoppingCart size={18} />
+                        <span>Añadir al Carro</span>
+                      </button>
+                    </div>
+
+                    {/* Collapsible Ficha Técnica */}
+                    {modalSpecs.length > 0 && (
+                      <div>
+                        <button 
+                          type="button" 
+                          className={styles.specsToggleBtn}
+                          onClick={() => setSpecsExpanded(!specsExpanded)}
+                        >
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FileText size={14} style={{ color: '#E11D48' }} />
+                            Especificaciones Técnicas
+                          </span>
+                          <ChevronDown size={16} style={{ transform: specsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+                        </button>
+
+                        {specsExpanded && (
+                          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderTop: 'none', borderRadius: '0 0 10px 10px', padding: '12px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
+                            {modalSpecs.map((s, idx) => (
+                              <div key={idx} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '6px 10px' }}>
+                                <div style={{ color: '#64748B', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>{s.key}</div>
+                                <div style={{ color: '#0F172A', fontSize: '0.82rem', fontWeight: 700 }}>{s.value}</div>
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </div>
-                    </div>
-
-                    {/* Quantity Section */}
-                    <div className={styles.qtySection}>
-                      <span className={styles.qtySectionLabel}>Cantidad:</span>
-                      <div className={styles.qtyBox}>
-                        <button 
-                          type="button" 
-                          onClick={() => setSelectedQuantity(Math.max(1, selectedQuantity - 1))}
-                          disabled={selectedQuantity <= 1 || activeStock <= 0}
-                          className={styles.qtyButton}
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <span className={styles.qtyValue}>{activeStock <= 0 ? 0 : selectedQuantity}</span>
-                        <button 
-                          type="button" 
-                          onClick={() => setSelectedQuantity(Math.min(activeStock, selectedQuantity + 1))}
-                          disabled={selectedQuantity >= activeStock || activeStock <= 0}
-                          className={styles.qtyButton}
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
-                      {activeStock > 0 && (
-                        <span style={{ fontSize: '0.8rem', color: '#64748B' }}>
-                          ({activeStock} unidades disponibles)
-                        </span>
-                      )}
-                    </div>
-
-                    {/* WhatsApp Banner Prompt (Photo 1) */}
-                    <div 
-                      className={styles.whatsappBanner} 
-                      onClick={() => handleDirectWhatsAppQuery(selectedProduct, selectedVariant)}
-                      title="Preguntar directamente por WhatsApp"
-                    >
-                      <div className={styles.whatsappBannerText}>
-                        ¿Tienes dudas sobre las medidas? <strong>Envíanos un mensaje de WhatsApp</strong>
-                      </div>
-                      <div className={styles.whatsappBubbleIcon}>
-                        <MessageCircle size={18} fill="#fff" color="#25d366" />
-                      </div>
-                    </div>
-
-                    {/* Delivery Timeframe Notice */}
-                    <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '10px', padding: '9px 12px', display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
-                      <Truck size={18} style={{ color: '#2563EB', flexShrink: 0 }} />
-                      <div style={{ fontSize: '0.78rem', color: '#1E40AF', lineHeight: 1.35 }}>
-                        <strong>Envíos a todo Chile</strong> • Plazo estimado: <span style={{ color: '#0F172A', fontWeight: 600 }}>{deliveryTimeframe}</span>
-                      </div>
-                    </div>
-
-                    {/* Main CTA Button "AGREGAR AL CARRO" */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        addToCart(selectedProduct, selectedVariant, selectedQuantity)
-                        setSelectedProduct(null)
-                      }}
-                      disabled={activeStock <= 0}
-                      className={styles.btnAddToCartLarge}
-                      style={{ marginTop: '12px' }}
-                    >
-                      <ShoppingCart size={20} />
-                      <span>{activeStock > 0 ? 'AGREGAR AL CARRO' : 'AGOTADO'}</span>
-                    </button>
+                    )}
                   </div>
-
-                  {/* Ficha Técnica / Especificaciones Técnicas */}
-                  {modalSpecs.length > 0 && (
-                    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '16px', marginTop: '14px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #E2E8F0' }}>
-                        <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: '#FFF1F2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E11D48' }}>
-                          <FileText size={13} />
-                        </div>
-                        <span style={{ fontSize: '0.82rem', color: '#0F172A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px' }}>
-                          Ficha Técnica & Especificaciones
-                        </span>
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' }}>
-                        {modalSpecs.map((s, idx) => (
-                          <div key={idx} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '9px', padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            <span style={{ color: '#64748B', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 600 }}>{s.key}</span>
-                            <span style={{ color: '#0F172A', fontSize: '0.85rem', fontWeight: 700 }}>{s.value}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -1521,55 +1505,11 @@ export default function ProductosPage() {
                         </div>
                       )}
 
-                      {/* SANDBOX / SIMULATOR INTERACTIVE PANEL */}
-                      {simulationData && (
-                        <div className={styles.simulationBox}>
-                          <div className={styles.simulationHeader}>
-                            <h5 className={styles.simulationTitle}>
-                              <Zap size={16} /> Entorno de Pruebas Banca.me (Sandbox)
-                            </h5>
-                            <span className={styles.simulationBadge}>Modo Simulación</span>
-                          </div>
-                          <p className={styles.simulationText}>
-                            Sesión creada para la orden <strong>#{simulationData.orderNumber}</strong>. En producción con tu clave <code>BANCAME_SECRET_KEY</code> se despliega el widget oficial. Puedes simular la respuesta crediticia ahora:
-                          </p>
-                          <div className={styles.simulationTokenWrap}>
-                            Token de Sesión: {simulationData.widgetToken}
-                          </div>
-                          <div className={styles.simulationActions}>
-                            <button 
-                              type="button" 
-                              onClick={handleSimulateBancameSuccess}
-                              disabled={orderProcessing}
-                              className={styles.simulationBtnApprove}
-                            >
-                              <CheckCircle2 size={15} /> Simular Aprobación y Pago
-                            </button>
-                            <button 
-                              type="button" 
-                              onClick={handleSimulateBancameReject}
-                              disabled={orderProcessing}
-                              className={styles.simulationBtnReject}
-                            >
-                              <X size={15} /> Simular Rechazo de Crédito
-                            </button>
-                            <button 
-                              type="button" 
-                              onClick={() => setSimulationData(null)}
-                              style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#475569', borderRadius: '6px', padding: '6px 12px', fontSize: '0.75rem', cursor: 'pointer' }}
-                            >
-                              Cerrar Panel
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
                       {/* BOTONES DE NAVEGACIÓN */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px' }}>
                         <button 
                           type="button" 
                           onClick={() => {
-                            setSimulationData(null)
                             setBancameError(null)
                             setCheckoutStep('details')
                           }}
@@ -1591,14 +1531,14 @@ export default function ProductosPage() {
                           {orderProcessing ? (
                             <>
                               <RefreshCw size={16} className={styles.spin} />
-                              <span>Procesando...</span>
+                              <span>Conectando con pasarela...</span>
                             </>
                           ) : (
                             <>
                               <span>
-                                {paymentMethod === 'flow' && 'Pagar con Flow (Webpay / Tarjetas)'}
+                                {paymentMethod === 'flow' && `Pagar con Webpay Plus (${formatPrice(cartTotal)} CLP)`}
                                 {paymentMethod === 'whatsapp' && 'Finalizar por WhatsApp'}
-                                {paymentMethod === 'transfer' && 'Confirmar Pedido y Datos de Pago'}
+                                {paymentMethod === 'transfer' && 'Confirmar Pedido por Transferencia'}
                                 {paymentMethod === 'bancame' && 'Pagar en Cuotas con Banca.me'}
                               </span>
                               <Check size={18} />
