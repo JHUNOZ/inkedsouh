@@ -1,6 +1,5 @@
 'use client'
-import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { User } from 'lucide-react'
 import SparklesBg from './SparklesBg'
 import { useConfig } from '@/context/ConfigContext'
@@ -8,19 +7,6 @@ import styles from './Hero.module.css'
 
 export default function Hero() {
   const { textos } = useConfig()
-  const ref = useRef(null)
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start start', 'end start']
-  })
-
-  // Cinematic GPU-composited scroll transforms
-  const yBg = useTransform(scrollYProgress, [0, 1], ['0%', '25%'])
-  const yText = useTransform(scrollYProgress, [0, 1], ['0%', '40%'])
-  const opacityContent = useTransform(scrollYProgress, [0, 0.55, 0.95], [1, 0.5, 0])
-  const scaleHero = useTransform(scrollYProgress, [0, 1], [1, 0.94])
-  const darkOverlay = useTransform(scrollYProgress, [0, 0.35, 0.8, 1], [0, 0.35, 0.85, 1])
 
   const scrollToNext = () => {
     window.scrollTo({
@@ -60,17 +46,14 @@ export default function Hero() {
   const currentPhoto = textos.artistPhoto || textos.artist_photo
 
   return (
-    <section className={styles.hero} ref={ref}>
-      {/* Background with Parallax & Particle Glow */}
-      <motion.div style={{ y: yBg }} className={styles.bgParallax}>
-        <SparklesBg count={30} />
-      </motion.div>
+    <section className={styles.hero}>
+      {/* Background with Particle Glow */}
+      <div className={styles.bgParallax}>
+        <SparklesBg count={24} />
+      </div>
 
-      {/* Main Hero Container that scales and fades smoothly on scroll */}
-      <motion.div
-        className={styles.content}
-        style={{ scale: scaleHero, opacity: opacityContent }}
-      >
+      {/* Main Hero Container */}
+      <div className={styles.content}>
         <motion.div
           className={styles.inner}
           variants={containerVars}
@@ -99,11 +82,8 @@ export default function Hero() {
             <div className={styles.lightSweep} />
           </motion.div>
 
-          {/* Información con Parallax y Stagger */}
-          <motion.div
-            className={styles.info}
-            style={{ y: yText }}
-          >
+          {/* Información */}
+          <div className={styles.info}>
             <motion.div variants={textLogoVars} className={styles.logoContainer}>
               <h1 className={styles.heroTextLogo}>INKEDSOUH</h1>
             </motion.div>
@@ -129,16 +109,9 @@ export default function Hero() {
                 {textos.heroIg || textos.hero_ig || '@inked.tto'}
               </a>
             </motion.div>
-          </motion.div>
+          </div>
         </motion.div>
-      </motion.div>
-
-      {/* Dynamic Scroll Darkening Overlay */}
-      <motion.div
-        className={styles.scrollDarkOverlay}
-        style={{ opacity: darkOverlay }}
-        aria-hidden="true"
-      />
+      </div>
 
       {/* Bottom Gradient Transition to next section */}
       <div className={styles.bottomGradientTransition} />

@@ -63,10 +63,9 @@ export default function SparklesBg({ count = 30 }) {
     let targetY = height / 2
 
     const handlePointerMove = (e) => {
-      if (e.pointerType === 'touch') return
-      const rect = canvas.getBoundingClientRect()
-      targetX = e.clientX - rect.left
-      targetY = e.clientY - rect.top
+      if (!isVisible || e.pointerType === 'touch') return
+      targetX = e.clientX
+      targetY = e.clientY
     }
     window.addEventListener('pointermove', handlePointerMove, { passive: true })
 

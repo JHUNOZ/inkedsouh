@@ -7,7 +7,7 @@ import Footer from '@/components/layout/Footer'
 import SectionTitle from '@/components/ui/SectionTitle'
 import VideoPreview from '@/components/ui/VideoPreview'
 import { createClient } from '@/lib/supabase/client'
-import { isVideoUrl } from '@/lib/productUtils'
+import { isVideoUrl, getOptimizedVideoAssets, parseGalleryPermalink } from '@/lib/productUtils'
 import Link from 'next/link'
 import styles from './galeria.module.css'
 
@@ -30,25 +30,14 @@ export default function GaleriaPage() {
 
         if (!error && data && data.length > 0) {
           const dbItems = data.map(item => {
-            let itemTitle = 'Obra InkedSouh'
-            let itemCategory = 'Tatuaje'
-            if (item.permalink) {
-              try {
-                if (item.permalink.startsWith('{')) {
-                  const parsed = JSON.parse(item.permalink)
-                  if (parsed.title) itemTitle = parsed.title
-                  if (parsed.category) itemCategory = parsed.category
-                } else if (!item.permalink.startsWith('http')) {
-                  itemTitle = item.permalink
-                }
-              } catch {
-                itemTitle = item.permalink
-              }
-            }
+            const { title: itemTitle, category: itemCategory, thumbUrl } = parseGalleryPermalink(item.permalink)
+            const { posterUrl, videoUrl } = getOptimizedVideoAssets(item.media_url, thumbUrl)
 
             return {
               id: item.id,
               media_url: item.media_url,
+              video_url: videoUrl || item.media_url,
+              poster_url: posterUrl || null,
               media_type: item.media_type || 'IMAGE',
               caption: itemTitle,
               category: itemCategory
@@ -170,7 +159,12 @@ export default function GaleriaPage() {
                 onClick={() => setLightboxIndex(idx)}
               >
                 {(post.media_type === 'VIDEO' || isVideoUrl(post.media_url)) ? (
-                  <VideoPreview src={post.media_url} className={styles.mediaImg} />
+                  <VideoPreview
+                    src={post.media_url}
+                    poster={post.poster_url}
+                    alt={post.caption || "Portafolio InkedSouh"}
+                    className={styles.mediaImg}
+                  />
                 ) : (
                   <img 
                     src={post.media_url} 
@@ -229,7 +223,16 @@ export default function GaleriaPage() {
             <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
               <div className={styles.lightboxMediaContainer}>
                 {(activeItem.media_type === 'VIDEO' || isVideoUrl(activeItem.media_url)) ? (
-                  <video src={activeItem.media_url} controls autoPlay muted loop playsInline className={styles.lightboxMedia} />
+                  <video
+                    src={activeItem.video_url || activeItem.media_url}
+                    poster={activeItem.poster_url || undefined}
+                    controls
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className={styles.lightboxMedia}
+                  />
                 ) : (
                   <img src={activeItem.media_url} alt={activeItem.caption} className={styles.lightboxMedia} />
                 )}

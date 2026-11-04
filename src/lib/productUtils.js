@@ -233,6 +233,72 @@ export function isVideoUrl(url) {
   )
 }
 
+const OPTIMIZED_VIDEO_MAP = {
+  'gallery_1792591888678_e7hb.mov': {
+    posterUrl: '/images/gallery/thumb_gallery_1792591888678_e7hb.webp',
+    videoUrl: '/images/gallery/opt_gallery_1792591888678_e7hb.mp4'
+  },
+  'gallery_1792591957926_lrvz.mov': {
+    posterUrl: '/images/gallery/thumb_gallery_1792591957926_lrvz.webp',
+    videoUrl: '/images/gallery/opt_gallery_1792591957926_lrvz.mp4'
+  },
+  'video_mp4_1791320164438_0.mp4': {
+    posterUrl: '/images/gallery/thumb_VIDEO_mp4_1791320164438_0.webp',
+    videoUrl: null
+  }
+}
+
+/**
+ * Devuelve assets optimizados (poster ligero WebP/JPG y URL de video MP4 optimizado)
+ * para evitar decodificar archivos .MOV 4K HDR pesados durante el scroll.
+ */
+export function getOptimizedVideoAssets(url, customPoster = null) {
+  if (!url || typeof url !== 'string') {
+    return { posterUrl: customPoster || null, videoUrl: url || '' }
+  }
+
+  const fileName = url.split('?')[0].split('/').pop()?.toLowerCase() || ''
+  const mapped = OPTIMIZED_VIDEO_MAP[fileName]
+
+  if (mapped) {
+    return {
+      posterUrl: customPoster || mapped.posterUrl,
+      videoUrl: mapped.videoUrl || url
+    }
+  }
+
+  return {
+    posterUrl: customPoster || null,
+    videoUrl: url
+  }
+}
+
+/**
+ * Extrae metadatos estructurados de permalink en instagram_cache
+ */
+export function parseGalleryPermalink(permalink) {
+  let title = 'Obra InkedSouh'
+  let category = 'Tatuaje'
+  let thumbUrl = null
+
+  if (permalink && typeof permalink === 'string') {
+    try {
+      if (permalink.startsWith('{')) {
+        const parsed = JSON.parse(permalink)
+        if (parsed.title) title = parsed.title
+        if (parsed.category) category = parsed.category
+        if (parsed.thumbUrl) thumbUrl = parsed.thumbUrl
+      } else if (!permalink.startsWith('http')) {
+        title = permalink
+      }
+    } catch {
+      title = permalink
+    }
+  }
+
+  return { title, category, thumbUrl }
+}
+
 /**
  * Calcula cuotas estimadas para métodos BNPL (Banca.me / Cuotas)
  */

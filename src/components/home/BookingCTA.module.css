@@ -58,12 +58,6 @@
   height: 100%;
   object-fit: cover;
   z-index: 1;
-  opacity: 0.92;
-  transition: opacity var(--transition-base);
-}
-
-.videoBox:hover .promoVideo {
-  opacity: 1;
 }
 
 /* Content (Derecha) */

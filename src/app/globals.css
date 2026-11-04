@@ -136,7 +136,6 @@ img {
   max-width: 100%; 
   height: auto; 
   display: block; 
-  content-visibility: auto;
 }
 
 ul, ol { 

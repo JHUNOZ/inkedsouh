@@ -1,9 +1,13 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { Play } from 'lucide-react'
+import { getOptimizedVideoAssets } from '@/lib/productUtils'
 import styles from './VideoPreview.module.css'
 
-// Global sequential queue so multiple 4K/1080p phone videos never decode at the same time
+// In-memory cache of extracted thumbnail data URLs so a video is never decoded twice
+const frameCache = new Map()
+
+// Global sequential queue so multiple videos never decode at the same time
 const decodeQueue = []
 let isDecoding = false
 
@@ -12,11 +16,10 @@ function processNextInQueue() {
   isDecoding = true
   const task = decodeQueue.shift()
   task(() => {
-    // Small pause between video frame extractions to keep scrolling at 60/120fps
     setTimeout(() => {
       isDecoding = false
       processNextInQueue()
-    }, 60)
+    }, 120)
   })
 }
 
@@ -27,138 +30,160 @@ function enqueueVideoFrame(task) {
 
 export default function VideoPreview({
   src,
+  poster = null,
+  alt = 'Vista previa de video',
   className = '',
   style,
   showBadge = true,
-  maxDimension = 420
+  maxDimension = 360
 }) {
+  const { posterUrl: mappedPoster, videoUrl } = getOptimizedVideoAssets(src, poster)
+  const initialThumb = mappedPoster || (src ? frameCache.get(src) : null) || null
+
   const containerRef = useRef(null)
-  const canvasRef = useRef(null)
-  const [ready, setReady] = useState(false)
+  const [thumbSrc, setThumbSrc] = useState(initialThumb)
 
   useEffect(() => {
+    const resolved = mappedPoster || (src ? frameCache.get(src) : null) || null
+    if (resolved) {
+      setThumbSrc(resolved)
+      return
+    }
+
     const container = containerRef.current
-    if (!container || !src) return
+    const targetUrl = videoUrl || src
+    if (!container || !targetUrl) return
+
+    // Never auto-download/decode raw QuickTime .MOV files on the client for thumbnails
+    // (raw iPhone .MOV files are often 50MB+ 4K 10-bit HEVC without faststart)
+    const cleanLower = targetUrl.split('?')[0].toLowerCase()
+    if (cleanLower.endsWith('.mov')) {
+      return
+    }
 
     let cancelled = false
     let cleanupVideo = null
+    let idleTimer = null
+    let isInView = false
 
-    const startExtraction = () => {
-      enqueueVideoFrame((done) => {
-        if (cancelled) {
-          done()
-          return
-        }
+    const startExtractionWhenScrollIdle = () => {
+      if (cancelled || !isInView) return
+      if (idleTimer) clearTimeout(idleTimer)
 
-        // Detached video element — never added to the DOM, so zero layout/compositor cost
-        const video = document.createElement('video')
-        video.muted = true
-        video.playsInline = true
-        video.preload = 'metadata'
+      // Wait until the user has completely stopped scrolling for 800ms
+      idleTimer = setTimeout(() => {
+        if (cancelled || !isInView) return
+        window.removeEventListener('scroll', onScrollActivity)
 
-        let finished = false
-        const finish = () => {
-          if (finished) return
-          finished = true
-          try {
-            video.pause()
-            video.removeAttribute('src')
-            video.load()
-          } catch {}
-          done()
-        }
-
-        cleanupVideo = finish
-
-        // Timeout fallback in case a video URL is slow or unsupported
-        const timeoutId = setTimeout(finish, 5000)
-
-        const drawFrame = () => {
-          clearTimeout(timeoutId)
+        enqueueVideoFrame((done) => {
           if (cancelled) {
-            finish()
+            done()
             return
           }
 
-          const canvas = canvasRef.current
-          if (canvas && video.videoWidth > 0 && video.videoHeight > 0) {
-            const vw = video.videoWidth
-            const vh = video.videoHeight
-
-            // Target lightweight thumbnail resolution (3:4 default aspect or container aspect)
-            const rect = container.getBoundingClientRect()
-            const boxW = rect.width || 320
-            const boxH = rect.height || 420
-            const scale = Math.min(1, maxDimension / Math.max(boxW, boxH))
-            const cw = Math.max(160, Math.round(boxW * scale * (window.devicePixelRatio > 1 ? 1.25 : 1)))
-            const ch = Math.max(160, Math.round(boxH * scale * (window.devicePixelRatio > 1 ? 1.25 : 1)))
-
-            canvas.width = cw
-            canvas.height = ch
-
-            // Compute object-fit: cover crop from source video
-            const videoRatio = vw / vh
-            const canvasRatio = cw / ch
-            let sx = 0
-            let sy = 0
-            let sw = vw
-            let sh = vh
-
-            if (videoRatio > canvasRatio) {
-              sw = vh * canvasRatio
-              sx = (vw - sw) * 0.5
-            } else {
-              sh = vw / canvasRatio
-              sy = (vh - sh) * 0.5
-            }
-
-            const ctx = canvas.getContext('2d', { alpha: false })
-            if (ctx) {
-              ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch)
-              setReady(true)
-            }
+          if (frameCache.has(src)) {
+            setThumbSrc(frameCache.get(src))
+            done()
+            return
           }
-          finish()
-        }
 
-        video.addEventListener('seeked', drawFrame, { once: true })
-        video.addEventListener(
-          'loadeddata',
-          () => {
+          const video = document.createElement('video')
+          video.muted = true
+          video.playsInline = true
+          video.preload = 'metadata'
+          video.crossOrigin = 'anonymous'
+
+          let finished = false
+          const finish = () => {
+            if (finished) return
+            finished = true
+            try {
+              video.pause()
+              video.removeAttribute('src')
+              video.load()
+            } catch {}
+            done()
+          }
+
+          cleanupVideo = finish
+          const timeoutId = setTimeout(finish, 4000)
+
+          const drawFrame = () => {
+            clearTimeout(timeoutId)
             if (cancelled) {
               finish()
               return
             }
-            // Seek slightly into the video (0.15s) to avoid black fade-in frames
-            try {
-              if (video.duration > 0.2) {
-                video.currentTime = 0.15
-              } else {
+
+            if (video.videoWidth > 0 && video.videoHeight > 0) {
+              try {
+                const vw = video.videoWidth
+                const vh = video.videoHeight
+                const scale = Math.min(1, maxDimension / Math.max(vw, vh))
+                const cw = Math.max(160, Math.round(vw * scale))
+                const ch = Math.max(160, Math.round(vh * scale))
+
+                const offscreen = document.createElement('canvas')
+                offscreen.width = cw
+                offscreen.height = ch
+                const ctx = offscreen.getContext('2d', { alpha: false })
+                if (ctx) {
+                  ctx.drawImage(video, 0, 0, cw, ch)
+                  const dataUrl = offscreen.toDataURL('image/jpeg', 0.78)
+                  frameCache.set(src, dataUrl)
+                  setThumbSrc(dataUrl)
+                }
+              } catch {}
+            }
+            finish()
+          }
+
+          video.addEventListener('seeked', drawFrame, { once: true })
+          video.addEventListener(
+            'loadeddata',
+            () => {
+              if (cancelled) {
+                finish()
+                return
+              }
+              try {
+                if (video.duration > 0.2) {
+                  video.currentTime = 0.15
+                } else {
+                  drawFrame()
+                }
+              } catch {
                 drawFrame()
               }
-            } catch {
-              drawFrame()
-            }
-          },
-          { once: true }
-        )
-        video.addEventListener('error', () => {
-          clearTimeout(timeoutId)
-          finish()
-        }, { once: true })
+            },
+            { once: true }
+          )
+          video.addEventListener('error', () => {
+            clearTimeout(timeoutId)
+            finish()
+          }, { once: true })
 
-        video.src = src
-      })
+          video.src = targetUrl
+        })
+      }, 800)
+    }
+
+    const onScrollActivity = () => {
+      if (isInView) {
+        startExtractionWhenScrollIdle()
+      }
     }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        isInView = entry.isIntersecting
+        if (isInView) {
           observer.disconnect()
-          startExtraction()
+          window.addEventListener('scroll', onScrollActivity, { passive: true })
+          startExtractionWhenScrollIdle()
         }
       },
-      { rootMargin: '250px' }
+      { rootMargin: '100px' }
     )
 
     observer.observe(container)
@@ -166,21 +191,29 @@ export default function VideoPreview({
     return () => {
       cancelled = true
       observer.disconnect()
+      window.removeEventListener('scroll', onScrollActivity)
+      if (idleTimer) clearTimeout(idleTimer)
       if (cleanupVideo) cleanupVideo()
     }
-  }, [src, maxDimension])
+  }, [src, mappedPoster, videoUrl, maxDimension])
 
   return (
     <div ref={containerRef} className={`${styles.wrapper} ${className}`} style={style}>
-      <canvas
-        ref={canvasRef}
-        className={`${styles.canvas} ${ready ? styles.canvasReady : ''}`}
-      />
-      {!ready && (
+      {thumbSrc ? (
+        <img
+          src={thumbSrc}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+          className={styles.posterImg}
+        />
+      ) : (
         <div className={styles.skeleton} aria-hidden="true">
           <div className={styles.skeletonIcon}>
             <Play size={24} fill="currentColor" />
           </div>
+          <span className={styles.skeletonLabel}>VIDEO REEL</span>
         </div>
       )}
       {showBadge && (

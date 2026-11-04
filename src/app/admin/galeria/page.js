@@ -2,11 +2,84 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import VideoPreview from '@/components/ui/VideoPreview'
+import { parseGalleryPermalink } from '@/lib/productUtils'
 import { 
   UploadCloud, Trash2, Image as ImageIcon, Video, User, Check, 
   AlertTriangle, RefreshCw, Plus, Sparkles, Eye, Film, Layers 
 } from 'lucide-react'
 import styles from './galeria.module.css'
+
+// Extrae un frame ligero en formato JPEG desde un archivo de video local antes de subirlo
+function extractLocalVideoThumbnail(file, maxDim = 480) {
+  return new Promise((resolve) => {
+    try {
+      const url = URL.createObjectURL(file)
+      const video = document.createElement('video')
+      video.muted = true
+      video.playsInline = true
+      video.preload = 'metadata'
+
+      let done = false
+      const finish = (blob = null) => {
+        if (done) return
+        done = true
+        try {
+          video.pause()
+          video.removeAttribute('src')
+          video.load()
+          URL.revokeObjectURL(url)
+        } catch {}
+        resolve(blob)
+      }
+
+      const timeoutId = setTimeout(() => finish(null), 3500)
+
+      const capture = () => {
+        clearTimeout(timeoutId)
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          try {
+            const vw = video.videoWidth
+            const vh = video.videoHeight
+            const scale = Math.min(1, maxDim / Math.max(vw, vh))
+            const cw = Math.max(160, Math.round(vw * scale))
+            const ch = Math.max(160, Math.round(vh * scale))
+            const canvas = document.createElement('canvas')
+            canvas.width = cw
+            canvas.height = ch
+            const ctx = canvas.getContext('2d', { alpha: false })
+            if (ctx) {
+              ctx.drawImage(video, 0, 0, cw, ch)
+              canvas.toBlob((blob) => finish(blob), 'image/jpeg', 0.8)
+              return
+            }
+          } catch {}
+        }
+        finish(null)
+      }
+
+      video.addEventListener('seeked', capture, { once: true })
+      video.addEventListener('loadeddata', () => {
+        try {
+          if (video.duration > 0.25) {
+            video.currentTime = 0.2
+          } else {
+            capture()
+          }
+        } catch {
+          capture()
+        }
+      }, { once: true })
+      video.addEventListener('error', () => {
+        clearTimeout(timeoutId)
+        finish(null)
+      }, { once: true })
+
+      video.src = url
+    } catch {
+      resolve(null)
+    }
+  })
+}
 
 export default function MultimediaPage() {
   const [activeTab, setActiveTab] = useState('gallery_manual') // 'gallery_manual' | 'bio_photo'
@@ -125,11 +198,30 @@ export default function MultimediaPage() {
         .from('admin_uploads')
         .getPublicUrl(filePath)
 
+      // Si es video, generamos y subimos una miniatura JPG ligera (~25KB) para que el scroll sea instantáneo
+      let thumbPublicUrl = null
+      if (mediaType === 'VIDEO') {
+        const thumbBlob = await extractLocalVideoThumbnail(selectedFile, 480)
+        if (thumbBlob) {
+          const thumbPath = `gallery/thumb_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.jpg`
+          const { error: thumbErr } = await supabase.storage
+            .from('admin_uploads')
+            .upload(thumbPath, thumbBlob, { contentType: 'image/jpeg', cacheControl: '31536000', upsert: true })
+          if (!thumbErr) {
+            const { data: { publicUrl: tUrl } } = supabase.storage
+              .from('admin_uploads')
+              .getPublicUrl(thumbPath)
+            thumbPublicUrl = tUrl
+          }
+        }
+      }
+
       // Format title and category in permalink or structured text
       const workMetadata = JSON.stringify({
         title: title.trim() || 'Obra InkedSouh',
         category: category || 'Tatuaje',
-        type: mediaType
+        type: mediaType,
+        ...(thumbPublicUrl ? { thumbUrl: thumbPublicUrl } : {})
       })
 
       const { error: dbError } = await supabase
@@ -221,24 +313,7 @@ export default function MultimediaPage() {
 
   // Helper to parse item details
   const getItemDetails = (item) => {
-    let itemTitle = 'Tatuaje InkedSouh'
-    let itemCategory = 'Tatuaje'
-    
-    if (item.permalink) {
-      try {
-        if (item.permalink.startsWith('{')) {
-          const parsed = JSON.parse(item.permalink)
-          if (parsed.title) itemTitle = parsed.title
-          if (parsed.category) itemCategory = parsed.category
-        } else if (!item.permalink.startsWith('http')) {
-          itemTitle = item.permalink
-        }
-      } catch {
-        itemTitle = item.permalink
-      }
-    }
-
-    return { title: itemTitle, category: itemCategory }
+    return parseGalleryPermalink(item.permalink)
   }
 
   return (
@@ -442,7 +517,7 @@ export default function MultimediaPage() {
                     <div key={item.id} className={styles.mediaCard}>
                       <div className={styles.mediaThumbWrap}>
                         {isVideo ? (
-                          <VideoPreview src={item.media_url} showBadge={false} className={styles.mediaThumb} />
+                          <VideoPreview src={item.media_url} poster={details.thumbUrl} showBadge={false} className={styles.mediaThumb} />
                         ) : (
                           <img src={item.media_url} alt={details.title} loading="lazy" decoding="async" className={styles.mediaThumb} />
                         )}

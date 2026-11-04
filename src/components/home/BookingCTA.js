@@ -76,6 +76,7 @@ export default function BookingCTA() {
             <video
               ref={videoRef}
               src={videoSrc}
+              poster={videoSrc === '/images/videoprom.mp4' ? '/images/videoprom-poster.webp' : undefined}
               loop
               muted
               playsInline

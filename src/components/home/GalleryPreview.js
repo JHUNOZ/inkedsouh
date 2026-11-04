@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import SectionTitle from '@/components/ui/SectionTitle'
 import VideoPreview from '@/components/ui/VideoPreview'
 import { createClient } from '@/lib/supabase/client'
-import { isVideoUrl } from '@/lib/productUtils'
+import { isVideoUrl, getOptimizedVideoAssets, parseGalleryPermalink } from '@/lib/productUtils'
 import Link from 'next/link'
 import styles from './GalleryPreview.module.css'
 
@@ -37,26 +37,15 @@ export default function GalleryPreview() {
 
         if (!error && data && data.length > 0) {
           const formatted = data.map(item => {
-            let itemTitle = 'Obra InkedSouh'
-            let itemCategory = 'Tatuaje'
-            if (item.permalink) {
-              try {
-                if (item.permalink.startsWith('{')) {
-                  const parsed = JSON.parse(item.permalink)
-                  if (parsed.title) itemTitle = parsed.title
-                  if (parsed.category) itemCategory = parsed.category
-                } else if (!item.permalink.startsWith('http')) {
-                  itemTitle = item.permalink
-                }
-              } catch {
-                itemTitle = item.permalink
-              }
-            }
+            const { title: itemTitle, category: itemCategory, thumbUrl } = parseGalleryPermalink(item.permalink)
+            const { posterUrl, videoUrl } = getOptimizedVideoAssets(item.media_url, thumbUrl)
 
             return {
               id: item.id,
               permalink: item.media_url,
               mediaUrl: item.media_url,
+              videoUrl: videoUrl || item.media_url,
+              posterUrl: posterUrl || null,
               mediaType: item.media_type || 'IMAGE',
               caption: itemTitle,
               category: itemCategory
@@ -98,12 +87,12 @@ export default function GalleryPreview() {
     if (!el || posts.length === 0) return
     const maxScroll = el.scrollWidth - el.clientWidth
     if (maxScroll <= 0) {
-      setActiveSlide(1)
+      setActiveSlide(prev => (prev === 1 ? prev : 1))
       return
     }
     const progress = el.scrollLeft / maxScroll
     const idx = Math.min(posts.length, Math.max(1, Math.round(progress * (posts.length - 1)) + 1))
-    setActiveSlide(idx)
+    setActiveSlide(prev => (prev === idx ? prev : idx))
   }, [posts.length])
 
   const scrollLeft = () => {
@@ -254,6 +243,8 @@ export default function GalleryPreview() {
                   {(post.mediaType === 'VIDEO' || isVideoUrl(post.mediaUrl)) ? (
                     <VideoPreview
                       src={post.mediaUrl}
+                      poster={post.posterUrl}
+                      alt={post.caption || 'Galería de Tatuajes'}
                       className={styles.igMedia}
                     />
                   ) : (
@@ -341,7 +332,16 @@ export default function GalleryPreview() {
             >
               <div className={styles.lightboxMediaWrapper}>
                 {(currentItem.mediaType === 'VIDEO' || isVideoUrl(currentItem.mediaUrl)) ? (
-                  <video src={currentItem.mediaUrl} controls autoPlay muted loop playsInline className={styles.lightboxMedia} />
+                  <video
+                    src={currentItem.videoUrl || currentItem.mediaUrl}
+                    poster={currentItem.posterUrl || undefined}
+                    controls
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className={styles.lightboxMedia}
+                  />
                 ) : (
                   <img src={currentItem.mediaUrl} alt={currentItem.caption} className={styles.lightboxMedia} />
                 )}

@@ -11,10 +11,10 @@
   background: transparent;
 }
 
-/* Fondo parallax animado con framer-motion */
+/* Fondo de partículas */
 .bgParallax {
   position: absolute;
-  inset: -100px; /* Extend slightly to allow parallax room */
+  inset: 0;
   z-index: 0;
   pointer-events: none;
 }
