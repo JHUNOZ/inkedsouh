@@ -45,7 +45,7 @@
 /* Texto Gigante con Efecto Editorial Oscuro */
 .title {
   font-family: var(--font-display);
-  font-size: clamp(3.6rem, 10vw, 7.5rem);
+  font-size: clamp(3.2rem, 10vw, 7.5rem);
   letter-spacing: 4px;
   line-height: 0.88;
   text-transform: uppercase;
@@ -53,18 +53,10 @@
   display: inline-flex;
   align-items: flex-end;
   background: linear-gradient(135deg, #0F172A 0%, #334155 50%, #0F172A 100%);
-  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
-  animation: metallicShine 8s linear infinite;
-}
-
-@keyframes metallicShine {
-  to {
-    background-position: 200% center;
-  }
 }
 
 /* Bloque rojo final */

@@ -1,10 +1,12 @@
-/* Custom Cursor — Optimized with pure CSS transitions */
+/* Custom Cursor — Hardware-Accelerated Zero-Latency DOM Refs */
 .cursorWrapper {
   pointer-events: none;
   position: fixed;
   inset: 0;
   z-index: 99999;
-  transition: opacity 0.3s ease;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  overflow: hidden;
 }
 
 .cursorRing {
@@ -13,21 +15,19 @@
   left: 0;
   width: 32px;
   height: 32px;
-  border: 1.5px solid rgba(225, 29, 72, 0.55);
+  border: 1.5px solid rgba(225, 29, 72, 0.6);
   border-radius: 50%;
   pointer-events: none;
   will-change: transform;
-  transition: width 0.25s ease, height 0.25s ease, border-color 0.25s ease, background-color 0.25s ease, margin 0.25s ease;
+  transform: translate3d(-100px, -100px, 0) translate(-50%, -50%);
+  /* Do NOT transition transform here — JS RAF handles transform at 60/120fps */
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .cursorRing.hovering {
-  width: 56px;
-  height: 56px;
-  margin-left: -12px;
-  margin-top: -12px;
-  border-color: transparent;
-  background-color: rgba(255, 42, 61, 0.12);
-  mix-blend-mode: normal;
+  border-color: rgba(225, 29, 72, 0.35);
+  background-color: rgba(225, 29, 72, 0.12);
+  box-shadow: 0 0 20px rgba(225, 29, 72, 0.2);
 }
 
 .cursorDot {
@@ -40,14 +40,18 @@
   border-radius: 50%;
   pointer-events: none;
   will-change: transform;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transform: translate3d(-100px, -100px, 0) translate(-50%, -50%);
+  /* Do NOT transition transform here — instant 0ms response */
+  transition: opacity 0.15s ease;
 }
 
 .cursorDot.dotHidden {
   opacity: 0;
-  transform: scale(0) !important;
 }
 
-@media (pointer: coarse) {
-  .cursorWrapper { display: none; }
+/* Only hide on pure touch devices that have no fine pointer / hover capability */
+@media (hover: none) and (pointer: coarse) {
+  .cursorWrapper {
+    display: none !important;
+  }
 }

@@ -4,7 +4,7 @@ import {
   ShoppingBag, ShoppingCart, Plus, Minus, X, Search, 
   Check, ChevronRight, ChevronDown, Sparkles, Tag, ShieldCheck, 
   Star, MessageCircle, ArrowRight, CreditCard, Building2,
-  Zap, Copy, CheckCircle2, Truck, MapPin, User, Mail, Phone,
+  Zap, Copy, CheckCircle2, Truck, MapPin, User, Mail, Phone, Clock,
   FileText, ExternalLink, RefreshCw, AlertCircle, ArrowLeft,
   Gift, Flame, Package
 } from 'lucide-react'

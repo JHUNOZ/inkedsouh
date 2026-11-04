@@ -1,7 +1,22 @@
 'use client'
-// Obsidian Liquid Glow con Destellos Rojos - Ultra Optimized for High Performance & Mobile
+// Obsidian Liquid Glow con Destellos Rojos — Pre-rendered GPU Offscreen Textures for 60/120fps
 import { useEffect, useRef } from 'react'
 import styles from './SparklesBg.module.css'
+
+function createOrbTexture(colorInner, colorOuter, size = 128) {
+  const offscreen = document.createElement('canvas')
+  offscreen.width = size
+  offscreen.height = size
+  const oCtx = offscreen.getContext('2d')
+  if (!oCtx) return null
+  const half = size / 2
+  const grad = oCtx.createRadialGradient(half, half, 0, half, half, half)
+  grad.addColorStop(0, colorInner)
+  grad.addColorStop(1, colorOuter)
+  oCtx.fillStyle = grad
+  oCtx.fillRect(0, 0, size, size)
+  return offscreen
+}
 
 export default function SparklesBg({ count = 30 }) {
   const canvasRef = useRef(null)
@@ -9,158 +24,167 @@ export default function SparklesBg({ count = 30 }) {
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d', { alpha: false })
+    const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true })
     if (!ctx) return
 
-    let animId
+    let animId = null
     let isVisible = true
+    let width = 800
+    let height = 600
 
-    // Check if user prefers reduced motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const isMobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches
+    let isSmallScreen = window.innerWidth < 768
 
-    // Resize canvas to parent bounds
+    // Pre-render radial gradients once into lightweight offscreen textures
+    const orb1Tex = createOrbTexture('rgba(225, 29, 72, 0.10)', 'rgba(250, 250, 252, 0)')
+    const orb2Tex = createOrbTexture('rgba(244, 63, 94, 0.065)', 'rgba(250, 250, 252, 0)')
+
     const resize = () => {
       const parent = canvas.parentElement
-      if (parent) {
-        canvas.width = parent.offsetWidth || window.innerWidth
-        canvas.height = parent.offsetHeight || window.innerHeight
-      }
+      width = (parent && parent.offsetWidth) || window.innerWidth
+      height = (parent && parent.offsetHeight) || window.innerHeight
+      canvas.width = width
+      canvas.height = height
+      isSmallScreen = window.innerWidth < 768
     }
     resize()
-    window.addEventListener('resize', resize, { passive: true })
 
-    // Pause animation when hero is off-screen
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        isVisible = entry.isIntersecting
-        if (isVisible && !animId) {
-          animId = requestAnimationFrame(animate)
-        }
-      },
-      { threshold: 0.05 }
-    )
-    observer.observe(canvas)
-
-    // Mouse tracking with throttled / smoothed coordinates
-    let mouseX = canvas.width / 2
-    let mouseY = canvas.height / 2
-    let targetX = canvas.width / 2
-    let targetY = canvas.height / 2
-
-    const handleMouseMove = (e) => {
-      targetX = e.clientX
-      targetY = e.clientY
+    let resizeTimer = null
+    const handleResize = () => {
+      if (resizeTimer) clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(resize, 100)
     }
+    window.addEventListener('resize', handleResize, { passive: true })
 
-    if (!isMobile) {
-      window.addEventListener('mousemove', handleMouseMove, { passive: true })
+    // Mouse tracking (works on all PCs including hybrid touchscreen laptops)
+    let mouseX = width / 2
+    let mouseY = height / 2
+    let targetX = width / 2
+    let targetY = height / 2
+
+    const handlePointerMove = (e) => {
+      if (e.pointerType === 'touch') return
+      const rect = canvas.getBoundingClientRect()
+      targetX = e.clientX - rect.left
+      targetY = e.clientY - rect.top
     }
+    window.addEventListener('pointermove', handlePointerMove, { passive: true })
 
     let time = 0
+    let lastFrameTime = 0
 
-    // Adjusted particle count for mobile vs desktop for high frame rates
-    const actualCount = isMobile ? Math.min(8, count) : count
+    const actualCount = isSmallScreen ? Math.min(8, count) : Math.min(28, count)
     const sparkles = Array.from({ length: actualCount }, () => ({
-      x: Math.random() * (canvas.width || 800),
-      y: Math.random() * (canvas.height || 600),
-      size: Math.random() * 2 + 0.5,
-      speedY: -Math.random() * 0.4 - 0.1,
+      x: Math.random() * width,
+      y: Math.random() * height,
+      size: Math.random() * 1.8 + 0.6,
+      speedY: -Math.random() * 0.35 - 0.1,
       phase: Math.random() * Math.PI * 2,
       blinkSpeed: Math.random() * 0.02 + 0.01
     }))
 
-    const animate = () => {
+    const drawFrame = (now = 0) => {
       if (!isVisible) {
         animId = null
         return
       }
 
-      // Pearl White background fill
+      // On mobile screens, throttle to ~30fps to keep touch scrolling ultra-responsive
+      if (isSmallScreen && now - lastFrameTime < 32) {
+        animId = requestAnimationFrame(drawFrame)
+        return
+      }
+      lastFrameTime = now
+
       ctx.fillStyle = '#FAFAFC'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.fillRect(0, 0, width, height)
 
       // Smooth mouse lerp
-      if (!isMobile) {
-        mouseX += (targetX - mouseX) * 0.03
-        mouseY += (targetY - mouseY) * 0.03
-      }
-
+      mouseX += (targetX - mouseX) * 0.06
+      mouseY += (targetY - mouseY) * 0.06
       time += 0.008
 
-      // Orb 1: Soft Crimson glow follow
-      const radius1 = Math.min(canvas.width, canvas.height) * 0.45
-      const grad1 = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, radius1)
-      grad1.addColorStop(0, 'rgba(225, 29, 72, 0.09)')
-      grad1.addColorStop(1, 'rgba(250, 250, 252, 0)')
-      ctx.fillStyle = grad1
-      ctx.beginPath()
-      ctx.arc(mouseX, mouseY, radius1, 0, Math.PI * 2)
-      ctx.fill()
+      const minDim = Math.min(width, height)
 
-      // Orb 2: Warm Rose / Slate floating aura
-      const orb2X = canvas.width / 2 + Math.cos(time * 0.5) * canvas.width * 0.25
-      const orb2Y = canvas.height / 2 + Math.sin(time * 0.3) * canvas.height * 0.25
-      const radius2 = Math.min(canvas.width, canvas.height) * 0.55
-      const grad2 = ctx.createRadialGradient(orb2X, orb2Y, 0, orb2X, orb2Y, radius2)
-      grad2.addColorStop(0, 'rgba(244, 63, 94, 0.06)')
-      grad2.addColorStop(1, 'rgba(250, 250, 252, 0)')
-      ctx.fillStyle = grad2
-      ctx.beginPath()
-      ctx.arc(orb2X, orb2Y, radius2, 0, Math.PI * 2)
-      ctx.fill()
-
-      // Render sparkles (skipped if user prefers reduced motion)
-      if (!prefersReducedMotion) {
-        sparkles.forEach(s => {
-          s.y += s.speedY
-          if (s.y < -10) s.y = canvas.height + 10
-
-          s.phase += s.blinkSpeed
-          const opacity = Math.pow(Math.sin(s.phase), 8) * 0.65
-
-          if (opacity > 0.08) {
-            ctx.beginPath()
-            ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2)
-            ctx.fillStyle = `rgba(225, 29, 72, ${opacity})`
-            ctx.fill()
-          }
-        })
+      // Orb 1: Soft Crimson glow following cursor
+      if (orb1Tex) {
+        const r1 = minDim * 0.48
+        ctx.drawImage(orb1Tex, mouseX - r1, mouseY - r1, r1 * 2, r1 * 2)
       }
 
-      animId = requestAnimationFrame(animate)
+      // Orb 2: Warm Rose floating aura
+      if (orb2Tex) {
+        const orb2X = width * 0.5 + Math.cos(time * 0.5) * width * 0.22
+        const orb2Y = height * 0.5 + Math.sin(time * 0.3) * height * 0.22
+        const r2 = minDim * 0.55
+        ctx.drawImage(orb2Tex, orb2X - r2, orb2Y - r2, r2 * 2, r2 * 2)
+      }
+
+      // Render sparkles
+      if (!prefersReducedMotion) {
+        for (let i = 0; i < sparkles.length; i++) {
+          const s = sparkles[i]
+          s.y += s.speedY
+          if (s.y < -10) {
+            s.y = height + 10
+            s.x = Math.random() * width
+          }
+          s.phase += s.blinkSpeed
+          const sSin = Math.sin(s.phase)
+          if (sSin > 0.5) {
+            const opacity = Math.pow(sSin, 8) * 0.65
+            if (opacity > 0.08) {
+              ctx.fillStyle = `rgba(225, 29, 72, ${opacity.toFixed(2)})`
+              ctx.beginPath()
+              ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2)
+              ctx.fill()
+            }
+          }
+        }
+      }
+
+      if (!prefersReducedMotion) {
+        animId = requestAnimationFrame(drawFrame)
+      } else {
+        animId = null
+      }
     }
 
-    // Pause animation when tab is in background
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting
+        if (isVisible && !animId && !prefersReducedMotion) {
+          animId = requestAnimationFrame(drawFrame)
+        }
+      },
+      { threshold: 0.02 }
+    )
+    observer.observe(canvas)
+
     const handleVisibility = () => {
       if (document.hidden) {
         if (animId) {
           cancelAnimationFrame(animId)
           animId = null
         }
-      } else if (isVisible && !animId) {
-        animId = requestAnimationFrame(animate)
+      } else if (isVisible && !animId && !prefersReducedMotion) {
+        animId = requestAnimationFrame(drawFrame)
       }
     }
     document.addEventListener('visibilitychange', handleVisibility)
 
-    animId = requestAnimationFrame(animate)
+    // Initial render
+    drawFrame(0)
 
     return () => {
       if (animId) cancelAnimationFrame(animId)
+      if (resizeTimer) clearTimeout(resizeTimer)
       observer.disconnect()
-      window.removeEventListener('resize', resize)
+      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('pointermove', handlePointerMove)
       document.removeEventListener('visibilitychange', handleVisibility)
-      if (!isMobile) {
-        window.removeEventListener('mousemove', handleMouseMove)
-      }
     }
   }, [count])
 
-  return (
-    <canvas 
-      ref={canvasRef} 
-      className={styles.container} 
-    />
-  )
+  return <canvas ref={canvasRef} className={styles.container} aria-hidden="true" />
 }

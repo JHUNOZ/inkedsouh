@@ -4,12 +4,18 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 10001; /* Mayor que ProductsPreview (10000) */
+  z-index: 10001;
   height: var(--nav-height);
   background: #07070B;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-  transition: transform var(--transition-base);
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.navHidden {
+  transform: translate3d(0, -100%, 0);
 }
 
 /* Sólido y oscuro desde el principio (sin translucidez ni cambios de color al deslizar) */
@@ -147,10 +153,8 @@
 .mobileOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 998;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 9998;
 }
 
 /* Menú móvil */
@@ -159,14 +163,15 @@
   top: 0;
   right: 0;
   width: clamp(250px, 75vw, 300px);
-  height: 100vh;
+  height: 100dvh;
   background: #020204;
   border-left: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: -10px 0 50px rgba(0, 0, 0, 0.95);
-  padding: 100px 30px 40px;
+  padding: calc(var(--nav-height) + 28px) 30px 40px;
   display: flex;
   flex-direction: column;
-  z-index: 999;
+  z-index: 9999;
+  overflow-y: auto;
 }
 
 .mobileLinksContainer {

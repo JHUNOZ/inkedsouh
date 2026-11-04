@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  devIndicators: {
-    buildActivity: false,
-    appIsrStatus: false,
+  turbopack: {
+    root: import.meta.dirname,
   },
+  devIndicators: false,
   compress: true,
   poweredByHeader: false,
   images: {

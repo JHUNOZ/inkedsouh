@@ -107,7 +107,19 @@ export function ConfigProvider({ children }) {
               mapped.cta_media_url = item.value
               mapped.cta_image = item.value
             }
-            if (item.key_name === 'artist_photo') mapped.artistPhoto = item.value
+            if (item.key_name === 'artist_photo') {
+              let cleanPhotoUrl = item.value
+              if (typeof item.value === 'string' && item.value.trim().startsWith('{')) {
+                try {
+                  const parsed = JSON.parse(item.value)
+                  cleanPhotoUrl = parsed.url || item.value
+                } catch {
+                  cleanPhotoUrl = item.value
+                }
+              }
+              mapped.artistPhoto = cleanPhotoUrl
+              mapped.artist_photo = cleanPhotoUrl
+            }
             if (item.key_name === 'footer_description') mapped.footerDescription = item.value
             if (item.key_name === 'footer_copyright') mapped.footerCopyright = item.value
             if (item.key_name === 'contact_whatsapp') mapped.contactWhatsapp = item.value

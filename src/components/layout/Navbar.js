@@ -1,34 +1,48 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { NAV_LINKS } from '@/lib/constants'
 import styles from './Navbar.module.css'
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [hidden, setHidden] = useState(false)
   const pathname = usePathname()
-  
-  const { scrollY } = useScroll()
+  const lastScrollY = useRef(0)
 
-  // Detect scroll direction for Smart Navbar
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious()
-    if (latest > 50) {
-      setScrolled(true)
-    } else {
-      setScrolled(false)
+  // Lightweight scroll direction detector with hysteresis (avoids per-pixel re-renders)
+  useEffect(() => {
+    let ticking = false
+
+    const updateNav = () => {
+      const currentY = window.scrollY || window.pageYOffset
+      const diff = currentY - lastScrollY.current
+
+      if (currentY < 120) {
+        setHidden(false)
+        lastScrollY.current = currentY
+      } else if (diff > 10 && !mobileOpen) {
+        setHidden(true)
+        lastScrollY.current = currentY
+      } else if (diff < -10) {
+        setHidden(false)
+        lastScrollY.current = currentY
+      }
+      ticking = false
     }
 
-    if (latest > 150 && latest > previous) {
-      setHidden(true)
-    } else {
-      setHidden(false)
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true
+        requestAnimationFrame(updateNav)
+      }
     }
-  })
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [mobileOpen])
 
   // Close mobile menu on page change
   useEffect(() => {
@@ -41,105 +55,97 @@ export default function Navbar() {
   // Lock scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    return () => {
+      document.body.style.overflow = ''
+    }
   }, [mobileOpen])
 
   return (
-    <motion.nav 
-      className={`${styles.nav} ${scrolled ? styles.navSolid : styles.navTransparent}`}
-      variants={{
-        visible: { y: 0 },
-        hidden: { y: '-100%' },
-      }}
-      animate={hidden ? "hidden" : "visible"}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
-    >
-      <div className={styles.inner}>
-        {/* Logo Texto */}
-        <Link href="/" className={`${styles.logo} interactive`}>
-          INKEDSOUH
-        </Link>
-
-        {/* Links desktop */}
-        <div className={styles.links}>
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`${styles.link} ${pathname === link.href ? styles.linkActive : ''} interactive`}
-            >
-              {link.label}
-            </Link>
-          ))}
-          <Link href="/login" className={`${styles.loginBtn} interactive magnetic`}>
-            Login
+    <>
+      <nav
+        className={`${styles.nav} ${styles.navSolid} ${hidden && !mobileOpen ? styles.navHidden : ''}`}
+      >
+        <div className={styles.inner}>
+          {/* Logo Texto */}
+          <Link href="/" className={`${styles.logo} interactive`}>
+            INKEDSOUH
           </Link>
+
+          {/* Links desktop */}
+          <div className={styles.links}>
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`${styles.link} ${pathname === link.href ? styles.linkActive : ''} interactive`}
+              >
+                {link.label}
+              </Link>
+            ))}
+            <Link href="/login" className={`${styles.loginBtn} interactive magnetic`}>
+              Login
+            </Link>
+          </div>
+
+          {/* Hamburger móvil */}
+          <button
+            className={`${styles.hamburger} ${mobileOpen ? styles.hamburgerOpen : ''} interactive`}
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Menú de navegación"
+          >
+            <span className={styles.hamburgerLine} />
+            <span className={styles.hamburgerLine} />
+            <span className={styles.hamburgerLine} />
+          </button>
         </div>
+      </nav>
 
-        {/* Hamburger móvil */}
-        <button
-          className={`${styles.hamburger} ${mobileOpen ? styles.hamburgerOpen : ''} interactive`}
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Menú de navegación"
-        >
-          <span className={styles.hamburgerLine}></span>
-          <span className={styles.hamburgerLine}></span>
-          <span className={styles.hamburgerLine}></span>
-        </button>
-      </div>
-
-      {/* Overlay móvil con Framer Motion */}
+      {/* Overlay móvil fuera del contenedor transformado */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.2 }}
             className={styles.mobileOverlay}
             onClick={() => setMobileOpen(false)}
           />
         )}
       </AnimatePresence>
 
-      {/* Menú móvil deslizante con Framer Motion */}
+      {/* Menú móvil deslizante */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.div 
+          <motion.div
             className={styles.mobileMenu}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            transition={{ type: 'tween', duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className={styles.mobileLinksContainer}>
-              {NAV_LINKS.map((link, i) => (
-                <motion.div
+              {NAV_LINKS.map((link) => (
+                <Link
                   key={link.href}
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 50 }}
-                  transition={{ delay: 0.1 + i * 0.1 }}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`${styles.mobileLink} interactive`}
                 >
-                  <Link href={link.href} className={`${styles.mobileLink} interactive`}>
-                    {link.label}
-                  </Link>
-                </motion.div>
-              ))}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ delay: 0.1 + NAV_LINKS.length * 0.1 }}
-              >
-                <Link href="/login" className={`${styles.mobileLoginBtn} interactive`}>
-                  Login
+                  {link.label}
                 </Link>
-              </motion.div>
+              ))}
+              <Link
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className={`${styles.mobileLoginBtn} interactive`}
+              >
+                Login
+              </Link>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+    </>
   )
 }
