@@ -27,7 +27,7 @@ export default function BookingCTA() {
           video.pause()
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0.4 }
     )
 
     observer.observe(video)

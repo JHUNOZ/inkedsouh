@@ -4,6 +4,7 @@ import { ShoppingBag } from 'lucide-react'
 import { motion } from 'framer-motion'
 import SectionTitle from '@/components/ui/SectionTitle'
 import BubbleButton from '@/components/ui/BubbleButton'
+import VideoPreview from '@/components/ui/VideoPreview'
 import { parseProductSpecifications, calculateTotalVariantStock, isVideoUrl } from '@/lib/productUtils'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -119,15 +120,7 @@ export default function ProductsPreview() {
                     <div className={styles.cardImage}>
                       {product.image_url ? (
                         isVideoUrl(product.image_url) ? (
-                          <video 
-                            src={product.image_url} 
-                            autoPlay 
-                            muted 
-                            loop 
-                            playsInline 
-                            preload="none"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          />
+                          <VideoPreview src={product.image_url} />
                         ) : (
                           <img src={product.image_url} alt={product.name} loading="lazy" decoding="async" />
                         )

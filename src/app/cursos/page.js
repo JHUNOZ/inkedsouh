@@ -4,6 +4,7 @@ import { BookOpen, Play, Clock, Award } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import SectionTitle from '@/components/ui/SectionTitle'
+import VideoPreview from '@/components/ui/VideoPreview'
 import { createClient } from '@/lib/supabase/client'
 import { isVideoUrl } from '@/lib/productUtils'
 import Link from 'next/link'
@@ -55,16 +56,9 @@ export default function CursosPage() {
                     <div className={styles.cardImage}>
                       {course.image_url ? (
                         isVideoUrl(course.image_url) ? (
-                          <video 
-                            src={course.image_url} 
-                            autoPlay 
-                            muted 
-                            loop 
-                            playsInline 
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          />
+                          <VideoPreview src={course.image_url} showBadge={false} />
                         ) : (
-                          <img src={course.image_url} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img src={course.image_url} alt={course.title} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         )
                       ) : (
                         <BookOpen size={44} />

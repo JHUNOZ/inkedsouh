@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import VideoPreview from '@/components/ui/VideoPreview'
 import { 
   UploadCloud, Trash2, Image as ImageIcon, Video, User, Check, 
   AlertTriangle, RefreshCw, Plus, Sparkles, Eye, Film, Layers 
@@ -441,9 +442,9 @@ export default function MultimediaPage() {
                     <div key={item.id} className={styles.mediaCard}>
                       <div className={styles.mediaThumbWrap}>
                         {isVideo ? (
-                          <video src={item.media_url} muted loop className={styles.mediaThumb} />
+                          <VideoPreview src={item.media_url} showBadge={false} className={styles.mediaThumb} />
                         ) : (
-                          <img src={item.media_url} alt={details.title} className={styles.mediaThumb} />
+                          <img src={item.media_url} alt={details.title} loading="lazy" decoding="async" className={styles.mediaThumb} />
                         )}
                         
                         <span className={`${styles.typeBadge} ${isVideo ? styles.typeBadgeVideo : styles.typeBadgeImg}`}>

@@ -34,7 +34,6 @@
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
   overflow: hidden;
   border-radius: 30% 70% 60% 40% / 50% 40% 60% 50%;
-  animation: morphVideo 14s ease-in-out infinite;
   transition: transform var(--transition-smooth), border-color var(--transition-smooth), box-shadow var(--transition-smooth);
   transform: translateZ(0);
 }

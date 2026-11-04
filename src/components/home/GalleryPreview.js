@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { ArrowLeft, ArrowRight, X, ExternalLink, Eye, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import SectionTitle from '@/components/ui/SectionTitle'
+import VideoPreview from '@/components/ui/VideoPreview'
 import { createClient } from '@/lib/supabase/client'
 import { isVideoUrl } from '@/lib/productUtils'
 import Link from 'next/link'
@@ -32,6 +33,7 @@ export default function GalleryPreview() {
           .from('instagram_cache')
           .select('*')
           .order('created_at', { ascending: false })
+          .limit(10)
 
         if (!error && data && data.length > 0) {
           const formatted = data.map(item => {
@@ -250,13 +252,8 @@ export default function GalleryPreview() {
                   tabIndex={0}
                 >
                   {(post.mediaType === 'VIDEO' || isVideoUrl(post.mediaUrl)) ? (
-                    <video
+                    <VideoPreview
                       src={post.mediaUrl}
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      preload="metadata"
                       className={styles.igMedia}
                     />
                   ) : (

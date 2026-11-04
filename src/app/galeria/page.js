@@ -5,6 +5,7 @@ import { X, Heart, ExternalLink, ChevronLeft, ChevronRight, Image as ImageIcon, 
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import SectionTitle from '@/components/ui/SectionTitle'
+import VideoPreview from '@/components/ui/VideoPreview'
 import { createClient } from '@/lib/supabase/client'
 import { isVideoUrl } from '@/lib/productUtils'
 import Link from 'next/link'
@@ -169,11 +170,13 @@ export default function GaleriaPage() {
                 onClick={() => setLightboxIndex(idx)}
               >
                 {(post.media_type === 'VIDEO' || isVideoUrl(post.media_url)) ? (
-                  <video src={post.media_url} autoPlay loop muted playsInline className={styles.mediaImg} />
+                  <VideoPreview src={post.media_url} className={styles.mediaImg} />
                 ) : (
                   <img 
                     src={post.media_url} 
                     alt={post.caption || "Portafolio InkedSouh"} 
+                    loading="lazy"
+                    decoding="async"
                     className={styles.mediaImg}
                   />
                 )}

@@ -12,6 +12,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import SectionTitle from '@/components/ui/SectionTitle'
 import BubbleButton from '@/components/ui/BubbleButton'
+import VideoPreview from '@/components/ui/VideoPreview'
 import { PRODUCT_CATEGORIES } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
 import { 
@@ -632,16 +633,9 @@ export default function ProductosPage() {
                     <div className={styles.cardImage}>
                       {mainImage ? (
                         isVideoUrl(mainImage) ? (
-                          <video 
-                            src={mainImage} 
-                            autoPlay 
-                            muted 
-                            loop 
-                            playsInline 
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                          />
+                          <VideoPreview src={mainImage} />
                         ) : (
-                          <img src={mainImage} alt={product.name} loading="lazy" />
+                          <img src={mainImage} alt={product.name} loading="lazy" decoding="async" />
                         )
                       ) : (
                         <ShoppingBag size={36} />
